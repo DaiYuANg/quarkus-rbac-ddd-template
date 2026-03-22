@@ -14,7 +14,15 @@ dependencies {
   implementation(libs.blaze.persistence.quarkus)
   runtimeOnly(libs.blaze.persistence.hibernate)
 
-  annotationProcessor(libs.hibernate.processor)
-  annotationProcessor(libs.jakarta.persistence)
-  annotationProcessor(libs.jakarta.annotation)
+
+  api(libs.querydsl.core)
+  api(libs.querydsl.jpa)
+  api(libs.querydsl.collection)
+  api(libs.querydsl.spatial)
+  api(libs.querydsl.guava)
+
+  val queryDSLApt = variantOf(libs.querydsl.apt) { classifier(JAKARTA) }
+  compileOnly(queryDSLApt)
+  annotationProcessor(queryDSLApt)
+  annotationProcessor(libs.bundles.persistence.annotation.processor)
 }

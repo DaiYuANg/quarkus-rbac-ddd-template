@@ -19,11 +19,11 @@ mapstruct = "1.6.3"
 jetbrains-annotations = "26.0.2-1"
 blaze-persistence = "1.6.18"
 fesod = "2.0.1-incubating"
-lombok-mapstruct-binding = "0.2.0"
 hibernate-processor-version = "7.1.7.Final"
 jakarta-persistence-version = "3.2.0"
 jakarta-annotation-version = "3.0.0"
 record-builder = "52"
+query-dsl = "7.1"
 
 [plugins]
 quarkus = { id = "io.quarkus", version.ref = "quarkus" }
@@ -44,7 +44,6 @@ quarkus-blaze-persistence-bom = { group = "io.quarkus.platform", name = "quarkus
 jetbrains-annotations = { group = "org.jetbrains", name = "annotations", version.ref = "jetbrains-annotations" }
 mapstruct = { group = "org.mapstruct", name = "mapstruct", version.ref = "mapstruct" }
 mapstruct-processor = { group = "org.mapstruct", name = "mapstruct-processor", version.ref = "mapstruct" }
-lombok-mapstruct-binding = { group = "org.projectlombok", name = "lombok-mapstruct-binding", version.ref = "lombok-mapstruct-binding" }
 jakarta-ws-rs = { group = "jakarta.ws.rs", name = "jakarta.ws.rs-api" }
 jakarta-validation = { group = "jakarta.validation", name = "jakarta.validation-api" }
 jackson-annotations = { group = "com.fasterxml.jackson.core", name = "jackson-annotations" }
@@ -87,6 +86,14 @@ rest-assured = { group = "io.rest-assured", name = "rest-assured" }
 record-builder-processor = { group = "io.soabase.record-builder", name = "record-builder-processor", version.ref = "record-builder" }
 record-builder-core = { group = "io.soabase.record-builder", name = "record-builder-core", version.ref = "record-builder" }
 
+querydsl-jpa = { group = "io.github.openfeign.querydsl", name = "querydsl-jpa", version.ref = "query-dsl" }
+querydsl-apt = { group = "io.github.openfeign.querydsl", name = "querydsl-apt", version.ref = "query-dsl" }
+querydsl-core = { group = "io.github.openfeign.querydsl", name = "querydsl-core", version.ref = "query-dsl" }
+querydsl-spatial = { group = "io.github.openfeign.querydsl", name = "querydsl-spatial", version.ref = "query-dsl" }
+querydsl-guava = { group = "io.github.openfeign.querydsl", name = "querydsl-guava", version.ref = "query-dsl" }
+querydsl-collection = { group = "io.github.openfeign.querydsl", name = "querydsl-collections", version.ref = "query-dsl" }
+
+guava = { group = "com.google.guava", name = "guava", version = "33.5.0-jre" }
 [bundles]
 quarkus-application = [
   "quarkus-arc",
@@ -125,4 +132,10 @@ quarkus-migrator = [
 quarkus-test = [
   "quarkus-junit5",
   "rest-assured"
+]
+
+persistence-annotation-processor = [
+  'hibernate-processor',
+  'jakarta-persistence',
+  'jakarta-annotation'
 ]
