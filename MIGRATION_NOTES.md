@@ -99,13 +99,14 @@ This archive is meant as the next iteration artifact, not a claim of fully verif
 
 This round focuses only on database migration alignment.
 
-Added migrations:
-- `V1_3__Align_RBAC_Schema_With_Spring_Template.sql`
-- `V1_4__Job_Execution_History.sql`
-- `V1_5__Quartz_Admin_Tables.sql`
+Added migrations (consolidated into sequential versions):
+- `V1__Init_RBAC.sql` (merged: schema + bootstrap data, English)
+- `V1_1__Audit_Log_Tables.sql`
+- `V1_2__Job_Execution_History.sql`
+- `V1_3__Quartz_Admin_Tables.sql`
 
-What was aligned:
-- Added Spring-template-style audit/support columns such as `version`, `sort`, `deleted`, `avatar`, `latest_change_password` where they can safely coexist with the current Quarkus model.
+What was aligned (now in V1__Init_RBAC.sql):
+- RBAC schema includes Spring-template-style audit/support columns (`version`, `sort`, `deleted`, `avatar`, `latest_change_password`).
 - Added `job_execution_history` so the schema is closer to the original scheduler/history footprint.
 - Added Quartz admin JDBC tables under the `qrtz_admin_*` prefix.
 - Added comments and indexes closer to the original schema intent.
