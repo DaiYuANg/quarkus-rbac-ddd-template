@@ -20,7 +20,6 @@ dependencies {
   implementation(projects.libs.accesscontrol)
   implementation(projects.libs.audit)
   implementation(projects.libs.redis)
-  implementation(projects.libs.export)
   implementation(projects.libs.security)
 
   implementation(libs.bundles.quarkus.application)

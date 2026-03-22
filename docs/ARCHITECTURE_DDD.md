@@ -12,7 +12,6 @@ libs/
 ├── identity            # Identity context: User (depends on accesscontrol for Role)
 ├── audit               # Audit context: OperationLog, LoginLog
 ├── redis               # Redis storage
-├── export              # Export SPI
 └── security            # Auth chain, JWT, ActorAuditor
 
 apps/
@@ -26,10 +25,8 @@ apps/
 com.github.DaiYuANg
 ├── api/                      # API layer
 │   ├── controller/           # REST resources (thin controllers)
-│   ├── controller.support/   # ExportResponseHelper
 │   ├── dto.request/          # Form, Command (UserCreationForm, LoginRequest, etc.)
 │   ├── dto.response/         # VO, Result (UserVO, UserDetailVo, SystemAuthenticationToken)
-│   ├── dto.export/           # Export rows (UserExportRow, etc.)
 │   └── handler/              # GlobalExceptionHandler
 ├── application/              # Application layer (by bounded context)
 │   ├── user/                 # UserApplicationService
@@ -38,7 +35,7 @@ com.github.DaiYuANg
 │   ├── permissiongroup/      # PermissionGroupApplicationService
 │   ├── auth/                 # AuthApplicationService
 │   ├── audit/                # OperationLogService, LoginLogService, AuthorityVersionService
-│   └── converter/            # ViewMapper, ExportMapper
+│   └── converter/            # ViewMapper
 └── security/                 # Admin-specific auth/authorization adapters
 ```
 

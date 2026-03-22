@@ -1,24 +1,19 @@
 package com.github.DaiYuANg.api.controller;
 
-import com.github.DaiYuANg.api.controller.support.ExportResponseHelper;
 import com.github.DaiYuANg.api.dto.request.ChangePasswordForm;
 import com.github.DaiYuANg.api.dto.request.UpdateUserForm;
 import com.github.DaiYuANg.api.dto.request.UserCreationForm;
 import com.github.DaiYuANg.api.dto.request.UserRefRoleForm;
 import com.github.DaiYuANg.api.dto.response.UserVO;
-import com.github.DaiYuANg.application.converter.ExportMapper;
 import com.github.DaiYuANg.application.user.UserApplicationService;
 import com.github.DaiYuANg.common.model.PageResult;
 import com.github.DaiYuANg.common.model.Result;
-import com.github.DaiYuANg.export.model.ExportRequest;
-import com.github.DaiYuANg.export.spi.ExcelExporter;
 import com.github.DaiYuANg.identity.parameter.UserQuery;
 import io.quarkus.security.PermissionsAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -29,8 +24,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class UserResource {
     private final UserApplicationService userApplicationService;
-    private final ExcelExporter excelExporter;
-    private final ExportMapper exportMapper;
 
     @GET @PermissionsAllowed("system.user:view")
     public Result<PageResult<UserVO>> queryUserPage(@BeanParam @Valid UserQuery query) { return Result.ok(userApplicationService.queryUserPage(query)); }
@@ -57,9 +50,4 @@ public class UserResource {
     @PUT @Path("/{id}/status") @PermissionsAllowed("system.user:edit") public Result<Void> updateUserStatus(@PathParam("id") Long id, @QueryParam("status") Integer status) { userApplicationService.updateUserStatus(id, status); return Result.ok(); }
     @GET @Path("/count/userTotal") public Result<Long> countUserTotal() { return Result.ok(userApplicationService.countUserTotal()); }
     @GET @Path("/count/userLoginTotal") public Result<Long> countUserLoginTotal() { return Result.ok(userApplicationService.countUserLoginTotal()); }
-    @GET @Path("/export") @PermissionsAllowed("system.user:view")
-    public Response export() {
-        var rows = userApplicationService.getAllUsers().stream().map(exportMapper::toUserExportRow).toList();
-        return ExportResponseHelper.attachment(excelExporter.export(new ExportRequest("users", rows)));
-    }
 }

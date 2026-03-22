@@ -42,7 +42,6 @@ libs/
 ├── identity            # 用户（依赖 accesscontrol）
 ├── audit               # 操作日志、登录日志
 ├── redis               # 刷新令牌、权限版本、登录尝试状态
-├── export              # 导出 SPI
 └── security            # 认证提供者链、JWT、当前用户、令牌上下文
 
 apps/

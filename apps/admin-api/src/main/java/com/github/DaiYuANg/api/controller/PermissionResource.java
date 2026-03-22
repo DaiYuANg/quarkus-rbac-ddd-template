@@ -1,19 +1,14 @@
 package com.github.DaiYuANg.api.controller;
 
 import com.github.DaiYuANg.accesscontrol.parameter.PermissionQuery;
-import com.github.DaiYuANg.api.controller.support.ExportResponseHelper;
 import com.github.DaiYuANg.api.dto.response.PermissionVO;
-import com.github.DaiYuANg.application.converter.ExportMapper;
 import com.github.DaiYuANg.application.permission.PermissionApplicationService;
 import com.github.DaiYuANg.common.model.PageResult;
 import com.github.DaiYuANg.common.model.Result;
-import com.github.DaiYuANg.export.model.ExportRequest;
-import com.github.DaiYuANg.export.spi.ExcelExporter;
 import io.quarkus.security.PermissionsAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.Response;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -24,15 +19,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class PermissionResource {
     private final PermissionApplicationService permissionApplicationService;
-    private final ExcelExporter excelExporter;
-    private final ExportMapper exportMapper;
 
     @GET @Path("/{id}") @PermissionsAllowed("system.permission:view") public Result<Optional<PermissionVO>> getById(@PathParam("id") Long id) { return Result.ok(permissionApplicationService.getPermissionById(id)); }
     @GET @Path("/name/{name}") @PermissionsAllowed("system.permission:view") public Result<Optional<PermissionVO>> getByName(@PathParam("name") String name) { return Result.ok(permissionApplicationService.getPermissionByName(name)); }
     @GET @PermissionsAllowed("system.permission:view") public Result<PageResult<PermissionVO>> query(@BeanParam @Valid PermissionQuery query) { return Result.ok(permissionApplicationService.queryPermissionPage(query)); }
     @GET @Path("/list") @PermissionsAllowed("system.permission:view") public Result<List<PermissionVO>> list() { return Result.ok(permissionApplicationService.getAllPermissions()); }
-    @GET @Path("/export") @PermissionsAllowed("system.permission:view") public Response export() {
-        var rows = permissionApplicationService.getAllPermissions().stream().map(exportMapper::toPermissionExportRow).toList();
-        return ExportResponseHelper.attachment(excelExporter.export(new ExportRequest("permissions", rows)));
-    }
 }

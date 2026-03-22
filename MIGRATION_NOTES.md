@@ -120,7 +120,7 @@ So this round is a **best-effort schema convergence**, not a blind checksum-copy
 
 ## Permission code structure
 
-- Permission query/VO/export paths now return these structured fields directly.
+- Permission query/VO paths now return these structured fields directly.
 
 
 ## Authorization cache and Redis snapshot

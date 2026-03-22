@@ -1,22 +1,17 @@
 package com.github.DaiYuANg.api.controller;
 
 import com.github.DaiYuANg.accesscontrol.parameter.RoleQuery;
-import com.github.DaiYuANg.api.controller.support.ExportResponseHelper;
 import com.github.DaiYuANg.api.dto.request.RoleCreationForm;
 import com.github.DaiYuANg.api.dto.request.RoleRefPermissionGroupForm;
 import com.github.DaiYuANg.api.dto.request.UpdateRoleForm;
 import com.github.DaiYuANg.api.dto.response.RoleVO;
-import com.github.DaiYuANg.application.converter.ExportMapper;
 import com.github.DaiYuANg.application.role.RoleApplicationService;
 import com.github.DaiYuANg.common.model.PageResult;
 import com.github.DaiYuANg.common.model.Result;
-import com.github.DaiYuANg.export.model.ExportRequest;
-import com.github.DaiYuANg.export.spi.ExcelExporter;
 import io.quarkus.security.PermissionsAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.Response;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -27,8 +22,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class RoleResource {
     private final RoleApplicationService roleApplicationService;
-    private final ExcelExporter excelExporter;
-    private final ExportMapper exportMapper;
 
     @POST @PermissionsAllowed("system.role:add") public Result<RoleVO> createRole(@Valid RoleCreationForm form) { return Result.ok(roleApplicationService.createRole(form)); }
     @GET @PermissionsAllowed("system.role:view") public Result<PageResult<RoleVO>> queryRolePage(@BeanParam @Valid RoleQuery query) { return Result.ok(roleApplicationService.queryRolePage(query)); }
@@ -40,8 +33,4 @@ public class RoleResource {
     @GET @Path("/list") @PermissionsAllowed("system.role:view") public Result<List<RoleVO>> getAllRoles() { return Result.ok(roleApplicationService.getAllRoles()); }
     @GET @Path("/count/code/{code}") public Result<Long> countCode(@PathParam("code") String code) { return Result.ok(roleApplicationService.countCode(code)); }
     @GET @Path("/count/roleTotal") public Result<Long> countRoleTotal() { return Result.ok(roleApplicationService.countRole()); }
-    @GET @Path("/export") @PermissionsAllowed("system.role:view") public Response export() {
-        var rows = roleApplicationService.getAllRoles().stream().map(exportMapper::toRoleExportRow).toList();
-        return ExportResponseHelper.attachment(excelExporter.export(new ExportRequest("roles", rows)));
-    }
 }

@@ -12,7 +12,6 @@ libs/
 ├── identity            # 身份上下文：User（依赖 accesscontrol 的 Role）
 ├── audit               # 审计上下文：OperationLog、LoginLog
 ├── redis               # Redis 存储
-├── export              # 导出 SPI
 └── security            # 认证链、JWT、ActorAuditor
 
 apps/
@@ -26,10 +25,8 @@ apps/
 com.github.DaiYuANg
 ├── api/                      # 接口层
 │   ├── controller/           # REST 资源（薄控制器）
-│   ├── controller.support/   # ExportResponseHelper
 │   ├── dto.request/          # Form、Command（UserCreationForm, LoginRequest 等）
 │   ├── dto.response/         # VO、Result（UserVO, UserDetailVo, SystemAuthenticationToken）
-│   ├── dto.export/           # 导出行（UserExportRow 等）
 │   └── handler/              # GlobalExceptionHandler
 ├── application/              # 应用层（按 bounded context）
 │   ├── user/                 # UserApplicationService
@@ -38,7 +35,7 @@ com.github.DaiYuANg
 │   ├── permissiongroup/      # PermissionGroupApplicationService
 │   ├── auth/                 # AuthApplicationService
 │   ├── audit/                # OperationLogService, LoginLogService, AuthorityVersionService
-│   └── converter/            # ViewMapper, ExportMapper
+│   └── converter/            # ViewMapper
 └── security/                 # Admin 特有的认证/授权适配器
 ```
 

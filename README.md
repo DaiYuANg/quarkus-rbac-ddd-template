@@ -42,7 +42,6 @@ libs/
 ├── identity            # User (depends on accesscontrol)
 ├── audit               # OperationLog, LoginLog
 ├── redis               # Refresh token, authority version, login attempt state
-├── export              # Export SPI
 └── security            # Auth provider chain, JWT, current user, token context
 
 apps/
