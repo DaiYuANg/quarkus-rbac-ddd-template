@@ -1,0 +1,2 @@
+-- Deprecated: schema and bootstrap data are now managed by apps/migrator via Flyway.
+-- Keep this file only as a historical reference; admin-api no longer executes it.

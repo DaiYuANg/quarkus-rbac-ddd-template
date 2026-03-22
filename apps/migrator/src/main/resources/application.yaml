@@ -1,0 +1,66 @@
+quarkus:
+  banner:
+    enabled: false
+  log:
+    level: INFO
+    console:
+      json:
+        enabled: true
+        log-format: ecs
+  datasource:
+    db-kind: postgresql
+    username: postgres
+    password: postgres
+    jdbc:
+      url: jdbc:postgresql://localhost:5433/rbac
+  hibernate-orm:
+    active: false
+  flyway:
+    migrate-at-start: true
+    validate-at-start: false
+    clean-disabled: true
+    locations: db/migration
+    schemas: public
+    baseline-on-migrate: true
+    baseline-version: 0
+    table: flyway_schema_history
+  management:
+    enabled: true
+    port: 9001
+    root-path: /q
+  info:
+    enabled: true
+
+"%dev":
+  quarkus:
+    datasource:
+      username: postgres
+      password: postgres
+      jdbc:
+        url: jdbc:postgresql://localhost:5433/rbac
+    log:
+      console:
+        json:
+          enabled: false
+
+"%test":
+  quarkus:
+    datasource:
+      username: postgres
+      password: postgres
+      jdbc:
+        url: jdbc:postgresql://localhost:5433/rbac_test
+    log:
+      console:
+        json:
+          enabled: false
+
+"%prod":
+  quarkus:
+    datasource:
+      username: ${DB_USERNAME:postgres}
+      password: ${DB_PASSWORD:postgres}
+      jdbc:
+        url: ${DB_JDBC_URL:jdbc:postgresql://postgres:5433/rbac}
+    flyway:
+      schemas: ${DB_SCHEMA:public}

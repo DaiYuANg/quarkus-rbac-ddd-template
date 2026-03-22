@@ -1,0 +1,102 @@
+quarkus:
+  http:
+    port: 8080
+    cors:
+      enabled: true
+      origins: /.*/
+  datasource:
+    db-kind: postgresql
+    username: postgres
+    password: postgres
+    jdbc:
+      url: jdbc:postgresql://localhost:5433/rbac
+  hibernate-orm:
+    database:
+      generation: validate
+    physical-naming-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+    log:
+      sql: true
+    sql-load-script: no-file
+  redis:
+    hosts: redis://localhost:6379
+  smallrye-openapi:
+    path: /q/openapi
+  swagger-ui:
+    always-include: true
+  management:
+    enabled: true
+    port: 9000
+    root-path: /q
+  smallrye-health:
+    root-path: /q/health
+  micrometer:
+    export:
+      prometheus:
+        path: /q/metrics/prometheus
+  otel:
+    enabled: true
+    exporter:
+      otlp:
+        endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4317}
+        protocol: grpc
+    resource:
+      attributes: service.name=admin-api,service.version=1.0.0-SNAPSHOT
+  info:
+    enabled: true
+  log:
+    level: INFO
+    console:
+      json:
+        enabled: true
+        log-format: ecs
+
+mp:
+  jwt:
+    verify:
+      issuer: quarkus-rbac-template
+      publickey:
+        location: publicKey.pem
+
+smallrye:
+  jwt:
+    sign:
+      key:
+        location: privateKey.pem
+
+app:
+  security:
+    access-token-ttl-seconds: 7200
+    refresh-token-ttl-seconds: 604800
+    login-failure-max-attempts: 5
+    login-failure-lock-seconds: 900
+    config-users:
+      bootstrap:
+        username: bootstrap-admin
+        password-hash: $2a$10$replace.with.bcrypt.hash
+        display-name: Bootstrap Admin
+        roles:
+          - root
+          - ops
+        permissions:
+          - system.user:view
+          - system.user:update
+          - system.role:view
+          - system.role:update
+
+"%dev":
+  quarkus:
+    otel:
+      enabled: false
+    log:
+      console:
+        json:
+          enabled: false
+
+"%test":
+  quarkus:
+    otel:
+      enabled: false
+    log:
+      console:
+        json:
+          enabled: false

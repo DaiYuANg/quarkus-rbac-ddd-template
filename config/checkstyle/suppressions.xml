@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions PUBLIC "-//Checkstyle//DTD SuppressionFilter Configuration 1.2//EN"
+    "https://checkstyle.org/dtds/suppressions_1_2.dtd">
+<suppressions>
+    <!-- Exclude generated MapStruct implementations -->
+    <suppress checks=".*" files=".*MapperImpl\.java"/>
+    <!-- Exclude Hibernate metamodel (SysUser_, SysRole_, etc.) -->
+    <!-- Hibernate metamodel: SysUser_.java, SysRole_.java, etc. -->
+    <suppress checks=".*" files=".*[a-zA-Z0-9]_\\.java$"/>
+    <!-- Exclude package-info and module-info -->
+    <suppress checks=".*" files="package-info\.java"/>
+    <suppress checks=".*" files="module-info\.java"/>
+</suppressions>
