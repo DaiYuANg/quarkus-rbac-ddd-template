@@ -4,7 +4,7 @@
 - Security login providers now return `SUCCESS / ABSTAIN / FAILURE`, which fixes the earlier problem where `config-user` could block `db-user` from ever being attempted.
 - Added default authentication success/failure handlers plus token/refresh abstractions in `libs/security`.
 - Added `AdminRefreshTokenAuthenticationProvider`, so refresh-token processing is now part of the same authentication chain.
-- Introduced `BaseQueryRepository` and `BaseBlazeQueryRepository`, and moved the four admin list repositories onto the shared Blaze base path.
+- Introduced `BaseQueryRepository`; moved the four admin list repositories onto Blaze + QueryDSL (strongly-typed Q-types). `BaseBlazeQueryRepository` / `BaseEntityViewQueryRepository` removed after BlazeJPAQuery refactor.
 - Permission and permission-group list queries now also use Blaze Entity Views instead of mixed constructor-projection fallbacks.
 
 # Migration Notes v13
@@ -75,7 +75,7 @@ This archive is meant as the next iteration artifact, not a claim of fully verif
 ## v17
 - Added token-context abstractions and principal attribute serialization to stabilize SecurityIdentity <-> business principal mapping.
 - Added `AuthenticationProviders` facade to make ordered provider resolution reusable.
-- Added `BaseEntityViewQueryRepository` and `AuditSnapshotProvider` to reduce repeated Blaze/audit plumbing.
+- Added `AuditSnapshotProvider` for Blaze/audit plumbing. `BaseEntityViewQueryRepository` removed after BlazeJPAQuery refactor.
 
 
 ## v18 migration process split

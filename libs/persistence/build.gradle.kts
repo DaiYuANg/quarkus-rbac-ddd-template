@@ -12,6 +12,10 @@ dependencies {
   api(libs.quarkus.rest.jackson)
 
   implementation(libs.blaze.persistence.quarkus)
+  api(libs.blaze.persistence.querydsl) {
+    exclude(group = "com.querydsl", module = "querydsl-jpa")
+    exclude(group = "com.querydsl", module = "querydsl-core")
+  }
   runtimeOnly(libs.blaze.persistence.hibernate)
 
 

@@ -3,7 +3,6 @@ package com.github.DaiYuANg.application.role;
 import com.github.DaiYuANg.accesscontrol.constant.RoleStatus;
 import com.github.DaiYuANg.accesscontrol.entity.SysRole;
 import com.github.DaiYuANg.accesscontrol.parameter.RoleQuery;
-import com.github.DaiYuANg.accesscontrol.query.RoleQueryRepository;
 import com.github.DaiYuANg.accesscontrol.repository.PermissionGroupRepository;
 import com.github.DaiYuANg.accesscontrol.repository.RoleRepository;
 import com.github.DaiYuANg.api.dto.request.RoleCreationForm;
@@ -30,7 +29,6 @@ public class RoleApplicationService {
     private final RoleRepository roleRepository;
     private final PermissionGroupRepository permissionGroupRepository;
     private final ViewMapper mapper;
-    private final RoleQueryRepository roleQueryRepository;
     private final AuthorityVersionService authorityVersionService;
     private final OperationLogService operationLogService;
     private final AuthorizationService authorizationService;
@@ -53,7 +51,7 @@ public class RoleApplicationService {
 
     public PageResult<RoleVO> queryRolePage(RoleQuery query) {
         authorizationService.check("system", "role", "view");
-        var slice = roleQueryRepository.page(query);
+        var slice = roleRepository.page(query);
         return PageResult.of(slice.total(), query.getPageNum(), query.getPageSize(), slice.content().stream().map(mapper::toRoleVO).toList());
     }
     public Optional<RoleVO> getRoleById(Long id) { authorizationService.check("system", "role", "view"); return roleRepository.findByIdOptional(id).map(mapper::toRoleVO); }

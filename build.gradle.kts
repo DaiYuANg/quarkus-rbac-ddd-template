@@ -80,6 +80,7 @@ subprojects {
     annotationProcessor(enforcedPlatform(rootLibs.quarkus.bom))
     compileOnly(rootLibs.jetbrains.annotations)
     implementation(rootLibs.mapstruct)
+    implementation(rootLibs.guava)
     implementation(rootLibs.record.builder.core)
     annotationProcessor(rootLibs.mapstruct.processor)
     annotationProcessor(rootLibs.record.builder.processor)

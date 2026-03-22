@@ -10,10 +10,9 @@ public abstract class BaseMetamodelQueryBuilder<Q, S> {
             return;
         }
         for (var sort : sorts) {
-            if (sort.direction() == SortDirection.ASC) {
-                builder.orderByAsc(sort.property());
-            } else {
-                builder.orderByDesc(sort.property());
+            switch (sort.direction()) {
+                case ASC -> builder.orderByAsc(sort.property());
+                case DESC -> builder.orderByDesc(sort.property());
             }
         }
     }

@@ -2,7 +2,6 @@ package com.github.DaiYuANg.application.permissiongroup;
 
 import com.github.DaiYuANg.accesscontrol.entity.SysPermissionGroup;
 import com.github.DaiYuANg.accesscontrol.parameter.PermissionGroupQuery;
-import com.github.DaiYuANg.accesscontrol.query.PermissionGroupQueryRepository;
 import com.github.DaiYuANg.accesscontrol.repository.PermissionGroupRepository;
 import com.github.DaiYuANg.accesscontrol.repository.PermissionRepository;
 import com.github.DaiYuANg.api.dto.request.PermissionGroupCreationForm;
@@ -28,7 +27,6 @@ import lombok.RequiredArgsConstructor;
 public class PermissionGroupApplicationService {
     private final PermissionGroupRepository repository;
     private final PermissionRepository permissionRepository;
-    private final PermissionGroupQueryRepository permissionGroupQueryRepository;
     private final ViewMapper mapper;
     private final AuthorityVersionService authorityVersionService;
     private final OperationLogService operationLogService;
@@ -69,7 +67,7 @@ public class PermissionGroupApplicationService {
     public void deletePermissionGroup(Long id) { authorizationService.check("system", "permission-group", "delete"); repository.deleteById(id); authorityVersionService.bumpGlobalVersion(); operationLogService.record("permission-group", "delete", String.valueOf(id), true, "delete permission group"); }
     public PageResult<PermissionGroupVO> queryPermissionGroupPage(PermissionGroupQuery query) {
         authorizationService.check("system", "permission-group", "view");
-        var slice = permissionGroupQueryRepository.page(query);
+        var slice = repository.page(query);
         return PageResult.of(slice.total(), query.getPageNum(), query.getPageSize(), slice.content().stream().map(mapper::toPermissionGroupVO).toList());
     }
     public Optional<PermissionGroupVO> getPermissionGroupByName(String name) { authorizationService.check("system", "permission-group", "view"); return repository.findByName(name).map(mapper::toPermissionGroupVO); }

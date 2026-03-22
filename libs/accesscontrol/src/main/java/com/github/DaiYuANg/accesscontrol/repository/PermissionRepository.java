@@ -1,19 +1,124 @@
 package com.github.DaiYuANg.accesscontrol.repository;
 
+import com.blazebit.persistence.CriteriaBuilderFactory;
+import com.blazebit.persistence.querydsl.BlazeJPAQuery;
+import com.github.DaiYuANg.accesscontrol.entity.QSysPermission;
 import com.github.DaiYuANg.accesscontrol.entity.SysPermission;
+import com.github.DaiYuANg.accesscontrol.entity.SysPermission_;
+import com.github.DaiYuANg.accesscontrol.parameter.PermissionQuery;
+import com.github.DaiYuANg.accesscontrol.projection.PermissionListProjection;
+import com.github.DaiYuANg.accesscontrol.query.PermissionQueryRepository;
+import com.github.DaiYuANg.accesscontrol.query.MetamodelPermissionQueryBuilder;
+import com.github.DaiYuANg.accesscontrol.query.sort.PermissionSortFieldMapper;
+import com.github.DaiYuANg.accesscontrol.view.PermissionListView;
 import com.github.DaiYuANg.common.constant.ResultCode;
+import com.github.DaiYuANg.persistence.query.BlazeQueryDSLSupport;
+import com.github.DaiYuANg.persistence.query.PageSlice;
 import com.github.DaiYuANg.persistence.repository.BasePanacheCommandRepository;
+import com.querydsl.core.types.dsl.Expressions;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 
 @ApplicationScoped
-public class PermissionRepository extends BasePanacheCommandRepository<SysPermission> {
-    public Optional<SysPermission> findByCode(String code) { return find("code", code).firstResultOptional(); }
-    public Optional<SysPermission> findByName(String name) { return find("name", name).firstResultOptional(); }
-    public long countByCode(String code) { return count("code", code); }
+@RequiredArgsConstructor(onConstructor_ = @Inject)
+public class PermissionRepository extends BasePanacheCommandRepository<SysPermission>
+    implements PermissionQueryRepository {
 
-    @Override
-    protected ResultCode notFoundCode() {
-        return ResultCode.DATA_NOT_FOUND;
-    }
+  private static final QSysPermission p = new QSysPermission("permission");
+
+  private final EntityManager entityManager;
+  private final CriteriaBuilderFactory criteriaBuilderFactory;
+  private final BlazeQueryDSLSupport queryDslSupport;
+  private final MetamodelPermissionQueryBuilder queryBuilder;
+
+  public Optional<SysPermission> findByCode(String code) {
+    return find(SysPermission_.code.getName(), code).firstResultOptional();
+  }
+
+  public Optional<SysPermission> findByName(String name) {
+    return find(SysPermission_.name.getName(), name).firstResultOptional();
+  }
+
+  public long countByCode(String code) {
+    return count(SysPermission_.code.getName(), code);
+  }
+
+  @Override
+  public PageSlice<PermissionListProjection> page(PermissionQuery query) {
+    var spec = queryBuilder.build(query);
+    var filter = spec.filter();
+
+    var blazeQuery =
+        new BlazeJPAQuery<SysPermission>(entityManager, criteriaBuilderFactory)
+            .from(p)
+            .select(p);
+
+    applyKeyword(blazeQuery, query.getKeyword());
+    applyLike(blazeQuery, p.name, filter.name());
+    applyLike(blazeQuery, p.code, filter.code());
+    applyEquals(blazeQuery, p.domain, filter.domain());
+    applyEquals(blazeQuery, p.resource, filter.resource());
+    applyLike(blazeQuery, p.action, filter.action());
+    applyEquals(blazeQuery, p.groupCode, filter.groupCode());
+    BlazeQueryDSLSupport.applySorts(blazeQuery, spec.sorts(), PermissionSortFieldMapper.INSTANCE);
+
+    return queryDslSupport.executeWithEntityView(
+        blazeQuery,
+        PermissionListView.class,
+        query.offset(),
+        query.getPageSize(),
+        this::toProjection);
+  }
+
+  private void applyKeyword(BlazeJPAQuery<SysPermission> q, String keyword) {
+    var like = BlazeQueryDSLSupport.likePattern(keyword);
+    if (like == null) return;
+    q.where(
+        Expressions.anyOf(
+            p.name.lower().like(like),
+            p.code.lower().like(like),
+            p.domain.lower().like(like),
+            p.resource.lower().like(like),
+            p.action.lower().like(like),
+            p.groupCode.lower().like(like),
+            p.description.lower().like(like)));
+  }
+
+  private void applyLike(
+      BlazeJPAQuery<SysPermission> q,
+      com.querydsl.core.types.dsl.StringPath path,
+      String value) {
+    var like = BlazeQueryDSLSupport.likePattern(value);
+    if (like == null) return;
+    q.where(path.lower().like(like));
+  }
+
+  private void applyEquals(
+      BlazeJPAQuery<SysPermission> q,
+      com.querydsl.core.types.dsl.StringPath path,
+      String value) {
+    if (value == null || value.isBlank()) return;
+    q.where(path.eq(value));
+  }
+
+  private PermissionListProjection toProjection(PermissionListView view) {
+    return new PermissionListProjection(
+        view.getId(),
+        view.getName(),
+        view.getCode(),
+        view.getDomain(),
+        view.getResource(),
+        view.getAction(),
+        view.getGroupCode(),
+        view.getDescription(),
+        view.getExpression());
+  }
+
+  @Override
+  protected ResultCode notFoundCode() {
+    return ResultCode.DATA_NOT_FOUND;
+  }
 }

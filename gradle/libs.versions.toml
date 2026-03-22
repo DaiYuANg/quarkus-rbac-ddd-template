@@ -1,14 +1,14 @@
 [versions]
 jdk = "25"
-quarkus = "3.32.4"
-jandex = "2.2.0"
-lombok-plugin = "3.1.5"
-spotless = "8.0.0"
-version-check = "0.53.0"
+quarkus = "3.34.0"
+jandex = "2.3.0"
+lombok-plugin = "3.1.6"
+spotless = "8.4.0"
+version-check = "1.1.0"
 dotenv = "4.0.0"
-git-plugin = "0.13.0"
-task-tree = "4.0.0"
-plantuml = "2.3.0"
+git-plugin = "0.15.1"
+task-tree = "4.0.1"
+plantuml = "2.4.0"
 checkstyle = "10.18.2"
 spotbugs = "6.4.8"
 owasp-dependency-check = "12.2.0"
@@ -16,7 +16,7 @@ foojay = "0.10.0"
 git-hooks = "2.0.23"
 develocity = "3.19.2"
 mapstruct = "1.6.3"
-jetbrains-annotations = "26.0.2-1"
+jetbrains-annotations = "26.1.0"
 blaze-persistence = "1.6.18"
 hibernate-processor-version = "7.1.7.Final"
 jakarta-persistence-version = "3.2.0"
@@ -29,7 +29,7 @@ quarkus = { id = "io.quarkus", version.ref = "quarkus" }
 jandex = { id = "org.kordamp.gradle.jandex", version.ref = "jandex" }
 lombok = { id = "name.remal.lombok", version.ref = "lombok-plugin" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
-version-check = { id = "com.github.ben-manes.versions", version.ref = "version-check" }
+version-check = { id = "nl.littlerobots.version-catalog-update", version.ref = "version-check" }
 dotenv = { id = "co.uzzu.dotenv.gradle", version.ref = "dotenv" }
 git = { id = "com.xenoterracide.gradle.git", version.ref = "git-plugin" }
 task-tree = { id = "com.dorongold.task-tree", version.ref = "task-tree" }
@@ -53,6 +53,7 @@ blaze-persistence-entity-view-api = { group = "com.blazebit", name = "blaze-pers
 blaze-persistence-entity-view-impl = { group = "com.blazebit", name = "blaze-persistence-entity-view-impl", version.ref = "blaze-persistence" }
 blaze-persistence-hibernate = { group = "com.blazebit", name = "blaze-persistence-integration-hibernate-7.1", version.ref = "blaze-persistence" }
 blaze-persistence-quarkus = { group = "com.blazebit", name = "blaze-persistence-integration-quarkus-3", version.ref = "blaze-persistence" }
+blaze-persistence-querydsl = { group = "com.blazebit", name = "blaze-persistence-integration-querydsl-expressions-jakarta", version.ref = "blaze-persistence" }
 hibernate-processor = { group = "org.hibernate.orm", name = "hibernate-processor", version.ref = "hibernate-processor-version" }
 jakarta-persistence = { group = "jakarta.persistence", name = "jakarta.persistence-api", version.ref = "jakarta-persistence-version" }
 jakarta-annotation = { group = "jakarta.annotation", name = "jakarta.annotation-api", version.ref = "jakarta-annotation-version" }

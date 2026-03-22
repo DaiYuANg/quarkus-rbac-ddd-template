@@ -13,7 +13,7 @@ public class QuarkusSecurityIdentityFactory {
 
     public SecurityIdentity create(AuthenticatedUser user) {
         var builder = QuarkusSecurityIdentity.builder()
-            .setPrincipal(() -> user.username())
+            .setPrincipal(user::username)
             .setAnonymous(false);
         user.roles().forEach(builder::addRole);
         user.permissions().forEach(permission -> builder.addPermission(new StringPermission(permission)));

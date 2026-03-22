@@ -1,7 +1,6 @@
 package com.github.DaiYuANg.application.permission;
 
 import com.github.DaiYuANg.accesscontrol.parameter.PermissionQuery;
-import com.github.DaiYuANg.accesscontrol.query.PermissionQueryRepository;
 import com.github.DaiYuANg.accesscontrol.repository.PermissionRepository;
 import com.github.DaiYuANg.api.dto.response.PermissionVO;
 import com.github.DaiYuANg.application.converter.ViewMapper;
@@ -17,7 +16,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class PermissionApplicationService {
     private final PermissionRepository repository;
-    private final PermissionQueryRepository permissionQueryRepository;
     private final ViewMapper mapper;
     private final AuthorizationService authorizationService;
 
@@ -26,7 +24,7 @@ public class PermissionApplicationService {
     public List<PermissionVO> getAllPermissions() { authorizationService.check("system", "permission", "view"); return repository.listAll().stream().map(mapper::toPermissionVO).toList(); }
     public PageResult<PermissionVO> queryPermissionPage(PermissionQuery query) {
         authorizationService.check("system", "permission", "view");
-        var slice = permissionQueryRepository.page(query);
+        var slice = repository.page(query);
         return PageResult.of(slice.total(), query.getPageNum(), query.getPageSize(), slice.content().stream().map(mapper::toPermissionVO).toList());
     }
 }

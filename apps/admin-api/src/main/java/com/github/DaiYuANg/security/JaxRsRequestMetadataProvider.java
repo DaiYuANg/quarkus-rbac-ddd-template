@@ -3,47 +3,50 @@ package com.github.DaiYuANg.security;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 import java.util.List;
 import java.util.Optional;
 
 @RequestScoped
 public class JaxRsRequestMetadataProvider implements RequestMetadataProvider {
-    @Context
-    HttpHeaders headers;
+  @Context
+  HttpHeaders headers;
 
-    @Override
-    public Optional<RequestMetadata> currentRequest() {
-        if (headers == null) {
-            return Optional.empty();
-        }
-        String remoteIp = firstHeader(
-            "X-Forwarded-For",
-            "X-Real-IP",
-            "CF-Connecting-IP",
-            "True-Client-IP"
-        );
-        if (remoteIp != null && remoteIp.contains(",")) {
-            remoteIp = remoteIp.split(",")[0].trim();
-        }
-        String userAgent = firstHeader("User-Agent");
-        String requestId = firstHeader("X-Request-Id", "X-Correlation-Id");
-        return Optional.of(new RequestMetadata(blankToNull(remoteIp), blankToNull(userAgent), blankToNull(requestId)));
+  @Override
+  public Optional<RequestMetadata> currentRequest() {
+    if (headers == null) {
+      return Optional.empty();
     }
+    String remoteIp = firstHeader(
+      "X-Forwarded-For",
+      "X-Real-IP",
+      "CF-Connecting-IP",
+      "True-Client-IP"
+    );
+    if (remoteIp != null && remoteIp.contains(",")) {
+      remoteIp = remoteIp.split(",")[0].trim();
+    }
+    String userAgent = firstHeader("User-Agent");
+    String requestId = firstHeader("X-Request-Id", "X-Correlation-Id");
+    return Optional.of(new RequestMetadata(blankToNull(remoteIp), blankToNull(userAgent), blankToNull(requestId)));
+  }
 
-    private String firstHeader(String... names) {
-        for (String name : names) {
-            List<String> values = headers.getRequestHeader(name);
-            if (values != null && !values.isEmpty()) {
-                String value = values.get(0);
-                if (value != null && !value.isBlank()) {
-                    return value;
-                }
-            }
+  private @Nullable String firstHeader(String @NonNull ... names) {
+    for (String name : names) {
+      List<String> values = headers.getRequestHeader(name);
+      if (values != null && !values.isEmpty()) {
+        String value = values.getFirst();
+        if (value != null && !value.isBlank()) {
+          return value;
         }
-        return null;
+      }
     }
+    return null;
+  }
 
-    private String blankToNull(String value) {
-        return value == null || value.isBlank() ? null : value;
-    }
+  private String blankToNull(String value) {
+    return value == null || value.isBlank() ? null : value;
+  }
 }

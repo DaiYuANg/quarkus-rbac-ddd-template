@@ -22,7 +22,7 @@ public class LoginAttemptStore {
 
     public boolean isLocked(String username) {
         var until = lockedUntil(username);
-        return until.filter(instant -> instant.isAfter(Instant.now())).isPresent();
+        return until.filter(Instant.now()::isBefore).isPresent();
     }
 
     public Optional<Instant> lockedUntil(String username) {

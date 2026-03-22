@@ -14,7 +14,6 @@ import com.github.DaiYuANg.common.model.PageResult;
 import com.github.DaiYuANg.identity.constant.UserStatus;
 import com.github.DaiYuANg.identity.entity.SysUser;
 import com.github.DaiYuANg.identity.parameter.UserQuery;
-import com.github.DaiYuANg.identity.query.UserQueryRepository;
 import com.github.DaiYuANg.identity.repository.UserRepository;
 import com.github.DaiYuANg.security.AuthorizationService;
 import com.github.DaiYuANg.security.CurrentUserAccess;
@@ -33,7 +32,6 @@ public class UserApplicationService {
     private final RoleRepository roleRepository;
     private final PasswordHasher passwordHasher;
     private final ViewMapper mapper;
-    private final UserQueryRepository userQueryRepository;
     private final AuthorityVersionService authorityVersionService;
     private final OperationLogService operationLogService;
     private final AuthorizationService authorizationService;
@@ -41,7 +39,7 @@ public class UserApplicationService {
 
     public PageResult<UserVO> queryUserPage(UserQuery query) {
         authorizationService.check("system", "user", "view");
-        var slice = userQueryRepository.page(query);
+        var slice = userRepository.page(query);
         return PageResult.of(slice.total(), query.getPageNum(), query.getPageSize(),
             slice.content().stream().map(mapper::toUserVO).toList());
     }

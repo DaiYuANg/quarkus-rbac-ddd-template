@@ -14,7 +14,7 @@ public class FlywayMigration {
         Quarkus.run(MigrationApp.class, args);
     }
 
-    @RequiredArgsConstructor(onConstructor = @__(@Inject))
+    @RequiredArgsConstructor(onConstructor_ = @Inject)
     public static class MigrationApp implements QuarkusApplication {
 
         private final Flyway flyway;

@@ -43,7 +43,7 @@ com.github.DaiYuANg
 
 ```
 admin-api
-    ├── identity (User, UserRepository, UserQueryRepository)
+    ├── identity (User, UserRepository)
     │       └── accesscontrol (User.roles → SysRole)
     ├── accesscontrol (Role, Permission, PermissionGroup)
     ├── audit (OperationLog, LoginLog)

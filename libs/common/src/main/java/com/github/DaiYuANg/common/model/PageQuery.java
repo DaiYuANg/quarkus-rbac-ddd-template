@@ -3,6 +3,7 @@ package com.github.DaiYuANg.common.model;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.ws.rs.QueryParam;
+import lombok.Setter;
 
 /**
  * Pagination/query contract shared by admin list endpoints.
@@ -31,12 +32,15 @@ public class PageQuery {
     @Max(200)
     private Integer size;
 
+    @Setter
     @QueryParam("keyword")
     private String keyword;
 
+    @Setter
     @QueryParam("sortBy")
     private String sortBy;
 
+    @Setter
     @QueryParam("sortDirection")
     private String sortDirection;
 
@@ -98,12 +102,8 @@ public class PageQuery {
         return trimmed.isEmpty() ? null : trimmed;
     }
 
-    public void setKeyword(String keyword) {
-        this.keyword = keyword;
-    }
 
-
-    public String getSortBy() {
+  public String getSortBy() {
         if (sortBy == null) {
             return null;
         }
@@ -111,11 +111,7 @@ public class PageQuery {
         return trimmed.isEmpty() ? null : trimmed;
     }
 
-    public void setSortBy(String sortBy) {
-        this.sortBy = sortBy;
-    }
-
-    public String getSortDirection() {
+  public String getSortDirection() {
         if (sortDirection == null) {
             return null;
         }
@@ -123,15 +119,11 @@ public class PageQuery {
         return trimmed.isEmpty() ? null : trimmed;
     }
 
-    public void setSortDirection(String sortDirection) {
-        this.sortDirection = sortDirection;
-    }
-
-    public int offset() {
+  public int offset() {
         return getPage() * getPageSize();
     }
 
     private int clampSize(int candidate) {
-        return Math.min(Math.max(candidate, 1), 200);
+        return Math.clamp(candidate, 1, 200);
     }
 }

@@ -12,7 +12,7 @@ public class AuthenticationProviderRegistry {
 
     public List<LoginAuthenticationProvider<?>> orderedProviders() {
         return providers.stream()
-            .sorted(Comparator.comparingInt((LoginAuthenticationProvider<?> provider) -> provider.order())
+            .sorted(Comparator.comparingInt((LoginAuthenticationProvider<?> p) -> p.order())
                 .thenComparing(LoginAuthenticationProvider::providerId))
             .toList();
     }
