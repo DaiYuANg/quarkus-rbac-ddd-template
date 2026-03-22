@@ -1,14 +1,9 @@
 import com.github.spotbugs.snom.Confidence
 import com.github.spotbugs.snom.Effort
+import com.github.spotbugs.snom.SpotBugsPlugin
+import name.remal.gradle_plugins.lombok.LombokPlugin
+import org.owasp.dependencycheck.gradle.DependencyCheckPlugin
 import java.nio.charset.StandardCharsets.UTF_8
-import org.gradle.api.artifacts.VersionCatalogsExtension
-import org.gradle.api.plugins.JavaLibraryPlugin
-import org.gradle.api.plugins.JavaPluginExtension
-import org.gradle.api.plugins.quality.CheckstyleExtension
-import org.gradle.api.tasks.testing.Test
-import org.gradle.kotlin.dsl.configure
-import org.gradle.kotlin.dsl.named
-import org.gradle.kotlin.dsl.the
 
 plugins {
   `java-library`
@@ -16,7 +11,7 @@ plugins {
   alias(libs.plugins.jandex) apply false
   alias(libs.plugins.version.check)
   alias(libs.plugins.dotenv)
-  alias(libs.plugins.lombok) apply false
+  alias(libs.plugins.lombok)
   alias(libs.plugins.spotless)
   alias(libs.plugins.spotbugs)
   alias(libs.plugins.owasp.dependency.check)
@@ -26,9 +21,12 @@ plugins {
   idea
 }
 
-group = "com.liangdian"
+group = "com.github.DaiYuANg"
 
-val rootLibs = the<VersionCatalogsExtension>().named("libs")
+val rootLibs = libs
+
+tasks.register<ReplacePackageTask>("replacePackage")
+tasks.register<GenerateRsaKeysTask>("generateRsaKeys")
 
 allprojects {
   version = "1.0.0-SNAPSHOT"
@@ -40,15 +38,14 @@ allprojects {
 }
 
 subprojects {
-  pluginManager.apply(JavaLibraryPlugin::class.java)
-  pluginManager.apply(rootLibs.findPlugin("lombok").get().get().pluginId)
-  pluginManager.apply("checkstyle")
-  pluginManager.apply("jacoco")
-  pluginManager.apply(rootLibs.findPlugin("spotbugs").get().get().pluginId)
-  pluginManager.apply(rootLibs.findPlugin("owasp-dependency-check").get().get().pluginId)
+  apply<JavaLibraryPlugin>()
+  apply<LombokPlugin>()
+  apply<CheckstylePlugin>()
+  apply<JacocoPlugin>()
+  apply<SpotBugsPlugin>()
+  apply<DependencyCheckPlugin>()
 
   extensions.findByType<CheckstyleExtension>()?.apply {
-    toolVersion = rootLibs.findVersion("checkstyle").get().requiredVersion
     configDirectory.set(rootProject.layout.projectDirectory.dir("config/checkstyle"))
   }
   tasks
@@ -65,22 +62,27 @@ subprojects {
     reports.create("html") { required.set(true) }
   }
 
-  extensions.configure<org.gradle.testing.jacoco.plugins.JacocoPluginExtension> {
+  extensions.configure<JacocoPluginExtension> {
     toolVersion = "0.8.12"
   }
 
   extensions.configure<JavaPluginExtension> {
     toolchain {
-      languageVersion = JavaLanguageVersion.of(rootLibs.findVersion("jdk").get().requiredVersion)
+      languageVersion = JavaLanguageVersion.of(rootLibs.versions.jdk.get())
     }
     withSourcesJar()
   }
 
   dependencies {
-    add("implementation", enforcedPlatform(rootLibs.findLibrary("quarkus-bom").get()))
-    add("compileOnly", rootLibs.findLibrary("jetbrains-annotations").get())
-    add("implementation", rootLibs.findLibrary("mapstruct").get())
-    add("annotationProcessor", rootLibs.findLibrary("mapstruct-processor").get())
+    implementation(enforcedPlatform(rootLibs.quarkus.bom))
+    implementation(enforcedPlatform(rootLibs.quarkus.blaze.persistence.bom))
+    annotationProcessor(enforcedPlatform(rootLibs.quarkus.blaze.persistence.bom))
+    annotationProcessor(enforcedPlatform(rootLibs.quarkus.bom))
+    compileOnly(rootLibs.jetbrains.annotations)
+    implementation(rootLibs.mapstruct)
+    implementation(rootLibs.record.builder.core)
+    annotationProcessor(rootLibs.mapstruct.processor)
+    annotationProcessor(rootLibs.record.builder.processor)
   }
 
   tasks.withType<JavaCompile>().configureEach {
@@ -90,7 +92,7 @@ subprojects {
 
   tasks.withType<Test>().configureEach {
     useJUnitPlatform()
-    extensions.configure<org.gradle.testing.jacoco.plugins.JacocoTaskExtension> { isEnabled = true }
+    extensions.configure<JacocoTaskExtension> { isEnabled = true }
   }
 
   extensions
@@ -99,21 +101,6 @@ subprojects {
         formats.set(listOf("HTML", "JSON"))
         suppressionFile.set(rootProject.file("config/owasp/suppressions.xml").absolutePath)
       }
-}
-
-configure(
-    listOf(
-        projects.libs.common,
-        projects.libs.persistence,
-        projects.libs.accesscontrol,
-        projects.libs.identity,
-        projects.libs.audit,
-        projects.libs.redis,
-        projects.libs.export,
-        projects.libs.security,
-    )
-) {
-  pluginManager.apply(rootLibs.findPlugin("jandex").get().get().pluginId)
 }
 
 spotless {

@@ -6,8 +6,8 @@ plugins {
 classDiagrams {
   classDiagram {
     name("DDD Application Layers")
-    include(packages().withName("com.liangdian.api"))
-    include(packages().withName("com.liangdian.application"))
+    include(packages().withName("com.github.DaiYuANg.api"))
+    include(packages().withName("com.github.DaiYuANg.application"))
     writeTo(file("build/plantuml/ddd-layers.puml"))
   }
 }

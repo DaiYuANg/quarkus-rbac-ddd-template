@@ -23,6 +23,7 @@ lombok-mapstruct-binding = "0.2.0"
 hibernate-processor-version = "7.1.7.Final"
 jakarta-persistence-version = "3.2.0"
 jakarta-annotation-version = "3.0.0"
+record-builder = "52"
 
 [plugins]
 quarkus = { id = "io.quarkus", version.ref = "quarkus" }
@@ -39,6 +40,7 @@ owasp-dependency-check = { id = "org.owasp.dependencycheck", version.ref = "owas
 
 [libraries]
 quarkus-bom = { group = "io.quarkus", name = "quarkus-bom", version.ref = "quarkus" }
+quarkus-blaze-persistence-bom = { group = "io.quarkus.platform", name = "quarkus-blaze-persistence-bom", version.ref = "quarkus" }
 jetbrains-annotations = { group = "org.jetbrains", name = "annotations", version.ref = "jetbrains-annotations" }
 mapstruct = { group = "org.mapstruct", name = "mapstruct", version.ref = "mapstruct" }
 mapstruct-processor = { group = "org.mapstruct", name = "mapstruct-processor", version.ref = "mapstruct" }
@@ -81,6 +83,9 @@ quarkus-micrometer-registry-prometheus = { group = "io.quarkus", name = "quarkus
 quarkus-opentelemetry = { group = "io.quarkus", name = "quarkus-opentelemetry" }
 quarkus-junit5 = { group = "io.quarkus", name = "quarkus-junit5" }
 rest-assured = { group = "io.rest-assured", name = "rest-assured" }
+
+record-builder-processor = { group = "io.soabase.record-builder", name = "record-builder-processor", version.ref = "record-builder" }
+record-builder-core = { group = "io.soabase.record-builder", name = "record-builder-core", version.ref = "record-builder" }
 
 [bundles]
 quarkus-application = [

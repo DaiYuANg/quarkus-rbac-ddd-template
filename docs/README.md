@@ -1,0 +1,7 @@
+# Documentation
+
+| Document | English | 中文 |
+|----------|---------|------|
+| DDD Architecture | [ARCHITECTURE_DDD.md](ARCHITECTURE_DDD.md) | [ARCHITECTURE_DDD.zh-CN.md](ARCHITECTURE_DDD.zh-CN.md) |
+| Authorization Flow | [AUTHORIZATION_FLOW.md](AUTHORIZATION_FLOW.md) | [AUTHORIZATION_FLOW.zh-CN.md](AUTHORIZATION_FLOW.zh-CN.md) |
+| Production Checklist | [PRODUCTION_READINESS_CHECKLIST.md](PRODUCTION_READINESS_CHECKLIST.md) | [PRODUCTION_READINESS_CHECKLIST.zh-CN.md](PRODUCTION_READINESS_CHECKLIST.zh-CN.md) |

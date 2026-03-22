@@ -1,5 +1,7 @@
 # Authorization Flow
 
+[中文](AUTHORIZATION_FLOW.zh-CN.md)
+
 ## Request-time flow
 1. Request enters Quarkus Security.
 2. Existing JWT is parsed and turned into a `SecurityIdentity`.

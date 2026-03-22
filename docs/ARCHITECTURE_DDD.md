@@ -1,35 +1,37 @@
-# DDD Bounded Context 架构说明
+# DDD Bounded Context Architecture
 
-## 模块结构
+[中文](ARCHITECTURE_DDD.zh-CN.md)
+
+## Module Structure
 
 ```
 libs/
-├── common              # 共享：Result、异常、PageQuery
-├── persistence         # 共享持久化基础：BaseEntity、AuditEntityListener、Repository/Query 基类
-├── accesscontrol       # RBAC 上下文：Role、Permission、PermissionGroup
-├── identity            # 身份上下文：User（依赖 accesscontrol 的 Role）
-├── audit               # 审计上下文：OperationLog、LoginLog
-├── redis               # Redis 存储
-├── export              # 导出 SPI
-└── security            # 认证链、JWT、ActorAuditor
+├── common              # Shared: Result, exceptions, PageQuery
+├── persistence         # Shared persistence base: BaseEntity, AuditEntityListener, Repository/Query base classes
+├── accesscontrol       # RBAC context: Role, Permission, PermissionGroup
+├── identity            # Identity context: User (depends on accesscontrol for Role)
+├── audit               # Audit context: OperationLog, LoginLog
+├── redis               # Redis storage
+├── export              # Export SPI
+└── security            # Auth chain, JWT, ActorAuditor
 
 apps/
-├── admin-api           # 管理 REST API，依赖 identity、accesscontrol、audit
-└── migrator            # Flyway 迁移（独立运行）
+├── admin-api           # Admin REST API, depends on identity, accesscontrol, audit
+└── migrator            # Flyway migration (standalone)
 ```
 
-## admin-api 内部包结构（DDD 风格）
+## admin-api Package Structure (DDD Style)
 
 ```
-com.liangdian
-├── api/                      # 接口层
-│   ├── controller/           # REST 资源（薄控制器）
+com.github.DaiYuANg
+├── api/                      # API layer
+│   ├── controller/           # REST resources (thin controllers)
 │   ├── controller.support/   # ExportResponseHelper
-│   ├── dto.request/          # Form、Command（UserCreationForm, LoginRequest 等）
-│   ├── dto.response/         # VO、Result（UserVO, UserDetailVo, SystemAuthenticationToken）
-│   ├── dto.export/           # 导出行（UserExportRow 等）
+│   ├── dto.request/          # Form, Command (UserCreationForm, LoginRequest, etc.)
+│   ├── dto.response/         # VO, Result (UserVO, UserDetailVo, SystemAuthenticationToken)
+│   ├── dto.export/           # Export rows (UserExportRow, etc.)
 │   └── handler/              # GlobalExceptionHandler
-├── application/              # 应用层（按 bounded context）
+├── application/              # Application layer (by bounded context)
 │   ├── user/                 # UserApplicationService
 │   ├── role/                 # RoleApplicationService
 │   ├── permission/           # PermissionApplicationService
@@ -37,10 +39,10 @@ com.liangdian
 │   ├── auth/                 # AuthApplicationService
 │   ├── audit/                # OperationLogService, LoginLogService, AuthorityVersionService
 │   └── converter/            # ViewMapper, ExportMapper
-└── security/                 # Admin 特有的认证/授权适配器
+└── security/                 # Admin-specific auth/authorization adapters
 ```
 
-## 依赖关系
+## Dependencies
 
 ```
 admin-api
@@ -48,7 +50,7 @@ admin-api
     │       └── accesscontrol (User.roles → SysRole)
     ├── accesscontrol (Role, Permission, PermissionGroup)
     ├── audit (OperationLog, LoginLog)
-    └── persistence (BaseEntity, 基类)
+    └── persistence (BaseEntity, base classes)
 
 identity ──────► accesscontrol
      └─────────► persistence
@@ -57,20 +59,20 @@ accesscontrol ─► persistence
 audit ──────────► persistence (+ security for AuditSnapshot)
 ```
 
-## 领域划分
+## Bounded Contexts
 
-| Bounded Context | 实体 | 职责 |
-|-----------------|------|------|
-| identity | SysUser | 用户、认证、User-Role 关联 |
-| accesscontrol | SysRole, SysPermission, SysPermissionGroup | RBAC 角色与权限 |
-| audit | SysOperationLog, SysLoginLog | 操作与登录审计 |
+| Bounded Context | Entities | Responsibility |
+|-----------------|----------|----------------|
+| identity | SysUser | User, authentication, User-Role association |
+| accesscontrol | SysRole, SysPermission, SysPermissionGroup | RBAC roles and permissions |
+| audit | SysOperationLog, SysLoginLog | Operation and login audit |
 
-## 表结构（未变）
+## Schema (unchanged)
 
 - `sys_user`, `sys_role`, `sys_permission`, `sys_permission_group`
 - `sys_user_ref_role`, `sys_role_ref_permission_group`, `sys_permission_group_ref_permission`
 - `sys_operation_log`, `sys_login_log`
 
-## Gradle 注意
+## Gradle Note
 
-模块名使用 `accesscontrol`（无连字符）以支持类型安全的 `projects.libs.accesscontrol`。
+Module name uses `accesscontrol` (no hyphen) to support type-safe `projects.libs.accesscontrol`.

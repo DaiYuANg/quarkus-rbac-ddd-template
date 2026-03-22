@@ -1,5 +1,7 @@
 # Production Readiness Checklist
 
+[中文](PRODUCTION_READINESS_CHECKLIST.zh-CN.md)
+
 ## Security
 - Verify JWT signing keys are injected from secret storage, not committed defaults.
 - Confirm refresh token TTL, revoke policy, and rotation strategy.
