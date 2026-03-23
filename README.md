@@ -20,6 +20,8 @@ A reusable Quarkus backend foundation with RBAC (Role-Based Access Control), JWT
 - PostgreSQL
 - Infinispan (optional for dev, required for production; Dev Services auto-starts with Docker)
 
+**Local config**: Copy `gradle.properties.template` to `gradle.properties` and adjust for your machine (JVM args, proxy, etc.). `gradle.properties` is gitignored.
+
 ### Run Migrations
 
 ```bash

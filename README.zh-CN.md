@@ -20,6 +20,8 @@
 - PostgreSQL
 - Infinispan（开发可选，生产必需；有 Docker 时 Dev Services 自动启动）
 
+**本地配置**：将 `gradle.properties.template` 复制为 `gradle.properties`，按本机环境调整（JVM 参数、代理等）。`gradle.properties` 已加入 gitignore。
+
 ### 执行数据库迁移
 
 ```bash
