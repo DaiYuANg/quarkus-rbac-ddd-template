@@ -5,7 +5,6 @@ import com.github.DaiYuANg.cache.PermissionSnapshotStore;
 import com.github.DaiYuANg.cache.RefreshTokenStore;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import java.time.Duration;
 import lombok.RequiredArgsConstructor;
 
 @ApplicationScoped
@@ -34,9 +33,10 @@ public class AdminAuthenticationLifecycle {
                 "roles", user.roles(),
                 "permissions", user.permissions(),
                 "authorityVersion", authorityVersion(user.username())
-            )
+            ),
+            user.userId()
         );
-        permissionSnapshotStore.save(snapshot, Duration.ofHours(12));
+        permissionSnapshotStore.save(snapshot);
     }
 
     public void revokeRefreshToken(String refreshToken) {

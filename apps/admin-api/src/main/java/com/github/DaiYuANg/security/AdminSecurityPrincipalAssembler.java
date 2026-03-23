@@ -27,7 +27,8 @@ public class AdminSecurityPrincipalAssembler {
             "ADMIN",
             roles,
             permissions,
-            attributes
+            attributes,
+            user.id
         );
     }
 }

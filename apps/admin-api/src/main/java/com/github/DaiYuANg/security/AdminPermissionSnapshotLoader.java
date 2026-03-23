@@ -38,7 +38,8 @@ public class AdminPermissionSnapshotLoader implements PermissionSnapshotLoader {
             roles,
             permissions,
             authorityVersionStore.versionFor(username),
-            attributes
+            attributes,
+            user.id
         ));
     }
 }

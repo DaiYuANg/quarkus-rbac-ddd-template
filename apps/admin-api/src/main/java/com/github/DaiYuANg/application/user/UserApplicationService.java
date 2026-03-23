@@ -14,6 +14,7 @@ import com.github.DaiYuANg.common.model.PageResult;
 import com.github.DaiYuANg.identity.constant.UserStatus;
 import com.github.DaiYuANg.identity.entity.SysUser;
 import com.github.DaiYuANg.identity.parameter.UserQuery;
+import com.github.DaiYuANg.cache.PermissionSnapshotStore;
 import com.github.DaiYuANg.identity.repository.UserRepository;
 import com.github.DaiYuANg.security.AuthorizationService;
 import com.github.DaiYuANg.security.CurrentUserAccess;
@@ -36,6 +37,7 @@ public class UserApplicationService {
     private final OperationLogService operationLogService;
     private final AuthorizationService authorizationService;
     private final CurrentUserAccess currentUserAccess;
+    private final PermissionSnapshotStore permissionSnapshotStore;
 
     public PageResult<UserVO> queryUserPage(UserQuery query) {
         authorizationService.check("user", "view");
@@ -98,7 +100,13 @@ public class UserApplicationService {
     }
 
     @Transactional
-    public void deleteUser(Long id) { authorizationService.check("user", "delete"); userRepository.deleteById(id); authorityVersionService.bumpGlobalVersion(); operationLogService.record("user", "delete", String.valueOf(id), true, "delete user"); }
+    public void deleteUser(Long id) {
+        authorizationService.check("user", "delete");
+        permissionSnapshotStore.delete(id);
+        userRepository.deleteById(id);
+        authorityVersionService.bumpGlobalVersion();
+        operationLogService.record("user", "delete", String.valueOf(id), true, "delete user");
+    }
     public Optional<UserVO> getUserByUsername(String username) { authorizationService.check("user", "view"); return userRepository.findByUsername(username).map(mapper::toUserVO); }
 
     @Transactional

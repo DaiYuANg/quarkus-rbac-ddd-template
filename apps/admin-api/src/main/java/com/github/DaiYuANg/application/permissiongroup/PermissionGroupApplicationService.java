@@ -1,32 +1,40 @@
 package com.github.DaiYuANg.application.permissiongroup;
 
+import com.github.DaiYuANg.accesscontrol.entity.SysPermission;
 import com.github.DaiYuANg.accesscontrol.entity.SysPermissionGroup;
 import com.github.DaiYuANg.accesscontrol.parameter.PermissionGroupQuery;
 import com.github.DaiYuANg.accesscontrol.repository.PermissionGroupRepository;
-import com.github.DaiYuANg.accesscontrol.repository.PermissionRepository;
 import com.github.DaiYuANg.api.dto.request.PermissionGroupCreationForm;
 import com.github.DaiYuANg.api.dto.request.PermissionGroupRefPermissionForm;
 import com.github.DaiYuANg.api.dto.request.UpdatePermissionGroupForm;
 import com.github.DaiYuANg.api.dto.response.PermissionGroupVO;
+import com.github.DaiYuANg.api.dto.response.PermissionVO;
 import com.github.DaiYuANg.application.audit.AuthorityVersionService;
 import com.github.DaiYuANg.application.audit.OperationLogService;
 import com.github.DaiYuANg.application.converter.ViewMapper;
+import com.github.DaiYuANg.cache.PermissionCatalogEntry;
+import com.github.DaiYuANg.cache.PermissionCatalogStore;
 import com.github.DaiYuANg.common.constant.ResultCode;
 import com.github.DaiYuANg.common.exception.BizException;
 import com.github.DaiYuANg.common.model.PageResult;
 import com.github.DaiYuANg.security.AuthorizationService;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class PermissionGroupApplicationService {
     private final PermissionGroupRepository repository;
-    private final PermissionRepository permissionRepository;
+    private final PermissionCatalogStore catalogStore;
+    private final EntityManager entityManager;
     private final ViewMapper mapper;
     private final AuthorityVersionService authorityVersionService;
     private final OperationLogService operationLogService;
@@ -44,10 +52,13 @@ public class PermissionGroupApplicationService {
         repository.persist(group);
         authorityVersionService.bumpGlobalVersion();
         operationLogService.record("permission-group", "create", form.name(), true, "create permission group");
-        return mapper.toPermissionGroupVO(group);
+        return toPermissionGroupVOWithCatalog(group);
     }
 
-    public Optional<PermissionGroupVO> getPermissionGroupById(Long id) { authorizationService.check("permission-group", "view"); return repository.findByIdOptional(id).map(mapper::toPermissionGroupVO); }
+    public Optional<PermissionGroupVO> getPermissionGroupById(Long id) {
+        authorizationService.check("permission-group", "view");
+        return repository.findByIdOptional(id).map(this::toPermissionGroupVOWithCatalog);
+    }
 
     @Transactional
     public PermissionGroupVO updatePermissionGroup(Long id, UpdatePermissionGroupForm form) {
@@ -60,7 +71,7 @@ public class PermissionGroupApplicationService {
         if (form.description() != null) group.description = form.description();
         authorityVersionService.bumpGlobalVersion();
         operationLogService.record("permission-group", "update", String.valueOf(id), true, "update permission group");
-        return mapper.toPermissionGroupVO(group);
+        return toPermissionGroupVOWithCatalog(group);
     }
 
     @Transactional
@@ -70,7 +81,10 @@ public class PermissionGroupApplicationService {
         var slice = repository.page(query);
         return PageResult.of(slice.total(), query.getPageNum(), query.getPageSize(), slice.content().stream().map(mapper::toPermissionGroupVO).toList());
     }
-    public Optional<PermissionGroupVO> getPermissionGroupByName(String name) { authorizationService.check("permission-group", "view"); return repository.findByName(name).map(mapper::toPermissionGroupVO); }
+    public Optional<PermissionGroupVO> getPermissionGroupByName(String name) {
+        authorizationService.check("permission-group", "view");
+        return repository.findByName(name).map(this::toPermissionGroupVOWithCatalog);
+    }
 
     @Transactional
     public void assignPermissions(PermissionGroupRefPermissionForm form) {
@@ -78,13 +92,42 @@ public class PermissionGroupApplicationService {
         var group = repository.findByIdOptional(form.permissionGroupId()).orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
         group.permissions.clear();
         if (form.permissionIds() != null) {
-            form.permissionIds().forEach(id -> permissionRepository.findByIdOptional(id).ifPresent(group.permissions::add));
+            form.permissionIds().forEach(id -> {
+                if (catalogStore.getById(id).isPresent()) {
+                    group.permissions.add(entityManager.getReference(SysPermission.class, id));
+                }
+            });
         }
         authorityVersionService.bumpGlobalVersion();
         operationLogService.record("permission-group", "assign-permission", String.valueOf(form.permissionGroupId()), true, "assign permissions");
     }
 
-    public List<PermissionGroupVO> getAllPermissionGroups() { authorizationService.check("permission-group", "view"); return repository.listAll().stream().map(mapper::toPermissionGroupVO).toList(); }
+    public List<PermissionGroupVO> getAllPermissionGroups() {
+        authorizationService.check("permission-group", "view");
+        return repository.listAll().stream().map(this::toPermissionGroupVOWithCatalog).toList();
+    }
     public long countName(String name) { return repository.countByName(name); }
     public long count() { return repository.count(); }
+
+    public PermissionGroupVO toPermissionGroupVOWithCatalog(SysPermissionGroup group) {
+        var permissionIds = repository.findPermissionIdsByGroupId(group.id);
+        var permissions = permissionIds.stream()
+            .map(catalogStore::getById)
+            .flatMap(Optional::stream)
+            .map(this::toPermissionVO)
+            .collect(Collectors.toCollection(LinkedHashSet::new));
+        return new PermissionGroupVO(
+            group.id,
+            group.name,
+            group.description,
+            group.code,
+            group.sort,
+            group.createAt,
+            group.updateAt,
+            permissions);
+    }
+
+    private PermissionVO toPermissionVO(PermissionCatalogEntry e) {
+        return new PermissionVO(e.id(), e.name(), e.code(), e.resource(), e.action(), e.groupCode(), e.description(), e.expression());
+    }
 }

@@ -19,6 +19,7 @@ import com.querydsl.core.types.dsl.Expressions;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 
@@ -48,6 +49,15 @@ public class PermissionGroupRepository extends BasePanacheCommandRepository<SysP
 
   public long countByName(String name) {
     return count(SysPermissionGroup_.name.getName(), name);
+  }
+
+  /** Returns permission ids for a group (from join table, no SysPermission load). */
+  public List<Long> findPermissionIdsByGroupId(Long groupId) {
+    return entityManager.createQuery(
+        "SELECT p.id FROM SysPermissionGroup g JOIN g.permissions p WHERE g.id = :groupId",
+        Long.class)
+        .setParameter("groupId", groupId)
+        .getResultList();
   }
 
   @Override

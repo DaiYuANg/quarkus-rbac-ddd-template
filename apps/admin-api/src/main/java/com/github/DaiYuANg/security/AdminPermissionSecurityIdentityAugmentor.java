@@ -38,7 +38,7 @@ public class AdminPermissionSecurityIdentityAugmentor implements SecurityIdentit
         if (loaded == null) {
             return identity;
         }
-        permissionSnapshotStore.save(loaded, permissionSnapshotRefreshPolicy.snapshotTtl());
+        permissionSnapshotStore.save(loaded);
         return securityIdentityFactory.create(loaded.toAuthenticatedUser());
     }
 

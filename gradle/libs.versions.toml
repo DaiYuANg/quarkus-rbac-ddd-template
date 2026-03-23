@@ -1,5 +1,5 @@
 [versions]
-jdk = "25"
+jdk = "21"
 quarkus = "3.32.4"
 jandex = "2.3.0"
 lombok-plugin = "3.1.6"
@@ -68,6 +68,8 @@ quarkus-jdbc-postgresql = { group = "io.quarkus", name = "quarkus-jdbc-postgresq
 quarkus-agroal = { group = "io.quarkus", name = "quarkus-agroal" }
 quarkus-hibernate-validator = { group = "io.quarkus", name = "quarkus-hibernate-validator" }
 quarkus-redis-client = { group = "io.quarkus", name = "quarkus-redis-client" }
+quarkus-jackson = { group = "io.quarkus", name = "quarkus-jackson" }
+quarkus-caffeine = { group = "io.quarkus", name = "quarkus-caffeine" }
 quarkus-qute = { group = "io.quarkus", name = "quarkus-qute" }
 quarkus-smallrye-openapi = { group = "io.quarkus", name = "quarkus-smallrye-openapi" }
 quarkus-config-yaml = { group = "io.quarkus", name = "quarkus-config-yaml" }
@@ -99,6 +101,7 @@ querydsl-collection = { group = "io.github.openfeign.querydsl", name = "querydsl
 guava = { group = "com.google.guava", name = "guava", version = "33.5.0-jre" }
 wildfly-elytron-sasl-digest = { group = "org.wildfly.security", name = "wildfly-elytron-sasl-digest", version.ref = "wildfly-elytron" }
 slf4j-api = { group = "org.slf4j", name = "slf4j-api", version = "2.0.17" }
+commons-codec = { group = "commons-codec", name = "commons-codec", version = "1.17.2" }
 
 [bundles]
 quarkus-application = [

@@ -1,93 +1,44 @@
 package com.github.DaiYuANg.cache;
 
 import com.github.DaiYuANg.security.PermissionSnapshot;
-import io.quarkus.redis.datasource.RedisDataSource;
-import io.quarkus.redis.datasource.keys.KeyCommands;
-import io.quarkus.redis.datasource.value.ValueCommands;
 import jakarta.enterprise.context.ApplicationScoped;
-import java.time.Duration;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
+/**
+ * Facade for user permission snapshot storage.
+ * Delegates to UserAuthorityStore with hash-based deduplication and reference counting.
+ */
 @ApplicationScoped
 public class PermissionSnapshotStore {
 
-    private final ValueCommands<String, String> valueCommands;
-    private final KeyCommands<String> keyCommands;
+    private final UserAuthorityStore userAuthorityStore;
 
-    public PermissionSnapshotStore(RedisDataSource ds) {
-        this.valueCommands = ds.value(String.class);
-        this.keyCommands = ds.key();
+    public PermissionSnapshotStore(UserAuthorityStore userAuthorityStore) {
+        this.userAuthorityStore = userAuthorityStore;
     }
 
-    public void save(PermissionSnapshot snapshot, Duration ttl) {
-        valueCommands.setex(key(snapshot.username()), (int) ttl.toSeconds(), encode(snapshot));
+    /**
+     * Save snapshot. Only persists when userId is non-null (DB users). Config users are skipped.
+     */
+    public void save(PermissionSnapshot snapshot) {
+        var userId = snapshot.userId();
+        if (userId == null) {
+            return; // Config user, no persistence
+        }
+        userAuthorityStore.save(userId, snapshot);
     }
 
+    /**
+     * Get snapshot by username. Resolves username -> userId then loads.
+     */
     public Optional<PermissionSnapshot> get(String username) {
-        var raw = valueCommands.get(key(username));
-        if (raw == null || raw.isBlank()) {
-            return Optional.empty();
-        }
-        return Optional.of(decode(username, raw));
+        return userAuthorityStore.resolveUserId(username).flatMap(userAuthorityStore::get);
     }
 
-    public void delete(String username) {
-        keyCommands.del(key(username));
-    }
-
-    private String key(String username) {
-        return "rbac-auth:permission-snapshot:" + username;
-    }
-
-    private String encode(PermissionSnapshot snapshot) {
-        return String.join("|",
-            escape(snapshot.username()),
-            escape(snapshot.displayName()),
-            escape(snapshot.userType()),
-            escape(String.join(",", snapshot.roles())),
-            escape(String.join(",", snapshot.permissions())),
-            escape(snapshot.authorityVersion())
-        );
-    }
-
-    private PermissionSnapshot decode(String username, String raw) {
-        String[] parts = raw.split("\\|", -1);
-        String displayName = parts.length > 1 ? unescape(parts[1]) : username;
-        String userType = parts.length > 2 ? unescape(parts[2]) : "ADMIN";
-        Set<String> roles = parts.length > 3 ? splitCsv(unescape(parts[3])) : Set.of();
-        Set<String> permissions = parts.length > 4 ? splitCsv(unescape(parts[4])) : Set.of();
-        String authorityVersion = parts.length > 5 ? unescape(parts[5]) : "";
-        Map<String, Object> attributes = new LinkedHashMap<>();
-        attributes.put("displayName", displayName);
-        attributes.put("userType", userType);
-        attributes.put("roles", roles);
-        attributes.put("permissions", permissions);
-        attributes.put("authorityVersion", authorityVersion);
-        return new PermissionSnapshot(username, displayName, userType, roles, permissions, authorityVersion, attributes);
-    }
-
-    private Set<String> splitCsv(String raw) {
-        if (raw == null || raw.isBlank()) {
-            return Set.of();
-        }
-        LinkedHashSet<String> result = new LinkedHashSet<>();
-        for (String item : raw.split(",")) {
-            if (!item.isBlank()) {
-                result.add(item.trim());
-            }
-        }
-        return Set.copyOf(result);
-    }
-
-    private String escape(String value) {
-        return value == null ? "" : value.replace("%", "%25").replace("|", "%7C").replace(",", "%2C");
-    }
-
-    private String unescape(String value) {
-        return value == null ? "" : value.replace("%2C", ",").replace("%7C", "|").replace("%25", "%");
+    /**
+     * Delete snapshot by userId.
+     */
+    public void delete(Long userId) {
+        userAuthorityStore.delete(userId);
     }
 }

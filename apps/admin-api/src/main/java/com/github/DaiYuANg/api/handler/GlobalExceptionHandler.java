@@ -33,11 +33,11 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
             .orElse("validation failed");
         yield json(ResultCode.BAD_REQUEST.status(), Result.fail(ResultCode.BAD_REQUEST, message));
       }
-      case UnauthorizedException _ ->
+      case UnauthorizedException ignored ->
           json(ResultCode.UNAUTHORIZED.status(), Result.fail(ResultCode.UNAUTHORIZED));
-      case ForbiddenException _ ->
+      case ForbiddenException ignored ->
           json(ResultCode.FORBIDDEN.status(), Result.fail(ResultCode.FORBIDDEN));
-      case NotFoundException _ ->
+      case NotFoundException ignored ->
           json(ResultCode.NOT_FOUND.status(), Result.fail(ResultCode.NOT_FOUND));
       default ->
           json(ResultCode.INTERNAL_ERROR.status(), Result.fail(ResultCode.INTERNAL_ERROR));
