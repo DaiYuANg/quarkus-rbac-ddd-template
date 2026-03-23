@@ -44,6 +44,7 @@ services:
     build:
       context: ./apps/migrator
       dockerfile: src/main/docker/Dockerfile.jvm
+      no_cache: true
     environment:
       QUARKUS_PROFILE: prod
       DB_JDBC_URL: jdbc:postgresql://postgres:5432/rbac
@@ -57,6 +58,7 @@ services:
     build:
       context: ./apps/admin-api
       dockerfile: src/main/docker/Dockerfile.jvm
+      no_cache: true
     environment:
       QUARKUS_PROFILE: prod
       QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://postgres:5432/rbac
