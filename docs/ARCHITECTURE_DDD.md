@@ -11,7 +11,7 @@ libs/
 ├── accesscontrol       # RBAC context: Role, Permission, PermissionGroup
 ├── identity            # Identity context: User (depends on accesscontrol for Role)
 ├── audit               # Audit context: OperationLog, LoginLog
-├── redis               # Redis storage
+├── cache               # Infinispan storage
 └── security            # Auth chain, JWT, ActorAuditor
 
 apps/

@@ -1,6 +1,6 @@
 package com.github.DaiYuANg.application.audit;
 
-import com.github.DaiYuANg.redis.AuthorityVersionStore;
+import com.github.DaiYuANg.cache.AuthorityVersionStore;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import lombok.RequiredArgsConstructor;

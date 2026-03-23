@@ -1,6 +1,6 @@
 [versions]
 jdk = "25"
-quarkus = "3.34.0"
+quarkus = "3.32.4"
 jandex = "2.3.0"
 lombok-plugin = "3.1.6"
 spotless = "8.4.0"
@@ -23,6 +23,7 @@ jakarta-persistence-version = "3.2.0"
 jakarta-annotation-version = "3.0.0"
 record-builder = "52"
 query-dsl = "7.1"
+protostream = "5.0.1.Final"
 
 [plugins]
 quarkus = { id = "io.quarkus", version.ref = "quarkus" }
@@ -65,7 +66,9 @@ quarkus-hibernate-orm-panache = { group = "io.quarkus", name = "quarkus-hibernat
 quarkus-jdbc-postgresql = { group = "io.quarkus", name = "quarkus-jdbc-postgresql" }
 quarkus-agroal = { group = "io.quarkus", name = "quarkus-agroal" }
 quarkus-hibernate-validator = { group = "io.quarkus", name = "quarkus-hibernate-validator" }
-quarkus-redis-client = { group = "io.quarkus", name = "quarkus-redis-client" }
+quarkus-infinispan-client = { group = "io.quarkus", name = "quarkus-infinispan-client" }
+quarkus-qute = { group = "io.quarkus", name = "quarkus-qute" }
+protostream-processor = { group = "org.infinispan.protostream", name = "protostream-processor", version.ref = "protostream" }
 quarkus-smallrye-openapi = { group = "io.quarkus", name = "quarkus-smallrye-openapi" }
 quarkus-config-yaml = { group = "io.quarkus", name = "quarkus-config-yaml" }
 quarkus-logging-json = { group = "io.quarkus", name = "quarkus-logging-json" }
@@ -101,7 +104,6 @@ quarkus-application = [
   "quarkus-hibernate-orm",
   "quarkus-hibernate-orm-panache",
   "quarkus-jdbc-postgresql",
-  "quarkus-redis-client",
   "quarkus-hibernate-validator",
   "quarkus-smallrye-openapi",
   "quarkus-config-yaml",

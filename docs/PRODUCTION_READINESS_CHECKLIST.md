@@ -5,11 +5,11 @@
 ## Security
 - Verify JWT signing keys are injected from secret storage, not committed defaults.
 - Confirm refresh token TTL, revoke policy, and rotation strategy.
-- Confirm `PermissionSnapshotStore` Redis namespace isolation per environment.
+- Confirm `PermissionSnapshotStore` Infinispan cache/namespace isolation per environment.
 - Validate authorization denial logs are enabled and retained.
 
 ## Authorization
-- Login must publish permission snapshots to Redis.
+- Login must publish permission snapshots to Infinispan.
 - `SecurityIdentityAugmentor` must reload snapshots when `authorityVersion` changes.
 - Service-layer authorization must protect role binding, permission-group binding, password reset, and similar sensitive operations.
 - Static endpoint guards may keep using Quarkus annotations, but complex checks must go through `AuthorizationService`.
@@ -25,5 +25,5 @@
 
 ## Runtime validation
 - Test login, refresh, logout, permission change, and post-change access denial.
-- Test Redis outage behavior for login and authorization snapshot fallback.
+- Test Infinispan outage behavior for login and authorization snapshot fallback.
 - Test denied authorization audit records.

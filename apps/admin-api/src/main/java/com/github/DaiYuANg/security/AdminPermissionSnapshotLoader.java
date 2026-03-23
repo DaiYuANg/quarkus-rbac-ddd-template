@@ -2,7 +2,7 @@ package com.github.DaiYuANg.security;
 
 import com.github.DaiYuANg.application.converter.ViewMapper;
 import com.github.DaiYuANg.identity.repository.UserRepository;
-import com.github.DaiYuANg.redis.AuthorityVersionStore;
+import com.github.DaiYuANg.cache.AuthorityVersionStore;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.LinkedHashMap;

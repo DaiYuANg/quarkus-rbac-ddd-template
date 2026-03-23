@@ -124,10 +124,10 @@ So this round is a **best-effort schema convergence**, not a blind checksum-copy
 - Permission query/VO paths now return these structured fields directly.
 
 
-## Authorization cache and Redis snapshot
+## Authorization cache and Infinispan snapshot
 
-This template now treats Redis as the runtime permission snapshot cache.
+This template uses Infinispan as the runtime permission snapshot cache.
 
 - Login and refresh publish an effective permission snapshot.
-- Request authentication re-hydrates permissions from Redis and only falls back to the database when the cached authority version is stale or missing.
+- Request authentication re-hydrates permissions from Infinispan and only falls back to the database when the cached authority version is stale or missing.
 - Endpoint annotations remain available, but complex permission decisions should be delegated to `AuthorizationService`.

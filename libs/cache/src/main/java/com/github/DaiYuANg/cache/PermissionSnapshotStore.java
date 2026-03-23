@@ -1,9 +1,7 @@
-package com.github.DaiYuANg.redis;
+package com.github.DaiYuANg.cache;
 
 import com.github.DaiYuANg.security.PermissionSnapshot;
-import io.quarkus.redis.datasource.RedisDataSource;
-import io.quarkus.redis.datasource.keys.KeyCommands;
-import io.quarkus.redis.datasource.value.ValueCommands;
+import io.quarkus.infinispan.client.Remote;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.time.Duration;
@@ -12,32 +10,34 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import org.infinispan.client.hotrod.RemoteCache;
 
 @ApplicationScoped
 public class PermissionSnapshotStore {
-    private final ValueCommands<String, String> commands;
-    private final KeyCommands<String> keyCommands;
+    private static final String CACHE_NAME = "rbac-auth";
+
+    private final RemoteCache<String, CacheValue> cache;
 
     @Inject
-    public PermissionSnapshotStore(RedisDataSource dataSource) {
-        this.commands = dataSource.value(String.class);
-        this.keyCommands = dataSource.key();
+    public PermissionSnapshotStore(@Remote(CACHE_NAME) RemoteCache<String, CacheValue> cache) {
+        this.cache = cache;
     }
 
     public void save(PermissionSnapshot snapshot, Duration ttl) {
-        commands.setex(key(snapshot.username()), ttl.getSeconds(), encode(snapshot));
+        cache.put(key(snapshot.username()), new CacheValue(encode(snapshot)), ttl.toSeconds(), TimeUnit.SECONDS);
     }
 
     public Optional<PermissionSnapshot> get(String username) {
-        var raw = commands.get(key(username));
-        if (raw == null || raw.isBlank()) {
+        var value = cache.get(key(username));
+        if (value == null || value.data() == null || value.data().isBlank()) {
             return Optional.empty();
         }
-        return Optional.of(decode(username, raw));
+        return Optional.of(decode(username, value.data()));
     }
 
     public void delete(String username) {
-        keyCommands.del(key(username));
+        cache.remove(key(username));
     }
 
     private String key(String username) {

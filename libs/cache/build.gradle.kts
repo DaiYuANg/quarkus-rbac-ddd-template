@@ -4,5 +4,9 @@ dependencies {
   api(projects.libs.common)
   api(projects.libs.security)
   api(libs.quarkus.arc)
-  api(libs.quarkus.redis.client)
+  api(libs.quarkus.infinispan.client)
+  api(libs.quarkus.qute)
+  api(libs.quarkus.rest)
+
+  annotationProcessor(libs.protostream.processor)
 }

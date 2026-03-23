@@ -7,7 +7,7 @@ A reusable Quarkus backend foundation with RBAC (Role-Based Access Control), JWT
 ## Features
 
 - **Security**: Quarkus Security, JWT, refresh token, provider-chain login orchestration
-- **RBAC**: User, Role, Permission, PermissionGroup with Redis-cached permission snapshots
+- **RBAC**: User, Role, Permission, PermissionGroup with Infinispan-cached permission snapshots
 - **Persistence**: Hibernate ORM + Panache, Blaze-Persistence + Entity View for queries
 - **DDD**: Bounded-context modules (identity, accesscontrol, audit)
 - **Code Quality**: Checkstyle, SpotBugs, JaCoCo, OWASP Dependency Check, Spotless
@@ -18,7 +18,7 @@ A reusable Quarkus backend foundation with RBAC (Role-Based Access Control), JWT
 
 - JDK 25+
 - PostgreSQL
-- Redis (optional for dev, required for production)
+- Infinispan (optional for dev, required for production; Dev Services auto-starts with Docker)
 
 ### Run Migrations
 
@@ -41,7 +41,7 @@ libs/
 ├── accesscontrol       # Role, Permission, PermissionGroup (RBAC)
 ├── identity            # User (depends on accesscontrol)
 ├── audit               # OperationLog, LoginLog
-├── redis               # Refresh token, authority version, login attempt state
+├── cache               # Refresh token, authority version, login attempt state (Infinispan)
 └── security            # Auth provider chain, JWT, current user, token context
 
 apps/

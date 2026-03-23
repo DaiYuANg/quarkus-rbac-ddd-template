@@ -3,7 +3,7 @@ package com.github.DaiYuANg.security;
 import com.github.DaiYuANg.common.constant.ResultCode;
 import com.github.DaiYuANg.identity.constant.UserStatus;
 import com.github.DaiYuANg.identity.repository.UserRepository;
-import com.github.DaiYuANg.redis.RefreshTokenStore;
+import com.github.DaiYuANg.cache.RefreshTokenStore;
 import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;

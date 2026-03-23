@@ -61,7 +61,7 @@ include("libs:identity")
 
 include("libs:audit")
 
-include("libs:redis")
+include("libs:cache")
 
 include("libs:security")
 

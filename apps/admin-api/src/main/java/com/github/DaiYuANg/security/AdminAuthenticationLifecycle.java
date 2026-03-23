@@ -1,8 +1,8 @@
 package com.github.DaiYuANg.security;
 
-import com.github.DaiYuANg.redis.AuthorityVersionStore;
-import com.github.DaiYuANg.redis.PermissionSnapshotStore;
-import com.github.DaiYuANg.redis.RefreshTokenStore;
+import com.github.DaiYuANg.cache.AuthorityVersionStore;
+import com.github.DaiYuANg.cache.PermissionSnapshotStore;
+import com.github.DaiYuANg.cache.RefreshTokenStore;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.time.Duration;

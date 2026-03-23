@@ -27,6 +27,6 @@ public class AdminPermissionSnapshotRefreshPolicy implements PermissionSnapshotR
 
     @Override
     public String source() {
-        return "redis-snapshot";
+        return "infinispan-snapshot";
     }
 }

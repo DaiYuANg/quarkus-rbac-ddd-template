@@ -17,8 +17,10 @@ quarkus:
     log:
       sql: true
     sql-load-script: no-file
-  redis:
-    hosts: redis://localhost:6379
+  infinispan-client:
+    hosts: localhost:11222
+    username: admin
+    password: password
   smallrye-openapi:
     path: /q/openapi
   swagger-ui:

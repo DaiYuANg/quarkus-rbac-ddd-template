@@ -7,7 +7,7 @@
 ## 特性
 
 - **安全**：Quarkus Security、JWT、刷新令牌、登录提供者链
-- **RBAC**：用户、角色、权限、权限组，基于 Redis 缓存的权限快照
+- **RBAC**：用户、角色、权限、权限组，基于 Infinispan 缓存的权限快照
 - **持久化**：Hibernate ORM + Panache，Blaze-Persistence + Entity View 查询
 - **DDD**：按限界上下文划分模块（identity、accesscontrol、audit）
 - **代码质量**：Checkstyle、SpotBugs、JaCoCo、OWASP 依赖检查、Spotless
@@ -18,7 +18,7 @@
 
 - JDK 25+
 - PostgreSQL
-- Redis（开发可选，生产必需）
+- Infinispan（开发可选，生产必需；有 Docker 时 Dev Services 自动启动）
 
 ### 执行数据库迁移
 
@@ -41,7 +41,7 @@ libs/
 ├── accesscontrol       # 角色、权限、权限组（RBAC）
 ├── identity            # 用户（依赖 accesscontrol）
 ├── audit               # 操作日志、登录日志
-├── redis               # 刷新令牌、权限版本、登录尝试状态
+├── cache               # 刷新令牌、权限版本、登录尝试状态（Infinispan）
 └── security            # 认证提供者链、JWT、当前用户、令牌上下文
 
 apps/

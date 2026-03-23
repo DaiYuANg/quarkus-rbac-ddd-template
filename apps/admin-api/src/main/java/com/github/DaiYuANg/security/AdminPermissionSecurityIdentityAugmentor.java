@@ -1,6 +1,6 @@
 package com.github.DaiYuANg.security;
 
-import com.github.DaiYuANg.redis.PermissionSnapshotStore;
+import com.github.DaiYuANg.cache.PermissionSnapshotStore;
 import io.quarkus.security.identity.AuthenticationRequestContext;
 import io.quarkus.security.identity.SecurityIdentity;
 import io.quarkus.security.identity.SecurityIdentityAugmentor;
