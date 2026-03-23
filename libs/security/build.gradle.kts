@@ -3,6 +3,7 @@ plugins { alias(libs.plugins.jandex) }
 dependencies {
   api(projects.libs.common)
   api(libs.quarkus.arc)
+  api(libs.slf4j.api)
   api(libs.quarkus.security)
   api(libs.quarkus.smallrye.jwt)
   api(libs.quarkus.smallrye.jwt.build)

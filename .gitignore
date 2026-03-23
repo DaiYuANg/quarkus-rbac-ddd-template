@@ -30,11 +30,9 @@ Thumbs.db
 # Local Gradle config (copy from gradle.properties.template and customize)
 gradle.properties
 
-# Generated RSA keys at root (from generateRsaKeys task)
-/privateKey.pem
-/publicKey.pem
-
-*.pem*.log
+# Generated RSA keys (from ./gradlew generateRsaKeys, project root)
+privateKey.pem
+publicKey.pem
 *.ctxt
 .mtj.tmp/
 *.nar

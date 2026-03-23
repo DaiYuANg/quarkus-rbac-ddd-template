@@ -32,13 +32,15 @@ Example:
 
 ## generateRsaKeys Task
 
-Generate RSA key pair and write to PEM files.
+Generate RSA key pair for JWT signing. Run **before first start** — keys are gitignored.
 
 ### Usage
 
 ```bash
 ./gradlew generateRsaKeys
 ```
+
+Keys are written to the **project root** by default. `quarkusDev` is configured to use the root as working directory so the app finds them.
 
 ### Options
 
@@ -49,9 +51,3 @@ Generate RSA key pair and write to PEM files.
 
 - `privateKey.pem` — RSA private key (PKCS#1)
 - `publicKey.pem` — RSA public key
-
-### Example with custom path
-
-```bash
-./gradlew generateRsaKeys -PoutputDir=apps/admin-api/src/main/resources
-```

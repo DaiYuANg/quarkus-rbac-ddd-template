@@ -24,6 +24,7 @@ jakarta-annotation-version = "3.0.0"
 record-builder = "52"
 query-dsl = "7.1"
 protostream = "5.0.1.Final"
+wildfly-elytron = "2.8.3.Final"
 
 [plugins]
 quarkus = { id = "io.quarkus", version.ref = "quarkus" }
@@ -83,6 +84,7 @@ quarkus-micrometer = { group = "io.quarkus", name = "quarkus-micrometer" }
 quarkus-micrometer-registry-prometheus = { group = "io.quarkus", name = "quarkus-micrometer-registry-prometheus" }
 quarkus-opentelemetry = { group = "io.quarkus", name = "quarkus-opentelemetry" }
 quarkus-junit5 = { group = "io.quarkus", name = "quarkus-junit5" }
+quarkus-container-image-docker = { group = "io.quarkus", name = "quarkus-container-image-docker" }
 rest-assured = { group = "io.rest-assured", name = "rest-assured" }
 
 record-builder-processor = { group = "io.soabase.record-builder", name = "record-builder-processor", version.ref = "record-builder" }
@@ -96,6 +98,9 @@ querydsl-guava = { group = "io.github.openfeign.querydsl", name = "querydsl-guav
 querydsl-collection = { group = "io.github.openfeign.querydsl", name = "querydsl-collections", version.ref = "query-dsl" }
 
 guava = { group = "com.google.guava", name = "guava", version = "33.5.0-jre" }
+wildfly-elytron-sasl-digest = { group = "org.wildfly.security", name = "wildfly-elytron-sasl-digest", version.ref = "wildfly-elytron" }
+slf4j-api = { group = "org.slf4j", name = "slf4j-api", version = "2.0.17" }
+
 [bundles]
 quarkus-application = [
   "quarkus-arc",
@@ -107,7 +112,8 @@ quarkus-application = [
   "quarkus-hibernate-validator",
   "quarkus-smallrye-openapi",
   "quarkus-config-yaml",
-  "quarkus-logging-json"
+  "quarkus-logging-json",
+  "quarkus-container-image-docker"
 ]
 quarkus-observability = [
   "quarkus-smallrye-health",
@@ -128,7 +134,8 @@ quarkus-migrator = [
   "quarkus-agroal",
   "quarkus-flyway",
   "quarkus-config-yaml",
-  "quarkus-logging-json"
+  "quarkus-logging-json",
+  "quarkus-container-image-docker"
 ]
 quarkus-test = [
   "quarkus-junit5",

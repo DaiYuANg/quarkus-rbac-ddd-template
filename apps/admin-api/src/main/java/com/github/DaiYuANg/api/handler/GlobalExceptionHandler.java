@@ -1,6 +1,7 @@
 package com.github.DaiYuANg.api.handler;
 
 import com.github.DaiYuANg.common.constant.ResultCode;
+import org.jboss.logging.Logger;
 import com.github.DaiYuANg.common.exception.BizException;
 import com.github.DaiYuANg.common.model.Result;
 import io.quarkus.security.ForbiddenException;
@@ -15,9 +16,13 @@ import jakarta.ws.rs.ext.Provider;
 
 @Provider
 public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
+  private static final Logger LOG = Logger.getLogger(GlobalExceptionHandler.class);
 
   @Override
   public Response toResponse(Exception exception) {
+    if (!(exception instanceof BizException)) {
+      LOG.error("Unhandled exception", exception);
+    }
     return switch (exception) {
       case BizException biz ->
           json(biz.getResultCode().status(), Result.fail(biz.getResultCode(), biz.getMessage()));

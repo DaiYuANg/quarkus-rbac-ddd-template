@@ -1,2 +1,2 @@
+# Exclude Gradle cache; keep build/ for quarkus-app (required by Dockerfile)
 .gradle
-build

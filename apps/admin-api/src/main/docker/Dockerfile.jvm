@@ -1,10 +1,40 @@
-FROM eclipse-temurin:25-jre
+####
+# This Dockerfile is used in order to build a container that runs the Quarkus application in JVM mode.
+# It uses Red Hat UBI9 OpenJDK runtime image as base.
+#
+# Before building the container image run (AOT cache requires app to start briefly; have DB/Infinispan up if needed):
+#
+#   ./gradlew :apps:admin-api:build
+#
+# Then, build the image with (from project root):
+#
+#   docker build -f apps/admin-api/src/main/docker/Dockerfile.jvm -t <image-name> apps/admin-api
+#
+# Then run the container using:
+#
+#   docker run -i --rm -p 8080:8080 <image-name>
+#
+#
+####
+FROM registry.access.redhat.com/ubi9/openjdk-25-runtime:1.24
+
+ENV LANGUAGE='en_US:en'
 
 WORKDIR /work/
-COPY build/quarkus-app/lib/ /work/lib/
-COPY build/quarkus-app/*.jar /work/
-COPY build/quarkus-app/app/ /work/app/
-COPY build/quarkus-app/quarkus/ /work/quarkus/
+
+# We make four distinct layers so if there are application changes the library layers can be re-used
+COPY --chown=185:root build/quarkus-app/lib/ /work/lib/
+COPY --chown=185:root build/quarkus-app/*.jar /work/
+COPY --chown=185:root build/quarkus-app/app/ /work/app/
+COPY --chown=185:root build/quarkus-app/quarkus/ /work/quarkus/
+# CDS/AOT cache (app.aot for JDK 25 Leyden, app-cds.jsa for AppCDS)
+COPY --chown=185:root build/quarkus-app/app.aot /work/app.aot
 
 EXPOSE 8080
-CMD ["java", "-jar", "/work/quarkus-run.jar"]
+USER 185
+# JDK 25 + Infinispan SASL (DIGEST-SHA-256) may require --add-opens/--add-reads
+# -XX:AOTCache enables Leyden AOT for faster startup (JDK 25+)
+ENV JAVA_OPTS_APPEND="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager --add-opens=java.base/java.security=ALL-UNNAMED --add-reads=java.base=ALL-UNNAMED -XX:AOTCache=/work/app.aot"
+ENV JAVA_APP_JAR="/work/quarkus-run.jar"
+
+ENTRYPOINT [ "/opt/jboss/container/java/run/run-java.sh" ]

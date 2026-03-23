@@ -14,11 +14,13 @@ import java.security.SecureRandom
  *   ./gradlew generateRsaKeys
  *
  * With custom output directory:
- *   ./gradlew generateRsaKeys -PoutputDir=src/main/resources
+ *   ./gradlew generateRsaKeys -PoutputDir=custom/path
  *
  * Options:
  *   -PoutputDir=<path>  Output directory (default: project root)
  *   -PkeySize=<size>    RSA key size in bits (default: 2048)
+ *
+ * Run before first start: ./gradlew generateRsaKeys
  */
 abstract class GenerateRsaKeysTask : DefaultTask() {
 
@@ -37,7 +39,8 @@ abstract class GenerateRsaKeysTask : DefaultTask() {
   init {
     outputDir.convention(
       project.provider {
-        project.findProperty("outputDir") as? String ?: project.rootProject.layout.projectDirectory.asFile.absolutePath
+        project.findProperty("outputDir") as? String
+          ?: project.rootProject.layout.projectDirectory.asFile.absolutePath
       }
     )
     keySize.convention(project.provider { (project.findProperty("keySize") as? String)?.toIntOrNull() ?: 2048 })

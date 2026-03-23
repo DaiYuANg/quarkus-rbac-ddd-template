@@ -9,11 +9,14 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 @Priority(100)
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class ConfigUserAuthenticationProvider implements LoginAuthenticationProvider<UsernamePasswordAuthenticationRequest> {
+    private static final Logger log = LoggerFactory.getLogger(ConfigUserAuthenticationProvider.class);
     private final ConfigUserAccountConfig config;
     private final PasswordHasher passwordHasher;
 
@@ -30,6 +33,7 @@ public class ConfigUserAuthenticationProvider implements LoginAuthenticationProv
     @Override
     public AuthenticationProviderResult authenticate(UsernamePasswordAuthenticationRequest request) {
         if (config.users() == null || config.users().isEmpty()) {
+            log.atDebug().log("config-user: no users configured, abstain");
             return AuthenticationProviderResult.abstain();
         }
         var entry = config.users().values().stream()
@@ -37,11 +41,14 @@ public class ConfigUserAuthenticationProvider implements LoginAuthenticationProv
             .findFirst()
             .orElse(null);
         if (entry == null) {
+            log.atDebug().addKeyValue("username", request.username()).log("config-user: user not found, abstain");
             return AuthenticationProviderResult.abstain();
         }
         if (!passwordHasher.verify(request.password(), entry.passwordHash())) {
+            log.atDebug().addKeyValue("username", request.username()).log("config-user: password mismatch");
             return AuthenticationProviderResult.failure(ResultCode.USERNAME_OR_PASSWORD_INVALID);
         }
+        log.atDebug().addKeyValue("username", request.username()).log("config-user: authenticated");
         Map<String, Object> attributes = new LinkedHashMap<>();
         attributes.put("source", "config");
         attributes.put("providerId", providerId());

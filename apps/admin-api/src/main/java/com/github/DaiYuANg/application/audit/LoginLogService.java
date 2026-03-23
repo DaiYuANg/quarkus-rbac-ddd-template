@@ -27,27 +27,44 @@ public class LoginLogService {
 
     @Transactional
     public void recordSuccess(String username, String remoteIp, String userAgent) {
-        var snapshot = auditSnapshotProvider.snapshot();
+        var ipAndUa = resolveRemoteIpAndUserAgent(remoteIp, userAgent);
         var log = new SysLoginLog();
         log.username = username;
         log.success = true;
         log.reason = null;
-        log.remoteIp = remoteIp != null ? remoteIp : snapshot.remoteIp();
-        log.userAgent = userAgent != null ? userAgent : snapshot.userAgent();
+        log.remoteIp = ipAndUa.remoteIp();
+        log.userAgent = ipAndUa.userAgent();
         log.loginAt = Instant.now();
         repository.persist(log);
     }
 
     @Transactional
     public void recordFailure(String username, String remoteIp, String userAgent, String reason) {
-        var snapshot = auditSnapshotProvider.snapshot();
+        var ipAndUa = resolveRemoteIpAndUserAgent(remoteIp, userAgent);
         var log = new SysLoginLog();
         log.username = username;
         log.success = false;
         log.reason = reason;
-        log.remoteIp = remoteIp != null ? remoteIp : snapshot.remoteIp();
-        log.userAgent = userAgent != null ? userAgent : snapshot.userAgent();
+        log.remoteIp = ipAndUa.remoteIp();
+        log.userAgent = ipAndUa.userAgent();
         log.loginAt = Instant.now();
         repository.persist(log);
+    }
+
+    /**
+     * Resolve remoteIp/userAgent from params or current request. Only calls AuditSnapshotProvider
+     * when needed; avoids it in async context (e.g. @ObservesAsync) where request context is absent.
+     */
+    private record IpAndUserAgent(String remoteIp, String userAgent) {}
+
+    private IpAndUserAgent resolveRemoteIpAndUserAgent(String remoteIp, String userAgent) {
+        if (remoteIp != null && userAgent != null) {
+            return new IpAndUserAgent(remoteIp, userAgent);
+        }
+        var snapshot = auditSnapshotProvider.snapshot();
+        return new IpAndUserAgent(
+            remoteIp != null ? remoteIp : snapshot.remoteIp(),
+            userAgent != null ? userAgent : snapshot.userAgent()
+        );
     }
 }

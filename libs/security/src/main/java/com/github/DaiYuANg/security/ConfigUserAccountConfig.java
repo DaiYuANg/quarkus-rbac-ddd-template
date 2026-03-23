@@ -13,6 +13,7 @@ public interface ConfigUserAccountConfig {
 
     interface ConfigUser {
         String username();
+        @WithName("password-hash")
         String passwordHash();
         Optional<String> displayName();
         Optional<List<String>> roles();

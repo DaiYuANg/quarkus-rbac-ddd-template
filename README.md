@@ -16,11 +16,15 @@ A reusable Quarkus backend foundation with RBAC (Role-Based Access Control), JWT
 
 ### Prerequisites
 
-- JDK 25+
+- JDK 21+ or JDK 25 (JDK 25: Infinispan SASL needs JVM args — see [TROUBLESHOOTING](docs/TROUBLESHOOTING.md))
 - PostgreSQL
 - Infinispan (optional for dev, required for production; Dev Services auto-starts with Docker)
 
 **Local config**: Copy `gradle.properties.template` to `gradle.properties` and adjust for your machine (JVM args, proxy, etc.). `gradle.properties` is gitignored.
+
+**JWT keys**: Run `./gradlew generateRsaKeys` before first start. Keys are generated to the project root and gitignored.
+
+**Default config user** (no DB): `root` / `root` — from `app.security.config-users`, for quick API testing.
 
 ### Run Migrations
 
@@ -64,6 +68,7 @@ apps/
 | DDD Architecture | [ARCHITECTURE_DDD.md](docs/ARCHITECTURE_DDD.md) | [ARCHITECTURE_DDD.zh-CN.md](docs/ARCHITECTURE_DDD.zh-CN.md) |
 | Authorization Flow | [AUTHORIZATION_FLOW.md](docs/AUTHORIZATION_FLOW.md) | [AUTHORIZATION_FLOW.zh-CN.md](docs/AUTHORIZATION_FLOW.zh-CN.md) |
 | Production Checklist | [PRODUCTION_READINESS_CHECKLIST.md](docs/PRODUCTION_READINESS_CHECKLIST.md) | [PRODUCTION_READINESS_CHECKLIST.zh-CN.md](docs/PRODUCTION_READINESS_CHECKLIST.zh-CN.md) |
+| Troubleshooting | [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | [TROUBLESHOOTING.zh-CN.md](docs/TROUBLESHOOTING.zh-CN.md) |
 
 ## Build Tasks
 
@@ -80,7 +85,7 @@ apps/
 | Task | Description |
 |------|-------------|
 | `replacePackage` | Batch-replace package names and group. `-PfromPackage=... -PtoPackage=...` |
-| `generateRsaKeys` | Generate RSA key pair (privateKey.pem, publicKey.pem). `-PoutputDir=...` optional |
+| `generateRsaKeys` | Generate JWT RSA keys (project root). Run before first start. `-PoutputDir=...` optional |
 
 See [buildSrc/README.md](buildSrc/README.md) for details.
 

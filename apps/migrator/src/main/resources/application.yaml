@@ -1,4 +1,6 @@
 quarkus:
+  container-image:
+    name: migrator
   banner:
     enabled: false
   log:

@@ -16,11 +16,15 @@
 
 ### 环境要求
 
-- JDK 25+
+- JDK 21+ 或 JDK 25（JDK 25 时 Infinispan SASL 需 JVM 参数，见 [故障排查](docs/TROUBLESHOOTING.zh-CN.md)）
 - PostgreSQL
 - Infinispan（开发可选，生产必需；有 Docker 时 Dev Services 自动启动）
 
 **本地配置**：将 `gradle.properties.template` 复制为 `gradle.properties`，按本机环境调整（JVM 参数、代理等）。`gradle.properties` 已加入 gitignore。
+
+**JWT 密钥**：首次启动前执行 `./gradlew generateRsaKeys`，密钥生成到项目根目录并已加入 gitignore。
+
+**默认配置用户**（不走数据库）：`root` / `root` — 来自 `app.security.config-users`，用于快速测试接口。
 
 ### 执行数据库迁移
 
@@ -64,6 +68,7 @@ apps/
 | DDD 架构说明 | [ARCHITECTURE_DDD.md](docs/ARCHITECTURE_DDD.md) | [ARCHITECTURE_DDD.zh-CN.md](docs/ARCHITECTURE_DDD.zh-CN.md) |
 | 授权流程 | [AUTHORIZATION_FLOW.md](docs/AUTHORIZATION_FLOW.md) | [AUTHORIZATION_FLOW.zh-CN.md](docs/AUTHORIZATION_FLOW.zh-CN.md) |
 | 生产就绪清单 | [PRODUCTION_READINESS_CHECKLIST.md](docs/PRODUCTION_READINESS_CHECKLIST.md) | [PRODUCTION_READINESS_CHECKLIST.zh-CN.md](docs/PRODUCTION_READINESS_CHECKLIST.zh-CN.md) |
+| 故障排查 | [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | [TROUBLESHOOTING.zh-CN.md](docs/TROUBLESHOOTING.zh-CN.md) |
 
 ## 构建任务
 
@@ -80,7 +85,7 @@ apps/
 | 任务 | 说明 |
 |------|------|
 | `replacePackage` | 批量替换包名与 group。`-PfromPackage=... -PtoPackage=...` |
-| `generateRsaKeys` | 生成 RSA 密钥对（privateKey.pem、publicKey.pem）。可选 `-PoutputDir=...` |
+| `generateRsaKeys` | 生成 JWT RSA 密钥（项目根目录）。首次启动前需执行。可选 `-PoutputDir=...` |
 
 详见 [buildSrc/README.md](buildSrc/README.md)。
 
