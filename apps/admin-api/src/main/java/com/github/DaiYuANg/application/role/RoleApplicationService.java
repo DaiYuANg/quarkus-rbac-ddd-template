@@ -35,7 +35,7 @@ public class RoleApplicationService {
 
     @Transactional
     public RoleVO createRole(RoleCreationForm form) {
-        authorizationService.check("system", "role", "add");
+        authorizationService.check("role", "add");
         if (roleRepository.countByCode(form.code()) > 0) throw new BizException(ResultCode.DATA_ALREADY_EXISTS, "role code already exists");
         var role = new SysRole();
         role.code = form.code();
@@ -50,15 +50,15 @@ public class RoleApplicationService {
     }
 
     public PageResult<RoleVO> queryRolePage(RoleQuery query) {
-        authorizationService.check("system", "role", "view");
+        authorizationService.check("role", "view");
         var slice = roleRepository.page(query);
         return PageResult.of(slice.total(), query.getPageNum(), query.getPageSize(), slice.content().stream().map(mapper::toRoleVO).toList());
     }
-    public Optional<RoleVO> getRoleById(Long id) { authorizationService.check("system", "role", "view"); return roleRepository.findByIdOptional(id).map(mapper::toRoleVO); }
+    public Optional<RoleVO> getRoleById(Long id) { authorizationService.check("role", "view"); return roleRepository.findByIdOptional(id).map(mapper::toRoleVO); }
 
     @Transactional
     public RoleVO updateRole(Long id, UpdateRoleForm form) {
-        authorizationService.check("system", "role", "edit");
+        authorizationService.check("role", "edit");
         var role = roleRepository.findByIdOptional(id).orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
         if (form.code() != null && !form.code().equals(role.code) && roleRepository.countByCode(form.code()) > 0) throw new BizException(ResultCode.DATA_ALREADY_EXISTS, "role code already exists");
         if (form.code() != null) role.code = form.code();
@@ -72,12 +72,12 @@ public class RoleApplicationService {
     }
 
     @Transactional
-    public void deleteRole(Long id) { authorizationService.check("system", "role", "delete"); roleRepository.deleteById(id); authorityVersionService.bumpGlobalVersion(); operationLogService.record("role", "delete", String.valueOf(id), true, "delete role"); }
-    public Optional<RoleVO> getRoleByName(String name) { authorizationService.check("system", "role", "view"); return roleRepository.findByName(name).map(mapper::toRoleVO); }
+    public void deleteRole(Long id) { authorizationService.check("role", "delete"); roleRepository.deleteById(id); authorityVersionService.bumpGlobalVersion(); operationLogService.record("role", "delete", String.valueOf(id), true, "delete role"); }
+    public Optional<RoleVO> getRoleByName(String name) { authorizationService.check("role", "view"); return roleRepository.findByName(name).map(mapper::toRoleVO); }
 
     @Transactional
     public void assignPermissionGroups(RoleRefPermissionGroupForm form) {
-        authorizationService.checkAny("system.role:edit", "system.role:assign-permission-group");
+        authorizationService.checkAny("role:edit", "role:assign-permission-group");
         var role = roleRepository.findByIdOptional(form.roleId()).orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
         role.permissionGroups.clear();
         if (form.permissionGroupIds() != null) {
@@ -87,7 +87,7 @@ public class RoleApplicationService {
         operationLogService.record("role", "assign-permission-group", String.valueOf(form.roleId()), true, "assign permission groups");
     }
 
-    public List<RoleVO> getAllRoles() { authorizationService.check("system", "role", "view"); return roleRepository.listAll().stream().map(mapper::toRoleVO).toList(); }
+    public List<RoleVO> getAllRoles() { authorizationService.check("role", "view"); return roleRepository.listAll().stream().map(mapper::toRoleVO).toList(); }
     public long countCode(String code) { return roleRepository.countByCode(code); }
     public long countRole() { return roleRepository.count(); }
 }

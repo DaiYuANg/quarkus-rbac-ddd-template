@@ -1,23 +1,22 @@
 package com.github.DaiYuANg.cache;
 
-import io.quarkus.infinispan.client.Remote;
+import io.quarkus.redis.datasource.RedisDataSource;
+import io.quarkus.redis.datasource.keys.KeyCommands;
+import io.quarkus.redis.datasource.value.ValueCommands;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-import org.infinispan.client.hotrod.RemoteCache;
 
 @ApplicationScoped
 public class LoginAttemptStore {
-    private static final String CACHE_NAME = "rbac-auth";
 
-    private final RemoteCache<String, CacheValue> cache;
+    private final ValueCommands<String, String> valueCommands;
+    private final KeyCommands<String> keyCommands;
 
-    @Inject
-    public LoginAttemptStore(@Remote(CACHE_NAME) RemoteCache<String, CacheValue> cache) {
-        this.cache = cache;
+    public LoginAttemptStore(RedisDataSource ds) {
+        this.valueCommands = ds.value(String.class);
+        this.keyCommands = ds.key();
     }
 
     public boolean isLocked(String username) {
@@ -26,12 +25,12 @@ public class LoginAttemptStore {
     }
 
     public Optional<Instant> lockedUntil(String username) {
-        var value = cache.get(lockKey(username));
-        if (value == null || value.data() == null || value.data().isBlank()) {
+        var value = valueCommands.get(lockKey(username));
+        if (value == null || value.isBlank()) {
             return Optional.empty();
         }
         try {
-            return Optional.of(Instant.parse(value.data()));
+            return Optional.of(Instant.parse(value));
         } catch (Exception ignored) {
             return Optional.empty();
         }
@@ -39,29 +38,27 @@ public class LoginAttemptStore {
 
     public long incrementFailure(String username, Duration ttl) {
         var key = failureKey(username);
-        var value = cache.get(key);
-        long next = value == null || value.data() == null ? 1 : Long.parseLong(value.data()) + 1;
-        cache.put(key, new CacheValue(Long.toString(next)), ttl.toSeconds(), TimeUnit.SECONDS);
+        var value = valueCommands.get(key);
+        long next = value == null || value.isBlank() ? 1 : Long.parseLong(value) + 1;
+        valueCommands.setex(key, (int) ttl.toSeconds(), Long.toString(next));
         return next;
     }
 
     public void lock(String username, Duration ttl) {
-        cache.put(lockKey(username),
-            new CacheValue(Instant.now().plus(ttl).toString()),
-            ttl.toSeconds(),
-            TimeUnit.SECONDS);
+        valueCommands.setex(lockKey(username), (int) ttl.toSeconds(),
+            Instant.now().plus(ttl).toString());
     }
 
     public void clear(String username) {
-        cache.remove(failureKey(username));
-        cache.remove(lockKey(username));
+        keyCommands.del(failureKey(username));
+        keyCommands.del(lockKey(username));
     }
 
     private String failureKey(String username) {
-        return "auth:login:failure:" + username;
+        return "rbac-auth:login:failure:" + username;
     }
 
     private String lockKey(String username) {
-        return "auth:login:lock:" + username;
+        return "rbac-auth:login:lock:" + username;
     }
 }

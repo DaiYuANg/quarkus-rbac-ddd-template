@@ -2,25 +2,27 @@ package com.github.DaiYuANg.security;
 
 import java.util.Optional;
 
+/**
+ * Permission in resource:action format (e.g. user:view, role:edit).
+ */
 public record PermissionDescriptor(
     String code,
-    String domain,
     String resource,
     String action
 ) {
     public static PermissionDescriptor ofCode(String code) {
         if (code == null || code.isBlank()) {
-            return new PermissionDescriptor("", "", "", "");
+            return new PermissionDescriptor("", "", "");
         }
-        String[] parts = code.split(":", 3);
-        if (parts.length == 3) {
-            return new PermissionDescriptor(code, parts[0], parts[1], parts[2]);
+        int colon = code.indexOf(':');
+        if (colon > 0 && colon < code.length() - 1) {
+            return new PermissionDescriptor(code, code.substring(0, colon), code.substring(colon + 1));
         }
-        return new PermissionDescriptor(code, "", "", "");
+        return new PermissionDescriptor(code, "", "");
     }
 
-    public static PermissionDescriptor of(String domain, String resource, String action) {
-        return new PermissionDescriptor(domain + ":" + resource + ":" + action, domain, resource, action);
+    public static PermissionDescriptor of(String resource, String action) {
+        return new PermissionDescriptor(resource + ":" + action, resource, action);
     }
 
     public Optional<String> codeOptional() {

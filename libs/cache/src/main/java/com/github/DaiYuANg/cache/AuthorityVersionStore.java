@@ -1,43 +1,41 @@
 package com.github.DaiYuANg.cache;
 
-import io.quarkus.infinispan.client.Remote;
+import io.quarkus.redis.datasource.RedisDataSource;
+import io.quarkus.redis.datasource.keys.KeyCommands;
+import io.quarkus.redis.datasource.value.ValueCommands;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 import java.time.Instant;
-import org.infinispan.client.hotrod.RemoteCache;
 
 @ApplicationScoped
 public class AuthorityVersionStore {
-    private static final String CACHE_NAME = "rbac-auth";
-    private static final String KEY = "auth.authority:global-version";
 
-    private final RemoteCache<String, CacheValue> cache;
+    private static final String KEY = "rbac-auth:authority:global-version";
 
-    @Inject
-    public AuthorityVersionStore(@Remote(CACHE_NAME) RemoteCache<String, CacheValue> cache) {
-        this.cache = cache;
+    private final ValueCommands<String, String> valueCommands;
+    private final KeyCommands<String> keyCommands;
+
+    public AuthorityVersionStore(RedisDataSource ds) {
+        this.valueCommands = ds.value(String.class);
+        this.keyCommands = ds.key();
     }
 
     public String currentVersion() {
-        var value = cache.get(KEY);
-        String version;
-        if (value == null || value.data() == null || value.data().isBlank()) {
+        var version = valueCommands.get(KEY);
+        if (version == null || version.isBlank()) {
             version = Instant.now().toString();
-            cache.put(KEY, new CacheValue(version));
-        } else {
-            version = value.data();
+            valueCommands.set(KEY, version);
         }
         return version;
     }
 
     public String bumpGlobalVersion() {
         var version = Instant.now().toString();
-        cache.put(KEY, new CacheValue(version));
+        valueCommands.set(KEY, version);
         return version;
     }
 
     public void clear() {
-        cache.remove(KEY);
+        keyCommands.del(KEY);
     }
 
     public String versionFor(String username) {

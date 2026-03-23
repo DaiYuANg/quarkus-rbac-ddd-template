@@ -18,7 +18,6 @@ public enum PermissionSortFieldMapper implements SortFieldMapper {
           Map.entry(SysPermission_.id.getName(), p.id),
           Map.entry(SysPermission_.name.getName(), p.name),
           Map.entry(SysPermission_.code.getName(), p.code),
-          Map.entry(SysPermission_.domain.getName(), p.domain),
           Map.entry(SysPermission_.resource.getName(), p.resource),
           Map.entry(SysPermission_.action.getName(), p.action),
           Map.entry(SysPermission_.groupCode.getName(), p.groupCode),

@@ -38,7 +38,7 @@ public class UserApplicationService {
     private final CurrentUserAccess currentUserAccess;
 
     public PageResult<UserVO> queryUserPage(UserQuery query) {
-        authorizationService.check("system", "user", "view");
+        authorizationService.check("user", "view");
         var slice = userRepository.page(query);
         return PageResult.of(slice.total(), query.getPageNum(), query.getPageSize(),
             slice.content().stream().map(mapper::toUserVO).toList());
@@ -46,7 +46,7 @@ public class UserApplicationService {
 
     @Transactional
     public UserVO createUser(UserCreationForm form) {
-        authorizationService.check("system", "user", "add");
+        authorizationService.check("user", "add");
         if (userRepository.countByUsername(form.username()) > 0) throw new BizException(ResultCode.DATA_ALREADY_EXISTS, "username already exists");
         if (form.email() != null && !form.email().isBlank() && userRepository.countByEmail(form.email()) > 0) throw new BizException(ResultCode.DATA_ALREADY_EXISTS, "email already exists");
         if (form.mobilePhone() != null && !form.mobilePhone().isBlank() && userRepository.countByMobilePhone(form.mobilePhone()) > 0) throw new BizException(ResultCode.DATA_ALREADY_EXISTS, "mobilePhone already exists");
@@ -68,21 +68,21 @@ public class UserApplicationService {
         var user = userRepository.findByIdOptional(id).orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
         var currentUsername = currentUserAccess.currentUser().map(com.github.DaiYuANg.security.CurrentAuthenticatedUser::username).orElse(null);
         if (currentUsername != null && currentUsername.equals(user.username)) {
-            authorizationService.checkAny("system.auth:change-password", "system.user:reset-password", "system.user:edit");
+            authorizationService.checkAny("auth:change-password", "user:reset-password", "user:edit");
         } else {
-            authorizationService.checkAny("system.user:reset-password", "system.user:edit");
+            authorizationService.checkAny("user:reset-password", "user:edit");
         }
         user.password = passwordHasher.hash(newPassword);
         authorityVersionService.bumpGlobalVersion();
         operationLogService.record("user", "change-password", String.valueOf(id), true, "change password");
     }
 
-    public Optional<UserVO> getUserById(Long id) { authorizationService.check("system", "user", "view"); return userRepository.findByIdOptional(id).map(mapper::toUserVO); }
-    public List<UserVO> getAllUsers() { authorizationService.check("system", "user", "view"); return userRepository.listAll().stream().map(mapper::toUserVO).toList(); }
+    public Optional<UserVO> getUserById(Long id) { authorizationService.check("user", "view"); return userRepository.findByIdOptional(id).map(mapper::toUserVO); }
+    public List<UserVO> getAllUsers() { authorizationService.check("user", "view"); return userRepository.listAll().stream().map(mapper::toUserVO).toList(); }
 
     @Transactional
     public UserVO updateUser(Long id, UpdateUserForm form) {
-        authorizationService.check("system", "user", "edit");
+        authorizationService.check("user", "edit");
         var user = userRepository.findByIdOptional(id).orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
         if (form.username() != null && !form.username().equals(user.username) && userRepository.countByUsername(form.username()) > 0) throw new BizException(ResultCode.DATA_ALREADY_EXISTS, "username already exists");
         if (form.email() != null && !form.email().equals(user.email) && userRepository.countByEmail(form.email()) > 0) throw new BizException(ResultCode.DATA_ALREADY_EXISTS, "email already exists");
@@ -98,12 +98,12 @@ public class UserApplicationService {
     }
 
     @Transactional
-    public void deleteUser(Long id) { authorizationService.check("system", "user", "delete"); userRepository.deleteById(id); authorityVersionService.bumpGlobalVersion(); operationLogService.record("user", "delete", String.valueOf(id), true, "delete user"); }
-    public Optional<UserVO> getUserByUsername(String username) { authorizationService.check("system", "user", "view"); return userRepository.findByUsername(username).map(mapper::toUserVO); }
+    public void deleteUser(Long id) { authorizationService.check("user", "delete"); userRepository.deleteById(id); authorityVersionService.bumpGlobalVersion(); operationLogService.record("user", "delete", String.valueOf(id), true, "delete user"); }
+    public Optional<UserVO> getUserByUsername(String username) { authorizationService.check("user", "view"); return userRepository.findByUsername(username).map(mapper::toUserVO); }
 
     @Transactional
     public void assignRole(UserRefRoleForm form) {
-        authorizationService.checkAny("system.user:edit", "system.user:assign-role");
+        authorizationService.checkAny("user:edit", "user:assign-role");
         var user = userRepository.findByIdOptional(form.userId()).orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
         user.roles.clear();
         if (form.roleIds() != null) {
@@ -115,7 +115,7 @@ public class UserApplicationService {
 
     @Transactional
     public void updateUserStatus(Long id, Integer status) {
-        authorizationService.check("system", "user", "edit");
+        authorizationService.check("user", "edit");
         var user = userRepository.findByIdOptional(id).orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
         user.userStatus = (status != null && status == 1) ? UserStatus.ENABLED : UserStatus.DISABLED;
         authorityVersionService.bumpGlobalVersion();

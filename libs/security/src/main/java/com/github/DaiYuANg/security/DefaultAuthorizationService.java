@@ -18,8 +18,8 @@ public class DefaultAuthorizationService implements AuthorizationService {
     }
 
     @Override
-    public AuthorizationDecision decide(String domain, String resource, String action) {
-        return decide(PermissionDescriptor.of(domain, resource, action));
+    public AuthorizationDecision decide(String resource, String action) {
+        return decide(PermissionDescriptor.of(resource, action));
     }
 
     @Override
@@ -39,8 +39,8 @@ public class DefaultAuthorizationService implements AuthorizationService {
     }
 
     @Override
-    public void check(String domain, String resource, String action) {
-        check(PermissionDescriptor.of(domain, resource, action));
+    public void check(String resource, String action) {
+        check(PermissionDescriptor.of(resource, action));
     }
 
     @Override
@@ -87,7 +87,7 @@ public class DefaultAuthorizationService implements AuthorizationService {
     }
 
     @Override
-    public boolean isAllowed(String domain, String resource, String action) {
-        return decide(domain, resource, action).allowed();
+    public boolean isAllowed(String resource, String action) {
+        return decide(resource, action).allowed();
     }
 }

@@ -16,7 +16,6 @@ public class AdminAuthorizationAuditor implements AuthorizationAuditor {
         var target = permission == null ? "unknown" : permission.code();
         var detail = "authorization denied"
             + ", reason=" + decision.reason()
-            + ", domain=" + (permission == null ? "" : permission.domain())
             + ", resource=" + (permission == null ? "" : permission.resource())
             + ", action=" + (permission == null ? "" : permission.action())
             + ", actor=" + (decision.actorKey() == null ? "anonymous" : decision.actorKey())

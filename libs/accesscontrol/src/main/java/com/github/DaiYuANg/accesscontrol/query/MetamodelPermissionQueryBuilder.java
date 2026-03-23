@@ -16,7 +16,6 @@ public class MetamodelPermissionQueryBuilder {
         "id", new MetamodelSortMapping("id", SysPermission_.id, SortDirection.DESC),
         "name", new MetamodelSortMapping("name", SysPermission_.name, SortDirection.ASC),
         "code", new MetamodelSortMapping("code", SysPermission_.code, SortDirection.ASC),
-        "domain", new MetamodelSortMapping("domain", SysPermission_.domain, SortDirection.ASC),
         "resource", new MetamodelSortMapping("resource", SysPermission_.resource, SortDirection.ASC),
         "action", new MetamodelSortMapping("action", SysPermission_.action, SortDirection.ASC),
         "groupCode", new MetamodelSortMapping("groupCode", SysPermission_.groupCode, SortDirection.ASC),
@@ -29,7 +28,6 @@ public class MetamodelPermissionQueryBuilder {
             new PermissionListFilter(
                 normalize(query.getName()),
                 normalize(query.getCode()),
-                normalize(query.getDomain()),
                 normalize(query.getResource()),
                 normalize(query.getAction()),
                 normalize(query.getGroupCode())

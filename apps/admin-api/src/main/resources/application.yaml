@@ -19,13 +19,8 @@ quarkus:
     log:
       sql: true
     sql-load-script: no-file
-  infinispan-client:
-    hosts: localhost:11222
-    username: admin
-    password: password
-    sasl-mechanism: DIGEST-SHA-256
-    # Use BASIC when Infinispan runs in Docker: server advertises 172.18.x.x which host cannot reach
-    client-intelligence: BASIC
+  redis:
+    hosts: redis://localhost:6379
   smallrye-openapi:
     path: /q/openapi
   swagger-ui:
@@ -94,10 +89,10 @@ app:
           - root
           - ops
         permissions:
-          - system.user:view
-          - system.user:update
-          - system.role:view
-          - system.role:update
+          - user:view
+          - user:edit
+          - role:view
+          - role:edit
 
 "%dev":
   quarkus:
@@ -129,6 +124,9 @@ app:
   quarkus:
     otel:
       enabled: false
+    redis:
+      devservices:
+        enabled: true
     log:
       console:
         json:

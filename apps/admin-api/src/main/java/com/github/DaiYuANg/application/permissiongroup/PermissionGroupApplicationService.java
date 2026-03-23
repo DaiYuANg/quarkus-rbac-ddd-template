@@ -34,7 +34,7 @@ public class PermissionGroupApplicationService {
 
     @Transactional
     public PermissionGroupVO createPermissionGroup(PermissionGroupCreationForm form) {
-        authorizationService.check("system", "permission-group", "add");
+        authorizationService.check("permission-group", "add");
         if (repository.countByName(form.name()) > 0) throw new BizException(ResultCode.DATA_ALREADY_EXISTS, "permission group name already exists");
         var group = new SysPermissionGroup();
         group.name = form.name();
@@ -47,11 +47,11 @@ public class PermissionGroupApplicationService {
         return mapper.toPermissionGroupVO(group);
     }
 
-    public Optional<PermissionGroupVO> getPermissionGroupById(Long id) { authorizationService.check("system", "permission-group", "view"); return repository.findByIdOptional(id).map(mapper::toPermissionGroupVO); }
+    public Optional<PermissionGroupVO> getPermissionGroupById(Long id) { authorizationService.check("permission-group", "view"); return repository.findByIdOptional(id).map(mapper::toPermissionGroupVO); }
 
     @Transactional
     public PermissionGroupVO updatePermissionGroup(Long id, UpdatePermissionGroupForm form) {
-        authorizationService.check("system", "permission-group", "edit");
+        authorizationService.check("permission-group", "edit");
         var group = repository.findByIdOptional(id).orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
         if (form.name() != null && !form.name().equals(group.name) && repository.countByName(form.name()) > 0) throw new BizException(ResultCode.DATA_ALREADY_EXISTS, "permission group name already exists");
         if (form.name() != null) group.name = form.name();
@@ -64,17 +64,17 @@ public class PermissionGroupApplicationService {
     }
 
     @Transactional
-    public void deletePermissionGroup(Long id) { authorizationService.check("system", "permission-group", "delete"); repository.deleteById(id); authorityVersionService.bumpGlobalVersion(); operationLogService.record("permission-group", "delete", String.valueOf(id), true, "delete permission group"); }
+    public void deletePermissionGroup(Long id) { authorizationService.check("permission-group", "delete"); repository.deleteById(id); authorityVersionService.bumpGlobalVersion(); operationLogService.record("permission-group", "delete", String.valueOf(id), true, "delete permission group"); }
     public PageResult<PermissionGroupVO> queryPermissionGroupPage(PermissionGroupQuery query) {
-        authorizationService.check("system", "permission-group", "view");
+        authorizationService.check("permission-group", "view");
         var slice = repository.page(query);
         return PageResult.of(slice.total(), query.getPageNum(), query.getPageSize(), slice.content().stream().map(mapper::toPermissionGroupVO).toList());
     }
-    public Optional<PermissionGroupVO> getPermissionGroupByName(String name) { authorizationService.check("system", "permission-group", "view"); return repository.findByName(name).map(mapper::toPermissionGroupVO); }
+    public Optional<PermissionGroupVO> getPermissionGroupByName(String name) { authorizationService.check("permission-group", "view"); return repository.findByName(name).map(mapper::toPermissionGroupVO); }
 
     @Transactional
     public void assignPermissions(PermissionGroupRefPermissionForm form) {
-        authorizationService.checkAny("system.permission-group:edit", "system.permission-group:assign-permission");
+        authorizationService.checkAny("permission-group:edit", "permission-group:assign-permission");
         var group = repository.findByIdOptional(form.permissionGroupId()).orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
         group.permissions.clear();
         if (form.permissionIds() != null) {
@@ -84,7 +84,7 @@ public class PermissionGroupApplicationService {
         operationLogService.record("permission-group", "assign-permission", String.valueOf(form.permissionGroupId()), true, "assign permissions");
     }
 
-    public List<PermissionGroupVO> getAllPermissionGroups() { authorizationService.check("system", "permission-group", "view"); return repository.listAll().stream().map(mapper::toPermissionGroupVO).toList(); }
+    public List<PermissionGroupVO> getAllPermissionGroups() { authorizationService.check("permission-group", "view"); return repository.listAll().stream().map(mapper::toPermissionGroupVO).toList(); }
     public long countName(String name) { return repository.countByName(name); }
     public long count() { return repository.count(); }
 }

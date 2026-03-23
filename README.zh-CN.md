@@ -7,7 +7,7 @@
 ## 特性
 
 - **安全**：Quarkus Security、JWT、刷新令牌、登录提供者链
-- **RBAC**：用户、角色、权限、权限组，基于 Infinispan 缓存的权限快照
+- **RBAC**：用户、角色、权限、权限组，基于 Valkey 缓存的权限快照
 - **持久化**：Hibernate ORM + Panache，Blaze-Persistence + Entity View 查询
 - **DDD**：按限界上下文划分模块（identity、accesscontrol、audit）
 - **代码质量**：Checkstyle、SpotBugs、JaCoCo、OWASP 依赖检查、Spotless
@@ -16,9 +16,9 @@
 
 ### 环境要求
 
-- JDK 21+ 或 JDK 25（JDK 25 时 Infinispan SASL 需 JVM 参数，见 [故障排查](docs/TROUBLESHOOTING.zh-CN.md)）
+- JDK 21+ 或 JDK 25
 - PostgreSQL
-- Infinispan（开发可选，生产必需；有 Docker 时 Dev Services 自动启动）
+- Valkey/Redis（开发可选，生产必需；使用 docker-compose 或本地安装）
 
 **本地配置**：将 `gradle.properties.template` 复制为 `gradle.properties`，按本机环境调整（JVM 参数、代理等）。`gradle.properties` 已加入 gitignore。
 
@@ -47,7 +47,7 @@ libs/
 ├── accesscontrol       # 角色、权限、权限组（RBAC）
 ├── identity            # 用户（依赖 accesscontrol）
 ├── audit               # 操作日志、登录日志
-├── cache               # 刷新令牌、权限版本、登录尝试状态（Infinispan）
+├── cache               # 刷新令牌、权限版本、登录尝试状态（Valkey/Redis）
 └── security            # 认证提供者链、JWT、当前用户、令牌上下文
 
 apps/

@@ -1,47 +1,46 @@
 package com.github.DaiYuANg.cache;
 
 import com.github.DaiYuANg.security.PermissionSnapshot;
-import io.quarkus.infinispan.client.Remote;
+import io.quarkus.redis.datasource.RedisDataSource;
+import io.quarkus.redis.datasource.keys.KeyCommands;
+import io.quarkus.redis.datasource.value.ValueCommands;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import org.infinispan.client.hotrod.RemoteCache;
 
 @ApplicationScoped
 public class PermissionSnapshotStore {
-    private static final String CACHE_NAME = "rbac-auth";
 
-    private final RemoteCache<String, CacheValue> cache;
+    private final ValueCommands<String, String> valueCommands;
+    private final KeyCommands<String> keyCommands;
 
-    @Inject
-    public PermissionSnapshotStore(@Remote(CACHE_NAME) RemoteCache<String, CacheValue> cache) {
-        this.cache = cache;
+    public PermissionSnapshotStore(RedisDataSource ds) {
+        this.valueCommands = ds.value(String.class);
+        this.keyCommands = ds.key();
     }
 
     public void save(PermissionSnapshot snapshot, Duration ttl) {
-        cache.put(key(snapshot.username()), new CacheValue(encode(snapshot)), ttl.toSeconds(), TimeUnit.SECONDS);
+        valueCommands.setex(key(snapshot.username()), (int) ttl.toSeconds(), encode(snapshot));
     }
 
     public Optional<PermissionSnapshot> get(String username) {
-        var value = cache.get(key(username));
-        if (value == null || value.data() == null || value.data().isBlank()) {
+        var raw = valueCommands.get(key(username));
+        if (raw == null || raw.isBlank()) {
             return Optional.empty();
         }
-        return Optional.of(decode(username, value.data()));
+        return Optional.of(decode(username, raw));
     }
 
     public void delete(String username) {
-        cache.remove(key(username));
+        keyCommands.del(key(username));
     }
 
     private String key(String username) {
-        return "auth:permission-snapshot:" + username;
+        return "rbac-auth:permission-snapshot:" + username;
     }
 
     private String encode(PermissionSnapshot snapshot) {

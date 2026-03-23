@@ -2,7 +2,7 @@
 # This Dockerfile is used in order to build a container that runs the Quarkus application in JVM mode.
 # It uses Red Hat UBI9 OpenJDK runtime image as base.
 #
-# Before building the container image run (AOT cache requires app to start briefly; have DB/Infinispan up if needed):
+# Before building the container image run (AOT cache requires app to start briefly; have DB/Valkey up if needed):
 #
 #   ./gradlew :apps:admin-api:build
 #
@@ -32,9 +32,8 @@ COPY --chown=185:root build/quarkus-app/app.aot /work/app.aot
 
 EXPOSE 8080
 USER 185
-# JDK 25 + Infinispan SASL (DIGEST-SHA-256) may require --add-opens/--add-reads
 # -XX:AOTCache enables Leyden AOT for faster startup (JDK 25+)
-ENV JAVA_OPTS_APPEND="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager --add-opens=java.base/java.security=ALL-UNNAMED --add-reads=java.base=ALL-UNNAMED -XX:AOTCache=/work/app.aot"
+ENV JAVA_OPTS_APPEND="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager -XX:AOTCache=/work/app.aot"
 ENV JAVA_APP_JAR="/work/quarkus-run.jar"
 
 ENTRYPOINT [ "/opt/jboss/container/java/run/run-java.sh" ]

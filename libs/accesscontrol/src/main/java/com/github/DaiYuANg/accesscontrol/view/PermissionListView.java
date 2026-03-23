@@ -10,7 +10,6 @@ public interface PermissionListView {
     Long getId();
     String getName();
     String getCode();
-    String getDomain();
     String getResource();
     String getAction();
     String getGroupCode();

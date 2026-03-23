@@ -8,10 +8,7 @@ services:
     ports:
       - "5433:5432"
 
-  infinispan:
-    image: quay.io/infinispan/server:latest
-    environment:
-      USER: admin
-      PASS: password
+  valkey:
+    image: valkey/valkey:latest
     ports:
-      - "11222:11222"
+      - "6379:6379"

@@ -14,9 +14,6 @@ public class PermissionQuery extends PageQuery {
     @QueryParam("code")
     private String code;
 
-    @QueryParam("domain")
-    private String domain;
-
     @QueryParam("resource")
     private String resource;
 

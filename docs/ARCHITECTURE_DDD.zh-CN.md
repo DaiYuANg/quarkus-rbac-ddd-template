@@ -11,7 +11,7 @@ libs/
 ├── accesscontrol       # RBAC 上下文：Role、Permission、PermissionGroup
 ├── identity            # 身份上下文：User（依赖 accesscontrol 的 Role）
 ├── audit               # 审计上下文：OperationLog、LoginLog
-├── cache               # Infinispan 存储
+├── cache               # Valkey/Redis 存储
 └── security            # 认证链、JWT、ActorAuditor
 
 apps/

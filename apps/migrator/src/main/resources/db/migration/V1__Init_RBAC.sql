@@ -8,7 +8,6 @@ CREATE TABLE IF NOT EXISTS sys_permission
     update_by   VARCHAR(128),
     name        VARCHAR(128)                NOT NULL,
     code        VARCHAR(128)                NOT NULL,
-    domain      VARCHAR(64)                 NOT NULL,
     resource    VARCHAR(128)                NOT NULL,
     action      VARCHAR(128)                NOT NULL,
     group_code  VARCHAR(128),
@@ -21,12 +20,10 @@ CREATE TABLE IF NOT EXISTS sys_permission
 
 CREATE UNIQUE INDEX IF NOT EXISTS uk_sys_permission_name ON sys_permission (name);
 CREATE UNIQUE INDEX IF NOT EXISTS uk_sys_permission_code ON sys_permission (code);
-CREATE UNIQUE INDEX IF NOT EXISTS uk_sys_permission_domain_resource_action ON sys_permission (domain, resource, action);
-CREATE INDEX IF NOT EXISTS idx_sys_permission_domain ON sys_permission (domain);
+CREATE UNIQUE INDEX IF NOT EXISTS uk_sys_permission_resource_action ON sys_permission (resource, action);
 CREATE INDEX IF NOT EXISTS idx_sys_permission_resource ON sys_permission (resource);
 CREATE INDEX IF NOT EXISTS idx_sys_permission_action ON sys_permission (action);
 CREATE INDEX IF NOT EXISTS idx_sys_permission_group_code ON sys_permission (group_code);
-CREATE INDEX IF NOT EXISTS idx_sys_permission_domain_resource ON sys_permission (domain, resource);
 CREATE INDEX IF NOT EXISTS idx_sys_permission_sort ON sys_permission (sort);
 CREATE INDEX IF NOT EXISTS idx_sys_permission_deleted ON sys_permission (deleted);
 
@@ -157,21 +154,21 @@ COMMENT ON COLUMN sys_user.latest_sign_in IS 'Last sign-in time';
 COMMENT ON COLUMN sys_user.latest_change_password IS 'Last password change time';
 
 -- Bootstrap data (English)
-INSERT INTO sys_permission (id, create_at, update_at, name, code, domain, resource, action, group_code, description, expression)
+INSERT INTO sys_permission (id, create_at, update_at, name, code, resource, action, group_code, description, expression)
 VALUES
-    (1, now(), now(), 'View User', 'system.user:view', 'system', 'user', 'view', 'system.user', 'view users', 'system.user:view'),
-    (2, now(), now(), 'Add User', 'system.user:add', 'system', 'user', 'add', 'system.user', 'add users', 'system.user:add'),
-    (3, now(), now(), 'Edit User', 'system.user:edit', 'system', 'user', 'edit', 'system.user', 'edit users', 'system.user:edit'),
-    (4, now(), now(), 'Delete User', 'system.user:delete', 'system', 'user', 'delete', 'system.user', 'delete users', 'system.user:delete'),
-    (5, now(), now(), 'View Role', 'system.role:view', 'system', 'role', 'view', 'system.role', 'view roles', 'system.role:view'),
-    (6, now(), now(), 'Add Role', 'system.role:add', 'system', 'role', 'add', 'system.role', 'add roles', 'system.role:add'),
-    (7, now(), now(), 'Edit Role', 'system.role:edit', 'system', 'role', 'edit', 'system.role', 'edit roles', 'system.role:edit'),
-    (8, now(), now(), 'Delete Role', 'system.role:delete', 'system', 'role', 'delete', 'system.role', 'delete roles', 'system.role:delete'),
-    (9, now(), now(), 'View Permission', 'system.permission:view', 'system', 'permission', 'view', 'system.permission', 'view permissions', 'system.permission:view'),
-    (10, now(), now(), 'View Permission Group', 'system.permission-group:view', 'system', 'permission-group', 'view', 'system.permission-group', 'view permission groups', 'system.permission-group:view'),
-    (11, now(), now(), 'Add Permission Group', 'system.permission-group:add', 'system', 'permission-group', 'add', 'system.permission-group', 'add permission groups', 'system.permission-group:add'),
-    (12, now(), now(), 'Edit Permission Group', 'system.permission-group:edit', 'system', 'permission-group', 'edit', 'system.permission-group', 'edit permission groups', 'system.permission-group:edit'),
-    (13, now(), now(), 'Delete Permission Group', 'system.permission-group:delete', 'system', 'permission-group', 'delete', 'system.permission-group', 'delete permission groups', 'system.permission-group:delete')
+    (1, now(), now(), 'View User', 'user:view', 'user', 'view', 'system.user', 'view users', 'user:view'),
+    (2, now(), now(), 'Add User', 'user:add', 'user', 'add', 'system.user', 'add users', 'user:add'),
+    (3, now(), now(), 'Edit User', 'user:edit', 'user', 'edit', 'system.user', 'edit users', 'user:edit'),
+    (4, now(), now(), 'Delete User', 'user:delete', 'user', 'delete', 'system.user', 'delete users', 'user:delete'),
+    (5, now(), now(), 'View Role', 'role:view', 'role', 'view', 'system.role', 'view roles', 'role:view'),
+    (6, now(), now(), 'Add Role', 'role:add', 'role', 'add', 'system.role', 'add roles', 'role:add'),
+    (7, now(), now(), 'Edit Role', 'role:edit', 'role', 'edit', 'system.role', 'edit roles', 'role:edit'),
+    (8, now(), now(), 'Delete Role', 'role:delete', 'role', 'delete', 'system.role', 'delete roles', 'role:delete'),
+    (9, now(), now(), 'View Permission', 'permission:view', 'permission', 'view', 'system.permission', 'view permissions', 'permission:view'),
+    (10, now(), now(), 'View Permission Group', 'permission-group:view', 'permission-group', 'view', 'system.permission-group', 'view permission groups', 'permission-group:view'),
+    (11, now(), now(), 'Add Permission Group', 'permission-group:add', 'permission-group', 'add', 'system.permission-group', 'add permission groups', 'permission-group:add'),
+    (12, now(), now(), 'Edit Permission Group', 'permission-group:edit', 'permission-group', 'edit', 'system.permission-group', 'edit permission groups', 'permission-group:edit'),
+    (13, now(), now(), 'Delete Permission Group', 'permission-group:delete', 'permission-group', 'delete', 'system.permission-group', 'delete permission groups', 'permission-group:delete')
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO sys_permission_group (id, create_at, update_at, name, description, code, sort)

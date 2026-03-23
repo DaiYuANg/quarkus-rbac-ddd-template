@@ -19,11 +19,11 @@ public class PermissionApplicationService {
     private final ViewMapper mapper;
     private final AuthorizationService authorizationService;
 
-    public Optional<PermissionVO> getPermissionById(Long id) { authorizationService.check("system", "permission", "view"); return repository.findByIdOptional(id).map(mapper::toPermissionVO); }
-    public Optional<PermissionVO> getPermissionByName(String name) { authorizationService.check("system", "permission", "view"); return repository.findByName(name).map(mapper::toPermissionVO); }
-    public List<PermissionVO> getAllPermissions() { authorizationService.check("system", "permission", "view"); return repository.listAll().stream().map(mapper::toPermissionVO).toList(); }
+    public Optional<PermissionVO> getPermissionById(Long id) { authorizationService.check("permission", "view"); return repository.findByIdOptional(id).map(mapper::toPermissionVO); }
+    public Optional<PermissionVO> getPermissionByName(String name) { authorizationService.check("permission", "view"); return repository.findByName(name).map(mapper::toPermissionVO); }
+    public List<PermissionVO> getAllPermissions() { authorizationService.check("permission", "view"); return repository.listAll().stream().map(mapper::toPermissionVO).toList(); }
     public PageResult<PermissionVO> queryPermissionPage(PermissionQuery query) {
-        authorizationService.check("system", "permission", "view");
+        authorizationService.check("permission", "view");
         var slice = repository.page(query);
         return PageResult.of(slice.total(), query.getPageNum(), query.getPageSize(), slice.content().stream().map(mapper::toPermissionVO).toList());
     }

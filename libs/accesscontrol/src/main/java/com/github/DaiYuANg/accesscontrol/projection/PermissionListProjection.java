@@ -4,7 +4,6 @@ public record PermissionListProjection(
     Long id,
     String name,
     String code,
-    String domain,
     String resource,
     String action,
     String groupCode,

@@ -14,9 +14,6 @@ public class SysPermission extends BaseEntity {
     @Column(nullable = false, unique = true, length = 128)
     public String code;
 
-    @Column(nullable = false, length = 64)
-    public String domain;
-
     @Column(nullable = false, length = 128)
     public String resource;
 

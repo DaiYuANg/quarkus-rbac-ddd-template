@@ -7,7 +7,7 @@ A reusable Quarkus backend foundation with RBAC (Role-Based Access Control), JWT
 ## Features
 
 - **Security**: Quarkus Security, JWT, refresh token, provider-chain login orchestration
-- **RBAC**: User, Role, Permission, PermissionGroup with Infinispan-cached permission snapshots
+- **RBAC**: User, Role, Permission, PermissionGroup with Valkey-cached permission snapshots
 - **Persistence**: Hibernate ORM + Panache, Blaze-Persistence + Entity View for queries
 - **DDD**: Bounded-context modules (identity, accesscontrol, audit)
 - **Code Quality**: Checkstyle, SpotBugs, JaCoCo, OWASP Dependency Check, Spotless
@@ -16,9 +16,9 @@ A reusable Quarkus backend foundation with RBAC (Role-Based Access Control), JWT
 
 ### Prerequisites
 
-- JDK 21+ or JDK 25 (JDK 25: Infinispan SASL needs JVM args — see [TROUBLESHOOTING](docs/TROUBLESHOOTING.md))
+- JDK 21+ or JDK 25
 - PostgreSQL
-- Infinispan (optional for dev, required for production; Dev Services auto-starts with Docker)
+- Valkey/Redis (optional for dev, required for production; use docker-compose or local install)
 
 **Local config**: Copy `gradle.properties.template` to `gradle.properties` and adjust for your machine (JVM args, proxy, etc.). `gradle.properties` is gitignored.
 
@@ -47,7 +47,7 @@ libs/
 ├── accesscontrol       # Role, Permission, PermissionGroup (RBAC)
 ├── identity            # User (depends on accesscontrol)
 ├── audit               # OperationLog, LoginLog
-├── cache               # Refresh token, authority version, login attempt state (Infinispan)
+├── cache               # Refresh token, authority version, login attempt state (Valkey/Redis)
 └── security            # Auth provider chain, JWT, current user, token context
 
 apps/

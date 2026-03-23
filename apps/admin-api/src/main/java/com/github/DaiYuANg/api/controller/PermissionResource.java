@@ -20,8 +20,8 @@ import lombok.RequiredArgsConstructor;
 public class PermissionResource {
     private final PermissionApplicationService permissionApplicationService;
 
-    @GET @Path("/{id}") @PermissionsAllowed("system.permission:view") public Result<Optional<PermissionVO>> getById(@PathParam("id") Long id) { return Result.ok(permissionApplicationService.getPermissionById(id)); }
-    @GET @Path("/name/{name}") @PermissionsAllowed("system.permission:view") public Result<Optional<PermissionVO>> getByName(@PathParam("name") String name) { return Result.ok(permissionApplicationService.getPermissionByName(name)); }
-    @GET @PermissionsAllowed("system.permission:view") public Result<PageResult<PermissionVO>> query(@BeanParam @Valid PermissionQuery query) { return Result.ok(permissionApplicationService.queryPermissionPage(query)); }
-    @GET @Path("/list") @PermissionsAllowed("system.permission:view") public Result<List<PermissionVO>> list() { return Result.ok(permissionApplicationService.getAllPermissions()); }
+    @GET @Path("/{id}") @PermissionsAllowed("permission:view") public Result<Optional<PermissionVO>> getById(@PathParam("id") Long id) { return Result.ok(permissionApplicationService.getPermissionById(id)); }
+    @GET @Path("/name/{name}") @PermissionsAllowed("permission:view") public Result<Optional<PermissionVO>> getByName(@PathParam("name") String name) { return Result.ok(permissionApplicationService.getPermissionByName(name)); }
+    @GET @PermissionsAllowed("permission:view") public Result<PageResult<PermissionVO>> query(@BeanParam @Valid PermissionQuery query) { return Result.ok(permissionApplicationService.queryPermissionPage(query)); }
+    @GET @Path("/list") @PermissionsAllowed("permission:view") public Result<List<PermissionVO>> list() { return Result.ok(permissionApplicationService.getAllPermissions()); }
 }

@@ -67,9 +67,8 @@ quarkus-hibernate-orm-panache = { group = "io.quarkus", name = "quarkus-hibernat
 quarkus-jdbc-postgresql = { group = "io.quarkus", name = "quarkus-jdbc-postgresql" }
 quarkus-agroal = { group = "io.quarkus", name = "quarkus-agroal" }
 quarkus-hibernate-validator = { group = "io.quarkus", name = "quarkus-hibernate-validator" }
-quarkus-infinispan-client = { group = "io.quarkus", name = "quarkus-infinispan-client" }
+quarkus-redis-client = { group = "io.quarkus", name = "quarkus-redis-client" }
 quarkus-qute = { group = "io.quarkus", name = "quarkus-qute" }
-protostream-processor = { group = "org.infinispan.protostream", name = "protostream-processor", version.ref = "protostream" }
 quarkus-smallrye-openapi = { group = "io.quarkus", name = "quarkus-smallrye-openapi" }
 quarkus-config-yaml = { group = "io.quarkus", name = "quarkus-config-yaml" }
 quarkus-logging-json = { group = "io.quarkus", name = "quarkus-logging-json" }

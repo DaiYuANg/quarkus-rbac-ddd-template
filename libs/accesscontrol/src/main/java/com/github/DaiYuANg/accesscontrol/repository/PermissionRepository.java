@@ -59,7 +59,6 @@ public class PermissionRepository extends BasePanacheCommandRepository<SysPermis
     applyKeyword(blazeQuery, query.getKeyword());
     applyLike(blazeQuery, p.name, filter.name());
     applyLike(blazeQuery, p.code, filter.code());
-    applyEquals(blazeQuery, p.domain, filter.domain());
     applyEquals(blazeQuery, p.resource, filter.resource());
     applyLike(blazeQuery, p.action, filter.action());
     applyEquals(blazeQuery, p.groupCode, filter.groupCode());
@@ -80,7 +79,6 @@ public class PermissionRepository extends BasePanacheCommandRepository<SysPermis
         Expressions.anyOf(
             p.name.lower().like(like),
             p.code.lower().like(like),
-            p.domain.lower().like(like),
             p.resource.lower().like(like),
             p.action.lower().like(like),
             p.groupCode.lower().like(like),
@@ -109,7 +107,6 @@ public class PermissionRepository extends BasePanacheCommandRepository<SysPermis
         view.getId(),
         view.getName(),
         view.getCode(),
-        view.getDomain(),
         view.getResource(),
         view.getAction(),
         view.getGroupCode(),

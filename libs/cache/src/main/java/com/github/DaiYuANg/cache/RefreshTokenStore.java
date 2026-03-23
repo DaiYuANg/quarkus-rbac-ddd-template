@@ -1,39 +1,38 @@
 package com.github.DaiYuANg.cache;
 
-import io.quarkus.infinispan.client.Remote;
+import io.quarkus.redis.datasource.RedisDataSource;
+import io.quarkus.redis.datasource.keys.KeyCommands;
+import io.quarkus.redis.datasource.value.ValueCommands;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 import java.time.Duration;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-import org.infinispan.client.hotrod.RemoteCache;
 import org.jspecify.annotations.NonNull;
 
 @ApplicationScoped
 public class RefreshTokenStore {
-    private static final String CACHE_NAME = "rbac-auth";
 
-    private final RemoteCache<String, CacheValue> cache;
+    private final ValueCommands<String, String> valueCommands;
+    private final KeyCommands<String> keyCommands;
 
-    @Inject
-    public RefreshTokenStore(@Remote(CACHE_NAME) RemoteCache<String, CacheValue> cache) {
-        this.cache = cache;
+    public RefreshTokenStore(RedisDataSource ds) {
+        this.valueCommands = ds.value(String.class);
+        this.keyCommands = ds.key();
     }
 
     public void save(String refreshToken, String username, @NonNull Duration ttl) {
-        cache.put(key(refreshToken), new CacheValue(username), ttl.toSeconds(), TimeUnit.SECONDS);
+        valueCommands.setex(key(refreshToken), (int) ttl.toSeconds(), username);
     }
 
     public Optional<String> getUsername(String refreshToken) {
-        var value = cache.get(key(refreshToken));
-        return value != null && value.data() != null ? Optional.of(value.data()) : Optional.empty();
+        var value = valueCommands.get(key(refreshToken));
+        return value != null ? Optional.of(value) : Optional.empty();
     }
 
     public void delete(String refreshToken) {
-        cache.remove(key(refreshToken));
+        keyCommands.del(key(refreshToken));
     }
 
     private String key(String refreshToken) {
-        return "auth:refresh:" + refreshToken;
+        return "rbac-auth:refresh:" + refreshToken;
     }
 }
