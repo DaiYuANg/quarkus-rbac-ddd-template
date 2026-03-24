@@ -9,10 +9,15 @@ import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class AdminSecurityPrincipalAssembler {
+
+    @ConfigProperty(name = "app.identity.db-user-type", defaultValue = "ADMIN")
+    String dbUserType;
+
     public AuthenticatedUser fromDbUser(SysUser user) {
         var roles = roleCodes(user);
         var permissions = permissionIdentifiers(user);
@@ -24,7 +29,7 @@ public class AdminSecurityPrincipalAssembler {
         return new AuthenticatedUser(
             user.username,
             user.nickname == null || user.nickname.isBlank() ? user.username : user.nickname,
-            "ADMIN",
+            dbUserType,
             roles,
             permissions,
             attributes,

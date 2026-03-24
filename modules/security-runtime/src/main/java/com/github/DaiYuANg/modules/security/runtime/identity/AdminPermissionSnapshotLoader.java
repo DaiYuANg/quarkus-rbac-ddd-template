@@ -13,12 +13,16 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class AdminPermissionSnapshotLoader implements PermissionSnapshotLoader {
     private final UserRepository userRepository;
     private final AuthorityVersionStore authorityVersionStore;
+
+    @ConfigProperty(name = "app.identity.db-user-type", defaultValue = "ADMIN")
+    String dbUserType;
 
     @Override
     @Transactional
@@ -38,7 +42,7 @@ public class AdminPermissionSnapshotLoader implements PermissionSnapshotLoader {
         return Optional.of(new PermissionSnapshot(
             user.username,
             user.nickname == null || user.nickname.isBlank() ? user.username : user.nickname,
-            "ADMIN",
+            dbUserType,
             roles,
             permissions,
             authorityVersionStore.versionFor(username),

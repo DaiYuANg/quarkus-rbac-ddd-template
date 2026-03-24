@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @ApplicationScoped
 @Priority(100)
@@ -20,6 +21,9 @@ import lombok.extern.slf4j.Slf4j;
 public class ConfigUserAuthenticationProvider implements LoginAuthenticationProvider<UsernamePasswordAuthenticationRequest> {
     private final ConfigUserAccountConfig config;
     private final PasswordHasher passwordHasher;
+
+    @ConfigProperty(name = "app.identity.config-user-fallback-type", defaultValue = "CONFIG")
+    String configUserFallbackType;
 
     @Override
     public String providerId() {
@@ -55,10 +59,11 @@ public class ConfigUserAuthenticationProvider implements LoginAuthenticationProv
         attributes.put("providerId", providerId());
         attributes.put("permissions", new LinkedHashSet<>(entry.permissions().orElseGet(List::of)));
         attributes.put("roles", new LinkedHashSet<>(entry.roles().orElseGet(List::of)));
+        String principalType = entry.principalUserType().orElse(configUserFallbackType);
         return AuthenticationProviderResult.success(new AuthenticationResult(new AuthenticatedUser(
             entry.username(),
             entry.displayName().orElse(entry.username()),
-            "CONFIG",
+            principalType,
             new LinkedHashSet<>(entry.roles().orElseGet(List::of)),
             new LinkedHashSet<>(entry.permissions().orElseGet(List::of)),
             attributes

@@ -18,5 +18,9 @@ public interface ConfigUserAccountConfig {
         Optional<String> displayName();
         Optional<List<String>> roles();
         Optional<List<String>> permissions();
+
+        /** Overrides {@code app.identity.config-user-fallback-type} for this account (e.g. MERCHANT vs MEMBER). */
+        @WithName("principal-user-type")
+        Optional<String> principalUserType();
     }
 }

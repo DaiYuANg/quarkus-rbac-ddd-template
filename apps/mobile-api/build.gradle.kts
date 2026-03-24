@@ -1,23 +1,10 @@
-plugins {
-  alias(libs.plugins.quarkus)
-  alias(libs.plugins.plantuml)
-}
-
-classDiagrams {
-  classDiagram {
-    name("DDD Application Layers")
-    include(packages().withName("com.github.DaiYuANg.modules"))
-    writeTo(file("build/plantuml/ddd-layers.puml"))
-  }
-}
+plugins { alias(libs.plugins.quarkus) }
 
 dependencies {
   implementation(enforcedPlatform(libs.quarkus.bom))
   implementation(projects.libs.common)
   implementation(projects.modules.identity)
-  implementation(projects.modules.accesscontrol)
   implementation(projects.modules.securityRuntime)
-  implementation(projects.modules.exampleDdd)
 
   implementation(libs.bundles.quarkus.application)
   implementation(libs.bundles.quarkus.observability)

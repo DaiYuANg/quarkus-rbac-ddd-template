@@ -1,0 +1,24 @@
+####
+# JVM image for mobile-api (build first: ./gradlew :apps:mobile-api:build)
+#
+#   docker build -f apps/mobile-api/src/main/docker/Dockerfile.jvm -t mobile-api:latest apps/mobile-api
+#
+####
+FROM registry.access.redhat.com/ubi9/openjdk-25-runtime:1.24
+
+ENV LANGUAGE='en_US:en'
+
+WORKDIR /work/
+
+COPY --chown=185:root build/quarkus-app/lib/ /work/lib/
+COPY --chown=185:root build/quarkus-app/*.jar /work/
+COPY --chown=185:root build/quarkus-app/app/ /work/app/
+COPY --chown=185:root build/quarkus-app/quarkus/ /work/quarkus/
+COPY --chown=185:root build/quarkus-app/app.aot /work/app.aot
+
+EXPOSE 8081 9001
+USER 185
+ENV JAVA_OPTS_APPEND="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager -XX:AOTCache=/work/app.aot"
+ENV JAVA_APP_JAR="/work/quarkus-run.jar"
+
+ENTRYPOINT [ "/opt/jboss/container/java/run/run-java.sh" ]

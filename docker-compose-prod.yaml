@@ -2,8 +2,9 @@
 #
 # Prerequisites:
 #   1. Build the applications and images:
-#      ./gradlew :apps:admin-api:build :apps:migrator:build
+#      ./gradlew :apps:admin-api:build :apps:mobile-api:build :apps:migrator:build
 #      docker build -f apps/admin-api/src/main/docker/Dockerfile.jvm -t admin-api:latest apps/admin-api
+#      docker build -f apps/mobile-api/src/main/docker/Dockerfile.jvm -t mobile-api:latest apps/mobile-api
 #      docker build -f apps/migrator/src/main/docker/Dockerfile.jvm -t migrator:latest apps/migrator
 #
 #   2. Run:
@@ -14,7 +15,8 @@
 #
 # Access:
 #   - Admin API:    http://localhost:8080
-#   - Swagger UI:   http://localhost:8080/q/swagger-ui
+#   - Mobile API:   http://localhost:8081
+#   - Swagger UI:   http://localhost:8080/q/swagger-ui (admin) / http://localhost:8081/q/swagger-ui (mobile)
 #   - Health:       http://localhost:8080/q/health
 
 services:
@@ -75,6 +77,38 @@ services:
     ports:
       - "8080:8080"
       - "9000:9000"
+    depends_on:
+      migrator:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_started
+      otel-collector:
+        condition: service_started
+
+  mobile-api:
+    build:
+      context: ./apps/mobile-api
+      dockerfile: src/main/docker/Dockerfile.jvm
+      no_cache: true
+    environment:
+      QUARKUS_PROFILE: prod
+      QUARKUS_HTTP_PORT: "8081"
+      QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://postgres:5432/rbac
+      QUARKUS_DATASOURCE_USERNAME: postgres
+      QUARKUS_DATASOURCE_PASSWORD: postgres
+      QUARKUS_REDIS_HOSTS: redis://valkey:6379
+      QUARKUS_OTEL_ENABLED: "true"
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      SMALLRYE_JWT_SIGN_KEY_LOCATION: file:///privateKey.pem
+      MP_JWT_VERIFY_PUBLICKEY_LOCATION: file:///publicKey.pem
+    volumes:
+      - ./privateKey.pem:/privateKey.pem
+      - ./publicKey.pem:/publicKey.pem
+    ports:
+      - "8081:8081"
+      - "9001:9001"
     depends_on:
       migrator:
         condition: service_completed_successfully

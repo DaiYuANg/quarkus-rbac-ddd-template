@@ -51,6 +51,8 @@ rootProject.name = "quarkus-rbac-template"
 
 include("apps:admin-api")
 
+include("apps:mobile-api")
+
 include("libs:common")
 
 include("libs:persistence")
@@ -70,5 +72,7 @@ include("modules:identity")
 include("modules:accesscontrol")
 
 include("modules:security-runtime")
+
+include("modules:example-ddd")
 
 include("apps:migrator")
