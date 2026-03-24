@@ -1,7 +1,7 @@
 package com.github.DaiYuANg.application.auth.profile;
 
 import com.github.DaiYuANg.api.dto.response.UserDetailVo;
-import com.github.DaiYuANg.security.CurrentAuthenticatedUser;
+import com.github.DaiYuANg.security.identity.CurrentAuthenticatedUser;
 
 /**
  * Resolves {@link UserDetailVo} for the current principal. One implementation per login identity

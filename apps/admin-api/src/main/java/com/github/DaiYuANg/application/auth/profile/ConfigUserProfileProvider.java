@@ -3,7 +3,7 @@ package com.github.DaiYuANg.application.auth.profile;
 import com.github.DaiYuANg.api.dto.response.UserDetailVo;
 import com.github.DaiYuANg.cache.AuthorityVersionStore;
 import com.github.DaiYuANg.cache.PermissionCatalogStore;
-import com.github.DaiYuANg.security.CurrentAuthenticatedUser;
+import com.github.DaiYuANg.security.identity.CurrentAuthenticatedUser;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.LinkedHashSet;

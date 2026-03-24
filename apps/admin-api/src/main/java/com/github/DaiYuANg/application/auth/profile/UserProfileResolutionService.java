@@ -3,7 +3,7 @@ package com.github.DaiYuANg.application.auth.profile;
 import com.github.DaiYuANg.api.dto.response.UserDetailVo;
 import com.github.DaiYuANg.common.constant.ResultCode;
 import com.github.DaiYuANg.common.exception.BizException;
-import com.github.DaiYuANg.security.CurrentAuthenticatedUser;
+import com.github.DaiYuANg.security.identity.CurrentAuthenticatedUser;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;

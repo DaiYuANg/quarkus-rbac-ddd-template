@@ -16,7 +16,7 @@ import com.github.DaiYuANg.application.converter.ViewMapper;
 import com.github.DaiYuANg.common.constant.ResultCode;
 import com.github.DaiYuANg.common.exception.BizException;
 import com.github.DaiYuANg.common.model.PageResult;
-import com.github.DaiYuANg.security.AuthorizationService;
+import com.github.DaiYuANg.security.authorization.AuthorizationService;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;

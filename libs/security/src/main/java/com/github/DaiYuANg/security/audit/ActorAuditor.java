@@ -1,0 +1,20 @@
+package com.github.DaiYuANg.security.audit;
+
+import com.github.DaiYuANg.security.access.CurrentUserAccess;
+import io.quarkus.arc.Unremovable;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import lombok.RequiredArgsConstructor;
+
+@ApplicationScoped
+@RequiredArgsConstructor(onConstructor_ = @Inject)
+@Unremovable
+public class ActorAuditor {
+  private final CurrentUserAccess currentUserAccess;
+
+  public String currentActorKey() {
+    return currentUserAccess.currentUser()
+      .map(user -> user.userType() + ":" + user.username())
+      .orElse("SYSTEM:anonymous");
+  }
+}

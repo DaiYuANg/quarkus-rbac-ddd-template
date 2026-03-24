@@ -8,7 +8,7 @@ import com.github.DaiYuANg.cache.RefreshTokenStore;
 import com.github.DaiYuANg.common.constant.ResultCode;
 import com.github.DaiYuANg.common.exception.BizException;
 import com.github.DaiYuANg.common.model.Result;
-import com.github.DaiYuANg.security.AuthSecurityConfig;
+import com.github.DaiYuANg.security.config.AuthSecurityConfig;
 import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.PermitAll;
 import jakarta.inject.Inject;

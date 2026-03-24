@@ -2,6 +2,8 @@ package com.github.DaiYuANg.security;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.github.DaiYuANg.security.config.AuthSecurityConfig;
+import com.github.DaiYuANg.security.token.JwtTokenService;
 import org.junit.jupiter.api.Test;
 
 class JwtTokenServiceTest {

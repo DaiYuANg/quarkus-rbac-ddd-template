@@ -5,7 +5,7 @@ import com.github.DaiYuANg.api.dto.response.PermissionVO;
 import com.github.DaiYuANg.cache.PermissionCatalogStore;
 import com.github.DaiYuANg.cache.PermissionCatalogStore.CatalogPage;
 import com.github.DaiYuANg.common.model.PageResult;
-import com.github.DaiYuANg.security.AuthorizationService;
+import com.github.DaiYuANg.security.authorization.AuthorizationService;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.List;

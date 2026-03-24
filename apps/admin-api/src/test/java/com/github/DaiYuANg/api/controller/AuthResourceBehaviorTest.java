@@ -14,7 +14,7 @@ import com.github.DaiYuANg.application.auth.AuthApplicationService;
 import com.github.DaiYuANg.cache.RefreshTokenStore;
 import com.github.DaiYuANg.common.constant.ResultCode;
 import com.github.DaiYuANg.common.exception.BizException;
-import com.github.DaiYuANg.security.AuthSecurityConfig;
+import com.github.DaiYuANg.security.config.AuthSecurityConfig;
 import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;

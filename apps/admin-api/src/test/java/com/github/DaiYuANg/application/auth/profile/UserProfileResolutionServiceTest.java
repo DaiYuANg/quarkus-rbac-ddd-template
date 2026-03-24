@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 import com.github.DaiYuANg.api.dto.response.UserDetailVo;
 import com.github.DaiYuANg.common.constant.ResultCode;
 import com.github.DaiYuANg.common.exception.BizException;
-import com.github.DaiYuANg.security.CurrentAuthenticatedUser;
+import com.github.DaiYuANg.security.identity.CurrentAuthenticatedUser;
 import jakarta.enterprise.inject.Instance;
 import java.util.List;
 import java.util.Map;

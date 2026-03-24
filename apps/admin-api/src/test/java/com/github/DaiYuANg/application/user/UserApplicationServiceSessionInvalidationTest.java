@@ -15,9 +15,9 @@ import com.github.DaiYuANg.cache.RefreshTokenStore;
 import com.github.DaiYuANg.identity.constant.UserStatus;
 import com.github.DaiYuANg.identity.entity.SysUser;
 import com.github.DaiYuANg.identity.repository.UserRepository;
-import com.github.DaiYuANg.security.AuthorizationService;
-import com.github.DaiYuANg.security.CurrentUserAccess;
-import com.github.DaiYuANg.security.PasswordHasher;
+import com.github.DaiYuANg.security.access.CurrentUserAccess;
+import com.github.DaiYuANg.security.auth.PasswordHasher;
+import com.github.DaiYuANg.security.authorization.AuthorizationService;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 

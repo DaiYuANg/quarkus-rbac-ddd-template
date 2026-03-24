@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 import com.github.DaiYuANg.cache.AuthorityVersionStore;
 import com.github.DaiYuANg.cache.PermissionCatalogEntry;
 import com.github.DaiYuANg.cache.PermissionCatalogStore;
-import com.github.DaiYuANg.security.CurrentAuthenticatedUser;
+import com.github.DaiYuANg.security.identity.CurrentAuthenticatedUser;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;

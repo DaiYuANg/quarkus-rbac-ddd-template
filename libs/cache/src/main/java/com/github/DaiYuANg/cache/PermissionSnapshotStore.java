@@ -1,6 +1,7 @@
 package com.github.DaiYuANg.cache;
 
-import com.github.DaiYuANg.security.PermissionSnapshot;
+import com.github.DaiYuANg.security.snapshot.PermissionSnapshot;
+import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import java.util.Optional;
 
@@ -35,10 +36,29 @@ public class PermissionSnapshotStore {
         return userAuthorityStore.resolveUserId(username).flatMap(userAuthorityStore::get);
     }
 
+    public Uni<Optional<PermissionSnapshot>> getAsync(String username) {
+        return userAuthorityStore.resolveUserIdAsync(username)
+            .chain(userIdOpt -> userIdOpt
+                .map(userAuthorityStore::getAsync)
+                .orElseGet(() -> Uni.createFrom().item(Optional.empty())));
+    }
+
     /**
      * Delete snapshot by userId.
      */
     public void delete(Long userId) {
         userAuthorityStore.delete(userId);
+    }
+
+    public Uni<Void> saveAsync(PermissionSnapshot snapshot) {
+        var userId = snapshot.userId();
+        if (userId == null) {
+            return Uni.createFrom().voidItem();
+        }
+        return userAuthorityStore.saveAsync(userId, snapshot);
+    }
+
+    public Uni<Void> deleteAsync(Long userId) {
+        return userAuthorityStore.deleteAsync(userId);
     }
 }

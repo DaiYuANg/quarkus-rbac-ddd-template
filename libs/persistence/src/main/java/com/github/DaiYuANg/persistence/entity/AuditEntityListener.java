@@ -1,6 +1,6 @@
 package com.github.DaiYuANg.persistence.entity;
 
-import com.github.DaiYuANg.security.ActorAuditor;
+import com.github.DaiYuANg.security.audit.ActorAuditor;
 import io.quarkus.arc.Arc;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;

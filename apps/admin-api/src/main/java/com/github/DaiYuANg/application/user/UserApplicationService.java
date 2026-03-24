@@ -17,9 +17,10 @@ import com.github.DaiYuANg.identity.parameter.UserQuery;
 import com.github.DaiYuANg.cache.PermissionSnapshotStore;
 import com.github.DaiYuANg.cache.RefreshTokenStore;
 import com.github.DaiYuANg.identity.repository.UserRepository;
-import com.github.DaiYuANg.security.AuthorizationService;
-import com.github.DaiYuANg.security.CurrentUserAccess;
-import com.github.DaiYuANg.security.PasswordHasher;
+import com.github.DaiYuANg.security.authorization.AuthorizationService;
+import com.github.DaiYuANg.security.auth.PasswordHasher;
+import com.github.DaiYuANg.security.access.CurrentUserAccess;
+import com.github.DaiYuANg.security.identity.CurrentAuthenticatedUser;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -70,7 +71,7 @@ public class UserApplicationService {
     @Transactional
     public void updateUserPassword(Long id, String newPassword) {
         var user = userRepository.findByIdOptional(id).orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
-        var currentUsername = currentUserAccess.currentUser().map(com.github.DaiYuANg.security.CurrentAuthenticatedUser::username).orElse(null);
+        var currentUsername = currentUserAccess.currentUser().map(CurrentAuthenticatedUser::username).orElse(null);
         if (currentUsername != null && currentUsername.equals(user.username)) {
             authorizationService.checkAny("auth:change-password", "user:reset-password", "user:edit");
         } else {

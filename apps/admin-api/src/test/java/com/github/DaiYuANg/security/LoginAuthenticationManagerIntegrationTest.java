@@ -7,6 +7,16 @@ import static org.mockito.Mockito.when;
 
 import com.github.DaiYuANg.common.constant.ResultCode;
 import com.github.DaiYuANg.common.exception.BizException;
+import com.github.DaiYuANg.security.auth.AuthenticationProviderResult;
+import com.github.DaiYuANg.security.auth.AuthenticationProviders;
+import com.github.DaiYuANg.security.auth.AuthenticationResult;
+import com.github.DaiYuANg.security.auth.DefaultAuthenticationFailureHandler;
+import com.github.DaiYuANg.security.auth.DefaultAuthenticationSuccessHandler;
+import com.github.DaiYuANg.security.auth.LoginAuthenticationProvider;
+import com.github.DaiYuANg.security.auth.LoginAuthenticationManager;
+import com.github.DaiYuANg.security.auth.LoginAuthenticationRequest;
+import com.github.DaiYuANg.security.auth.UsernamePasswordAuthenticationRequest;
+import com.github.DaiYuANg.security.identity.AuthenticatedUser;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
