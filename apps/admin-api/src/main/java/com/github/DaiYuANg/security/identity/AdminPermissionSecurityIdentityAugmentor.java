@@ -3,7 +3,6 @@ package com.github.DaiYuANg.security.identity;
 import com.github.DaiYuANg.cache.PermissionSnapshotStore;
 import com.github.DaiYuANg.security.snapshot.PermissionSnapshotLoader;
 import com.github.DaiYuANg.security.snapshot.PermissionSnapshotRefreshPolicy;
-import com.github.DaiYuANg.security.token.TokenContextResolver;
 import io.quarkus.security.identity.AuthenticationRequestContext;
 import io.quarkus.security.identity.SecurityIdentity;
 import io.quarkus.security.identity.SecurityIdentityAugmentor;
@@ -16,7 +15,6 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class AdminPermissionSecurityIdentityAugmentor implements SecurityIdentityAugmentor {
-    private final TokenContextResolver tokenContextResolver;
     private final QuarkusSecurityIdentityFactory securityIdentityFactory;
     private final PermissionSnapshotStore permissionSnapshotStore;
     private final PermissionSnapshotLoader permissionSnapshotLoader;

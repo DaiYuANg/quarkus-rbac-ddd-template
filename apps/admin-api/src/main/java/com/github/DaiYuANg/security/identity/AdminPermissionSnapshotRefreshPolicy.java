@@ -4,7 +4,6 @@ import com.github.DaiYuANg.cache.AuthorityVersionStore;
 import com.github.DaiYuANg.security.snapshot.PermissionSnapshot;
 import com.github.DaiYuANg.security.snapshot.PermissionSnapshotRefreshPolicy;
 import io.quarkus.arc.DefaultBean;
-import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.time.Duration;
@@ -39,25 +38,6 @@ public class AdminPermissionSnapshotRefreshPolicy implements PermissionSnapshotR
         }
         // Cached snapshot must match current global version (invalidated when admin bumps)
         return cachedVersion.equals(authorityVersionStore.currentVersion());
-    }
-
-    @Override
-    public Uni<Boolean> shouldReuseAsync(String expectedAuthorityVersion, PermissionSnapshot cachedSnapshot) {
-        if (cachedSnapshot == null) {
-            return Uni.createFrom().item(false);
-        }
-        var cachedVersion = cachedSnapshot.authorityVersion();
-        if (cachedVersion == null || cachedVersion.isBlank()) {
-            return Uni.createFrom().item(false);
-        }
-        if (expectedAuthorityVersion == null || expectedAuthorityVersion.isBlank()) {
-            return Uni.createFrom().item(true);
-        }
-        if (!expectedAuthorityVersion.equals(cachedVersion)) {
-            return Uni.createFrom().item(false);
-        }
-        return authorityVersionStore.currentVersionAsync()
-            .onItem().transform(cachedVersion::equals);
     }
 
     @Override
