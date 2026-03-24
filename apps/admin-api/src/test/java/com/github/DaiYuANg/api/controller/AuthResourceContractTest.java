@@ -32,6 +32,16 @@ class AuthResourceContractTest {
     assertNull(refreshGet);
   }
 
+  @Test
+  void refreshAliasEndpointUsesPostOnly() {
+    Method refreshPost = findHttpMethod("refresh", POST.class);
+    Method refreshGet = findHttpMethod("refresh", GET.class);
+
+    assertNotNull(refreshPost);
+    assertNotNull(refreshPost.getAnnotation(PermitAll.class));
+    assertNull(refreshGet);
+  }
+
   private Method findHttpMethod(String path, Class<?> httpAnnotation) {
     return Arrays.stream(AuthResource.class.getDeclaredMethods())
         .filter(

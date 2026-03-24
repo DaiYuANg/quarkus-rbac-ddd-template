@@ -7,6 +7,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.github.DaiYuANg.api.dto.response.MeResponse;
+import com.github.DaiYuANg.api.dto.response.MeRoleItem;
 import com.github.DaiYuANg.api.dto.response.SystemAuthenticationToken;
 import com.github.DaiYuANg.application.auth.AuthApplicationService;
 import com.github.DaiYuANg.application.permission.PermissionCatalogLoader;
@@ -16,7 +18,10 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.QuarkusTestProfile;
 import io.quarkus.test.junit.TestProfile;
+import io.quarkus.test.security.TestSecurity;
 import java.util.Map;
+import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
@@ -91,6 +96,52 @@ class AuthResourceQuarkusTest {
         .body("data.accessToken", equalTo("access-cookie"));
 
     verify(authApplicationService).refreshToken("rt-cookie");
+  }
+
+  @Test
+  @TestSecurity(user = "root", roles = {"user:view"})
+  void meEndpointReturnsFrontendContractShape() {
+    when(authApplicationService.me("root"))
+        .thenReturn(
+            new MeResponse(
+                "1",
+                "Root Admin",
+                "root@example.com",
+                List.of(new MeRoleItem("1", "admin")),
+                Set.of("user:view", "role:view")));
+
+    given()
+        .when()
+        .get("/api/v1/me")
+        .then()
+        .statusCode(200)
+        .body("code", equalTo("00000"))
+        .body("data.id", equalTo("1"))
+        .body("data.name", equalTo("Root Admin"))
+        .body("data.email", equalTo("root@example.com"))
+        .body("data.roles.size()", equalTo(1))
+        .body("data.roles[0].id", equalTo("1"))
+        .body("data.roles[0].name", equalTo("admin"))
+        .body("data.permissions.size()", equalTo(2));
+  }
+
+  @Test
+  void refreshAliasUsesSameFlowAsAuthRefresh() {
+    when(authApplicationService.refreshToken("rt-cookie-alias"))
+        .thenReturn(new SystemAuthenticationToken("access-alias", "rt-next-alias", "Bearer", 120L, "v4"));
+
+    given()
+        .contentType("application/json")
+        .body("{}")
+        .cookie("refresh_token", "rt-cookie-alias")
+        .when()
+        .post("/api/v1/auth/refresh")
+        .then()
+        .statusCode(200)
+        .body("code", equalTo("00000"))
+        .body("data.accessToken", equalTo("access-alias"));
+
+    verify(authApplicationService).refreshToken("rt-cookie-alias");
   }
 
   public static class AuthResourceIntegrationProfile implements QuarkusTestProfile {

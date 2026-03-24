@@ -106,6 +106,49 @@ public class PermissionGroupApplicationService {
         authorizationService.check("permission-group", "view");
         return repository.listAll().stream().map(this::toPermissionGroupVOWithCatalog).toList();
     }
+
+    @Transactional
+    public void bindPermissionsToGroup(Long targetGroupId, List<Long> permissionIds) {
+        authorizationService.checkAny("permission-group:edit", "permission-group:assign-permission");
+        if (permissionIds == null || permissionIds.isEmpty()) {
+            return;
+        }
+        var normalizedIds = permissionIds.stream().filter(java.util.Objects::nonNull).collect(Collectors.toCollection(LinkedHashSet::new));
+        if (normalizedIds.isEmpty()) {
+            return;
+        }
+
+        SysPermissionGroup target = null;
+        if (targetGroupId != null) {
+            target = repository.findByIdOptional(targetGroupId).orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
+        }
+
+        var refs = normalizedIds.stream()
+            .filter(id -> catalogStore.getById(id).isPresent())
+            .map(id -> entityManager.getReference(SysPermission.class, id))
+            .collect(Collectors.toCollection(LinkedHashSet::new));
+        if (refs.isEmpty()) {
+            return;
+        }
+
+        var allGroups = repository.listAll();
+        for (var group : allGroups) {
+            if (target != null && group.id.equals(target.id)) {
+                continue;
+            }
+            group.permissions.removeIf(permission -> normalizedIds.contains(permission.id));
+        }
+        if (target != null) {
+            target.permissions.addAll(refs);
+        }
+        authorityVersionService.bumpGlobalVersion();
+        operationLogService.record(
+            "permission-group",
+            targetGroupId == null ? "unbind-permission" : "bind-permission",
+            String.valueOf(targetGroupId),
+            true,
+            "bind permissions by groupId");
+    }
     public long countName(String name) { return repository.countByName(name); }
     public long count() { return repository.count(); }
 

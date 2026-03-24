@@ -87,6 +87,7 @@ quarkus-micrometer-registry-prometheus = { group = "io.quarkus", name = "quarkus
 quarkus-opentelemetry = { group = "io.quarkus", name = "quarkus-opentelemetry" }
 quarkus-junit5 = { group = "io.quarkus", name = "quarkus-junit5" }
 quarkus-junit5-mockito = { group = "io.quarkus", name = "quarkus-junit5-mockito" }
+quarkus-test-security = { group = "io.quarkus", name = "quarkus-test-security" }
 quarkus-container-image-docker = { group = "io.quarkus", name = "quarkus-container-image-docker" }
 rest-assured = { group = "io.rest-assured", name = "rest-assured" }
 testcontainers-postgresql = { group = "org.testcontainers", name = "postgresql", version.ref = "testcontainers" }
@@ -146,6 +147,7 @@ quarkus-migrator = [
 quarkus-test = [
   "quarkus-junit5",
   "quarkus-junit5-mockito",
+  "quarkus-test-security",
   "rest-assured"
 ]
 

@@ -74,6 +74,10 @@ public class RoleApplicationService {
         if (form.status() != null) role.status = form.status();
         if (form.sort() != null) role.sort = form.sort();
         if (form.description() != null) role.description = form.description();
+        if (form.permissionGroupIds() != null) {
+            role.permissionGroups.clear();
+            form.permissionGroupIds().forEach(pid -> permissionGroupRepository.findByIdOptional(pid).ifPresent(role.permissionGroups::add));
+        }
         authorityVersionService.bumpGlobalVersion();
         operationLogService.record("role", "update", String.valueOf(id), true, "update role");
         return toRoleVOWithCatalog(role);

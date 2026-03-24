@@ -1,6 +1,7 @@
 package com.github.DaiYuANg.api.controller;
 
 import com.github.DaiYuANg.api.dto.request.LoginRequest;
+import com.github.DaiYuANg.api.dto.response.MeResponse;
 import com.github.DaiYuANg.api.dto.response.SystemAuthenticationToken;
 import com.github.DaiYuANg.api.dto.response.UserDetailVo;
 import com.github.DaiYuANg.application.auth.AuthApplicationService;
@@ -49,8 +50,8 @@ public class AuthResource {
     }
 
     @GET @Path("/me") @Authenticated
-    public Result<UserDetailVo> me() {
-        return Result.ok(authApplicationService.profile(jwt.getName()));
+    public Result<MeResponse> me() {
+        return Result.ok(authApplicationService.me(jwt.getName()));
     }
 
     @POST @Path("/logout") @Authenticated
@@ -86,6 +87,15 @@ public class AuthResource {
         return Response.ok(Result.ok(token))
             .cookie(refreshTokenCookie(token.refreshToken(), isSecureRequest(uriInfo)))
             .build();
+    }
+
+    // Alias for frontend contract (/auth/refresh).
+    @POST @Path("/refresh") @PermitAll
+    public Response refreshAlias(
+        @HeaderParam(REFRESH_TOKEN_HEADER) String refreshTokenHeader,
+        @CookieParam(REFRESH_TOKEN_COOKIE) String refreshTokenCookie,
+        @Context UriInfo uriInfo) {
+        return refresh(refreshTokenHeader, refreshTokenCookie, uriInfo);
     }
 
     @GET @Path("/check/authority") @Authenticated

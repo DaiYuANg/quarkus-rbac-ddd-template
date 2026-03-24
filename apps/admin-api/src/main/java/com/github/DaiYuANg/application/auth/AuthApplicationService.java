@@ -1,6 +1,8 @@
 package com.github.DaiYuANg.application.auth;
 
 import com.github.DaiYuANg.api.dto.request.LoginRequest;
+import com.github.DaiYuANg.api.dto.response.MeResponse;
+import com.github.DaiYuANg.api.dto.response.MeRoleItem;
 import com.github.DaiYuANg.api.dto.response.SystemAuthenticationToken;
 import com.github.DaiYuANg.api.dto.response.UserDetailVo;
 import com.github.DaiYuANg.application.auth.profile.UserProfileResolutionService;
@@ -83,6 +85,40 @@ public class AuthApplicationService {
       throw new BizException(ResultCode.FORBIDDEN);
     }
     return userProfileResolutionService.resolve(current);
+  }
+
+  @Transactional
+  public MeResponse me(String username) {
+    var current =
+        currentUserAccess
+            .currentUser()
+            .orElseThrow(() -> new BizException(ResultCode.UNAUTHORIZED));
+    if (!username.equals(current.username())) {
+      throw new BizException(ResultCode.FORBIDDEN);
+    }
+
+    var user = userRepository.findByUsername(username).orElse(null);
+    if (user != null) {
+      var roles = user.roles.stream()
+          .map(role -> new MeRoleItem(String.valueOf(role.id), role.name))
+          .toList();
+      return new MeResponse(
+          String.valueOf(user.id),
+          current.displayName(),
+          user.email,
+          roles,
+          current.permissions());
+    }
+
+    var configRoles = current.roles().stream()
+        .map(role -> new MeRoleItem(role, role))
+        .toList();
+    return new MeResponse(
+        current.username(),
+        current.displayName(),
+        null,
+        configRoles,
+        current.permissions());
   }
 
   public void logout(String refreshToken) {

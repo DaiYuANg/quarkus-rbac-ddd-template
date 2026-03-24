@@ -9,6 +9,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.github.DaiYuANg.api.dto.request.LoginRequest;
+import com.github.DaiYuANg.api.dto.response.MeResponse;
+import com.github.DaiYuANg.api.dto.response.MeRoleItem;
 import com.github.DaiYuANg.api.dto.response.SystemAuthenticationToken;
 import com.github.DaiYuANg.application.auth.AuthApplicationService;
 import com.github.DaiYuANg.cache.RefreshTokenStore;
@@ -19,7 +21,9 @@ import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 import java.net.URI;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.junit.jupiter.api.Test;
 
@@ -110,6 +114,27 @@ class AuthResourceBehaviorTest {
             BizException.class,
             () -> resource.logout("rt-1", null, uriInfo("https://a.test")));
     assertEquals(ResultCode.FORBIDDEN, ex.getResultCode());
+  }
+
+  @Test
+  void meUsesAuthApplicationServiceMeContract() {
+    var authApplicationService = mock(AuthApplicationService.class);
+    var jwt = mock(JsonWebToken.class);
+    var refreshTokenStore = mock(RefreshTokenStore.class);
+    var authSecurityConfig = mock(AuthSecurityConfig.class);
+    when(jwt.getName()).thenReturn("root");
+    var me =
+        new MeResponse(
+            "1", "Root", "root@example.com", List.of(new MeRoleItem("1", "admin")), Set.of("user:view"));
+    when(authApplicationService.me("root")).thenReturn(me);
+
+    var resource =
+        new AuthResource(authApplicationService, jwt, refreshTokenStore, authSecurityConfig);
+
+    var response = resource.me();
+    assertEquals("1", response.data().id());
+    assertEquals("Root", response.data().name());
+    assertEquals(1, response.data().roles().size());
   }
 
   private UriInfo uriInfo(String rawUri) {

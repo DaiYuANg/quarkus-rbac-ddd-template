@@ -98,6 +98,10 @@ public class UserApplicationService {
         if (form.nickname() != null) user.nickname = form.nickname();
         if (form.email() != null) user.email = form.email();
         if (form.status() != null) user.userStatus = form.status();
+        if (form.roleIds() != null) {
+            user.roles.clear();
+            form.roleIds().forEach(rid -> roleRepository.findByIdOptional(rid).ifPresent(user.roles::add));
+        }
         if (user.userStatus == UserStatus.DISABLED) {
             refreshTokenStore.deleteByUsername(user.username);
         }
