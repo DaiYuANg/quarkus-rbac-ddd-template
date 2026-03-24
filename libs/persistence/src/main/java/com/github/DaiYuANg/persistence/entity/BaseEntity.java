@@ -2,13 +2,15 @@ package com.github.DaiYuANg.persistence.entity;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.*;
+import org.toolkit4j.integration.hibernate.snowflake.id.SnowflakeGenerator;
+
 import java.time.Instant;
 
 @MappedSuperclass
 @EntityListeners(AuditEntityListener.class)
 public abstract class BaseEntity extends PanacheEntityBase {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @SnowflakeGenerator
     public Long id;
 
     @Column(name = "create_at", nullable = false)

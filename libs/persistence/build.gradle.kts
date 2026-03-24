@@ -18,6 +18,7 @@ dependencies {
   }
   runtimeOnly(libs.blaze.persistence.hibernate)
 
+  implementation("io.github.daiyuang:hibernate-snowflake-id:0.0.1")
 
   api(libs.querydsl.core)
   api(libs.querydsl.jpa)
