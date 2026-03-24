@@ -122,11 +122,17 @@ app:
 
 "%test":
   quarkus:
+    datasource:
+      jdbc:
+        url: jdbc:tc:postgresql:16-alpine:///rbac_test
+      username: postgres
+      password: postgres
     otel:
       enabled: false
     redis:
       devservices:
         enabled: true
+        image-name: valkey/valkey:8-alpine
     log:
       console:
         json:

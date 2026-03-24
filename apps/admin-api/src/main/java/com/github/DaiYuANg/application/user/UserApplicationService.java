@@ -15,6 +15,7 @@ import com.github.DaiYuANg.identity.constant.UserStatus;
 import com.github.DaiYuANg.identity.entity.SysUser;
 import com.github.DaiYuANg.identity.parameter.UserQuery;
 import com.github.DaiYuANg.cache.PermissionSnapshotStore;
+import com.github.DaiYuANg.cache.RefreshTokenStore;
 import com.github.DaiYuANg.identity.repository.UserRepository;
 import com.github.DaiYuANg.security.AuthorizationService;
 import com.github.DaiYuANg.security.CurrentUserAccess;
@@ -38,6 +39,7 @@ public class UserApplicationService {
     private final AuthorizationService authorizationService;
     private final CurrentUserAccess currentUserAccess;
     private final PermissionSnapshotStore permissionSnapshotStore;
+    private final RefreshTokenStore refreshTokenStore;
 
     public PageResult<UserVO> queryUserPage(UserQuery query) {
         authorizationService.check("user", "view");
@@ -75,6 +77,7 @@ public class UserApplicationService {
             authorizationService.checkAny("user:reset-password", "user:edit");
         }
         user.password = passwordHasher.hash(newPassword);
+        refreshTokenStore.deleteByUsername(user.username);
         authorityVersionService.bumpGlobalVersion();
         operationLogService.record("user", "change-password", String.valueOf(id), true, "change password");
     }
@@ -94,6 +97,9 @@ public class UserApplicationService {
         if (form.nickname() != null) user.nickname = form.nickname();
         if (form.email() != null) user.email = form.email();
         if (form.status() != null) user.userStatus = form.status();
+        if (user.userStatus == UserStatus.DISABLED) {
+            refreshTokenStore.deleteByUsername(user.username);
+        }
         authorityVersionService.bumpGlobalVersion();
         operationLogService.record("user", "update", user.username, true, "update user");
         return mapper.toUserVO(user);
@@ -102,6 +108,7 @@ public class UserApplicationService {
     @Transactional
     public void deleteUser(Long id) {
         authorizationService.check("user", "delete");
+        userRepository.findByIdOptional(id).ifPresent(user -> refreshTokenStore.deleteByUsername(user.username));
         permissionSnapshotStore.delete(id);
         userRepository.deleteById(id);
         authorityVersionService.bumpGlobalVersion();
@@ -126,6 +133,9 @@ public class UserApplicationService {
         authorizationService.check("user", "edit");
         var user = userRepository.findByIdOptional(id).orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
         user.userStatus = (status != null && status == 1) ? UserStatus.ENABLED : UserStatus.DISABLED;
+        if (user.userStatus == UserStatus.DISABLED) {
+            refreshTokenStore.deleteByUsername(user.username);
+        }
         authorityVersionService.bumpGlobalVersion();
         operationLogService.record("user", "status", String.valueOf(id), true, "update user status");
     }

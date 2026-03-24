@@ -43,6 +43,6 @@ public class JwtTokenService {
     }
 
     public long accessTokenExpiresIn() {
-        return authSecurityConfig.refreshTokenTtlSeconds();
+        return authSecurityConfig.accessTokenTtlSeconds();
     }
 }

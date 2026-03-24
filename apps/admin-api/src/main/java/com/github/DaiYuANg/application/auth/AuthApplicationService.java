@@ -3,6 +3,7 @@ package com.github.DaiYuANg.application.auth;
 import com.github.DaiYuANg.api.dto.request.LoginRequest;
 import com.github.DaiYuANg.api.dto.response.SystemAuthenticationToken;
 import com.github.DaiYuANg.api.dto.response.UserDetailVo;
+import com.github.DaiYuANg.application.auth.profile.UserProfileResolutionService;
 import com.github.DaiYuANg.application.converter.ViewMapper;
 import com.github.DaiYuANg.audit.support.AuditSnapshot;
 import com.github.DaiYuANg.audit.support.AuditSnapshotProvider;
@@ -15,6 +16,7 @@ import com.github.DaiYuANg.security.AdminAuthenticationLifecycle;
 import com.github.DaiYuANg.security.AdminTokenIssuer;
 import com.github.DaiYuANg.security.AuthSecurityConfig;
 import com.github.DaiYuANg.security.LoginAuthenticationManager;
+import com.github.DaiYuANg.security.CurrentUserAccess;
 import com.github.DaiYuANg.security.RefreshTokenAuthenticationRequest;
 import com.github.DaiYuANg.security.UsernamePasswordAuthenticationRequest;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -23,7 +25,6 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 import java.time.Duration;
-import java.util.LinkedHashSet;
 import java.util.Objects;
 
 import lombok.RequiredArgsConstructor;
@@ -46,6 +47,8 @@ public class AuthApplicationService {
   private final AuditSnapshotProvider auditSnapshotProvider;
   private final AuthSecurityConfig authSecurityConfig;
   private final AdminAuthenticationLifecycle authenticationLifecycle;
+  private final CurrentUserAccess currentUserAccess;
+  private final UserProfileResolutionService userProfileResolutionService;
 
   @Transactional
   public SystemAuthenticationToken login(@NonNull LoginRequest req) {
@@ -72,12 +75,14 @@ public class AuthApplicationService {
   }
 
   public UserDetailVo profile(String username) {
-    var dbUser = userRepository.findByUsername(username).orElse(null);
-    if (dbUser != null) {
-      var detail = viewMapper.toUserDetail(dbUser);
-      return new UserDetailVo(detail.userid(), detail.username(), detail.nickname(), detail.permissions(), detail.roleCodes(), composeAuthorityVersion(detail.permissions(), detail.roleCodes()));
+    var current =
+        currentUserAccess
+            .currentUser()
+            .orElseThrow(() -> new BizException(ResultCode.UNAUTHORIZED));
+    if (!username.equals(current.username())) {
+      throw new BizException(ResultCode.FORBIDDEN);
     }
-    return new UserDetailVo(null, username, username, new LinkedHashSet<>(), new LinkedHashSet<>(), composeAuthorityVersion(new LinkedHashSet<>(), new LinkedHashSet<>()));
+    return userProfileResolutionService.resolve(current);
   }
 
   public void logout(String refreshToken) {
@@ -89,6 +94,7 @@ public class AuthApplicationService {
     log.atDebug().log("refresh token attempt");
     var result = authenticationManager.authenticate(new RefreshTokenAuthenticationRequest(refreshToken));
     log.atDebug().addKeyValue("username", result.user().username()).log("refresh token success");
+    authenticationLifecycle.revokeRefreshToken(refreshToken);
     authenticationLifecycle.publishSnapshot(result.user());
     return tokenIssuer.issue(result.user());
   }

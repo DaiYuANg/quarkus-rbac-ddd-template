@@ -25,6 +25,7 @@ record-builder = "52"
 query-dsl = "7.1"
 protostream = "5.0.1.Final"
 wildfly-elytron = "2.8.3.Final"
+testcontainers = "1.21.4"
 
 [plugins]
 quarkus = { id = "io.quarkus", version.ref = "quarkus" }
@@ -85,8 +86,11 @@ quarkus-micrometer = { group = "io.quarkus", name = "quarkus-micrometer" }
 quarkus-micrometer-registry-prometheus = { group = "io.quarkus", name = "quarkus-micrometer-registry-prometheus" }
 quarkus-opentelemetry = { group = "io.quarkus", name = "quarkus-opentelemetry" }
 quarkus-junit5 = { group = "io.quarkus", name = "quarkus-junit5" }
+quarkus-junit5-mockito = { group = "io.quarkus", name = "quarkus-junit5-mockito" }
 quarkus-container-image-docker = { group = "io.quarkus", name = "quarkus-container-image-docker" }
 rest-assured = { group = "io.rest-assured", name = "rest-assured" }
+testcontainers-postgresql = { group = "org.testcontainers", name = "postgresql", version.ref = "testcontainers" }
+testcontainers-jdbc = { group = "org.testcontainers", name = "jdbc", version.ref = "testcontainers" }
 
 record-builder-processor = { group = "io.soabase.record-builder", name = "record-builder-processor", version.ref = "record-builder" }
 record-builder-core = { group = "io.soabase.record-builder", name = "record-builder-core", version.ref = "record-builder" }
@@ -141,6 +145,7 @@ quarkus-migrator = [
 ]
 quarkus-test = [
   "quarkus-junit5",
+  "quarkus-junit5-mockito",
   "rest-assured"
 ]
 

@@ -27,4 +27,6 @@ dependencies {
   implementation(libs.bundles.quarkus.security.application)
 
   testImplementation(libs.bundles.quarkus.test)
+  testImplementation(libs.testcontainers.postgresql)
+  testImplementation(libs.testcontainers.jdbc)
 }
