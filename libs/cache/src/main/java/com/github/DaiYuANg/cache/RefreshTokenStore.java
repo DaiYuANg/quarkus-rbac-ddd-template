@@ -6,8 +6,8 @@ import io.quarkus.redis.datasource.set.SetCommands;
 import io.quarkus.redis.datasource.value.ValueCommands;
 import jakarta.enterprise.context.ApplicationScoped;
 import java.time.Duration;
-import java.util.Set;
 import java.util.Optional;
+import java.util.Set;
 import org.jspecify.annotations.NonNull;
 
 @ApplicationScoped

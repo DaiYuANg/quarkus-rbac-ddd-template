@@ -11,14 +11,13 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 @ApplicationScoped
 @Priority(100)
 @RequiredArgsConstructor(onConstructor_ = @Inject)
+@Slf4j
 public class ConfigUserAuthenticationProvider implements LoginAuthenticationProvider<UsernamePasswordAuthenticationRequest> {
-    private static final Logger log = LoggerFactory.getLogger(ConfigUserAuthenticationProvider.class);
     private final ConfigUserAccountConfig config;
     private final PasswordHasher passwordHasher;
 

@@ -1,9 +1,9 @@
 import com.github.spotbugs.snom.Confidence
 import com.github.spotbugs.snom.Effort
 import com.github.spotbugs.snom.SpotBugsPlugin
+import java.nio.charset.StandardCharsets.UTF_8
 import name.remal.gradle_plugins.lombok.LombokPlugin
 import org.owasp.dependencycheck.gradle.DependencyCheckPlugin
-import java.nio.charset.StandardCharsets.UTF_8
 
 plugins {
   `java-library`
@@ -26,7 +26,12 @@ group = "com.github.DaiYuANg"
 val rootLibs = libs
 
 tasks.register<ReplacePackageTask>("replacePackage")
+
 tasks.register<GenerateRsaKeysTask>("generateRsaKeys")
+
+val verifyLayerDependencies = tasks.register<VerifyLayerDependenciesTask>("verifyLayerDependencies")
+
+tasks.named("check") { dependsOn(verifyLayerDependencies) }
 
 allprojects {
   version = "1.0.0-SNAPSHOT"
@@ -62,14 +67,10 @@ subprojects {
     reports.create("html") { required.set(true) }
   }
 
-  extensions.configure<JacocoPluginExtension> {
-    toolVersion = "0.8.12"
-  }
+  extensions.configure<JacocoPluginExtension> { toolVersion = "0.8.12" }
 
   extensions.configure<JavaPluginExtension> {
-    toolchain {
-      languageVersion = JavaLanguageVersion.of(rootLibs.versions.jdk.get())
-    }
+    toolchain { languageVersion = JavaLanguageVersion.of(rootLibs.versions.jdk.get()) }
     withSourcesJar()
   }
 

@@ -3,14 +3,13 @@ package com.github.DaiYuANg.security.auth;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
+@Slf4j
 public class LoginAuthenticationManager {
-  private static final Logger log = LoggerFactory.getLogger(LoginAuthenticationManager.class);
   private final AuthenticationProviders authenticationProviders;
   private final AuthenticationSuccessHandler successHandler;
   private final AuthenticationFailureHandler failureHandler;

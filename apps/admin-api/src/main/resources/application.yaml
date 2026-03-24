@@ -108,7 +108,11 @@ app:
       # bind-parameter logging requires TRACE to be enabled
       min-level: TRACE
       category:
-        "com.github.DaiYuANg.application.auth":
+        "com.github.DaiYuANg.modules.identity.application":
+          level: DEBUG
+        "com.github.DaiYuANg.modules.accesscontrol.application":
+          level: DEBUG
+        "com.github.DaiYuANg.modules.securityruntime":
           level: DEBUG
         "com.github.DaiYuANg.security":
           level: DEBUG

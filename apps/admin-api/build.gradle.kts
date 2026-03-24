@@ -6,8 +6,7 @@ plugins {
 classDiagrams {
   classDiagram {
     name("DDD Application Layers")
-    include(packages().withName("com.github.DaiYuANg.api"))
-    include(packages().withName("com.github.DaiYuANg.application"))
+    include(packages().withName("com.github.DaiYuANg.modules"))
     writeTo(file("build/plantuml/ddd-layers.puml"))
   }
 }
@@ -15,12 +14,9 @@ classDiagrams {
 dependencies {
   implementation(enforcedPlatform(libs.quarkus.bom))
   implementation(projects.libs.common)
-  implementation(projects.libs.persistence)
-  implementation(projects.libs.identity)
-  implementation(projects.libs.accesscontrol)
-  implementation(projects.libs.audit)
-  implementation(projects.libs.cache)
-  implementation(projects.libs.security)
+  implementation(projects.modules.identity)
+  implementation(projects.modules.accesscontrol)
+  implementation(projects.modules.securityRuntime)
 
   implementation(libs.bundles.quarkus.application)
   implementation(libs.bundles.quarkus.observability)

@@ -2,9 +2,8 @@ package com.github.DaiYuANg.persistence.entity;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.*;
-import org.toolkit4j.integration.hibernate.snowflake.id.SnowflakeGenerator;
-
 import java.time.Instant;
+import org.toolkit4j.integration.hibernate.snowflake.id.SnowflakeGenerator;
 
 @MappedSuperclass
 @EntityListeners(AuditEntityListener.class)

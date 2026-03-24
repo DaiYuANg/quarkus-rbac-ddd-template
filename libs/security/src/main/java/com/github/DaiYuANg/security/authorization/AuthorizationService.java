@@ -1,6 +1,5 @@
 package com.github.DaiYuANg.security.authorization;
 
-import com.github.DaiYuANg.security.authorization.PermissionDescriptor;
 
 public interface AuthorizationService {
     AuthorizationDecision decide(String code);

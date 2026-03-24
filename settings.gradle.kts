@@ -65,4 +65,10 @@ include("libs:cache")
 
 include("libs:security")
 
+include("modules:identity")
+
+include("modules:accesscontrol")
+
+include("modules:security-runtime")
+
 include("apps:migrator")

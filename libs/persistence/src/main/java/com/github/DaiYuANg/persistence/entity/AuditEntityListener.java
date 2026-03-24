@@ -4,9 +4,8 @@ import com.github.DaiYuANg.security.audit.ActorAuditor;
 import jakarta.inject.Inject;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
-import org.jspecify.annotations.NonNull;
-
 import java.time.Instant;
+import org.jspecify.annotations.NonNull;
 
 public class AuditEntityListener {
   @Inject

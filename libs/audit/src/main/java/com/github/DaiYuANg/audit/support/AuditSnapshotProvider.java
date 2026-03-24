@@ -1,7 +1,7 @@
 package com.github.DaiYuANg.audit.support;
 
-import com.github.DaiYuANg.security.identity.CurrentAuthenticatedUserProvider;
 import com.github.DaiYuANg.security.access.RequestMetadataAccess;
+import com.github.DaiYuANg.security.identity.CurrentAuthenticatedUserProvider;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import lombok.RequiredArgsConstructor;
