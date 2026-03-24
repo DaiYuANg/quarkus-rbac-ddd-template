@@ -1,5 +1,5 @@
 [versions]
-jdk = "21"
+jdk = "25"
 quarkus = "3.32.4"
 jandex = "2.3.0"
 lombok-plugin = "3.1.6"

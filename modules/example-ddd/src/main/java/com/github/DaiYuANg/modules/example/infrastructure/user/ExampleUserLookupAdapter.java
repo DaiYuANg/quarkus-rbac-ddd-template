@@ -3,7 +3,7 @@ package com.github.DaiYuANg.modules.example.infrastructure.user;
 import com.github.DaiYuANg.common.constant.ResultCode;
 import com.github.DaiYuANg.common.exception.BizException;
 import com.github.DaiYuANg.identity.repository.UserRepository;
-import com.github.DaiYuANg.modules.example.application.port.ExampleUserLookupPort;
+import com.github.DaiYuANg.modules.example.application.port.driven.ExampleUserLookupPort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import lombok.RequiredArgsConstructor;

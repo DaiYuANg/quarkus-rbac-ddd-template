@@ -2,7 +2,7 @@ package com.github.DaiYuANg.modules.example.infrastructure.persistence;
 
 import com.github.DaiYuANg.modules.example.application.dto.ExampleOrderLineView;
 import com.github.DaiYuANg.modules.example.application.dto.ExampleOrderView;
-import com.github.DaiYuANg.modules.example.application.port.ExampleOrderStore;
+import com.github.DaiYuANg.modules.example.application.port.driven.ExampleOrderStore;
 import com.github.DaiYuANg.modules.example.domain.model.order.ExampleOrderStatus;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;

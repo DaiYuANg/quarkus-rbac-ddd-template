@@ -90,6 +90,7 @@ subprojects {
   tasks.withType<JavaCompile>().configureEach {
     options.encoding = UTF_8.name()
     options.compilerArgs.add("-parameters")
+    options.compilerArgs.add("-Xlint:deprecation")
   }
 
   tasks.withType<Test>().configureEach {

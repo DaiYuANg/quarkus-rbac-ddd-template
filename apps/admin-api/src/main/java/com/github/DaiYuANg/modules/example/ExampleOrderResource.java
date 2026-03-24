@@ -1,7 +1,7 @@
 package com.github.DaiYuANg.modules.example;
 
 import com.github.DaiYuANg.common.model.Result;
-import com.github.DaiYuANg.modules.example.application.ExampleOrderApplicationService;
+import com.github.DaiYuANg.modules.example.application.port.in.ExampleOrderPlacementApi;
 import com.github.DaiYuANg.modules.example.application.dto.ExampleOrderView;
 import com.github.DaiYuANg.modules.example.application.dto.PlaceExampleOrderCommand;
 import com.github.DaiYuANg.modules.security.runtime.replay.ReplayProtected;
@@ -22,16 +22,16 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class ExampleOrderResource {
 
-  private final ExampleOrderApplicationService orderApplicationService;
+  private final ExampleOrderPlacementApi orderPlacement;
 
   @POST
   public Result<ExampleOrderView> place(@Valid PlaceExampleOrderCommand body) {
-    return Result.ok(orderApplicationService.placeOrder(body));
+    return Result.ok(orderPlacement.placeOrder(body));
   }
 
   @GET
   @Path("/mine")
   public Result<List<ExampleOrderView>> mine() {
-    return Result.ok(orderApplicationService.myOrders());
+    return Result.ok(orderPlacement.myOrders());
   }
 }

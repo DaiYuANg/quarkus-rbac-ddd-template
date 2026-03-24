@@ -1,7 +1,7 @@
 package com.github.DaiYuANg.modules.example;
 
 import com.github.DaiYuANg.common.model.Result;
-import com.github.DaiYuANg.modules.example.application.ExampleProductApplicationService;
+import com.github.DaiYuANg.modules.example.application.port.in.ExampleProductCatalogApi;
 import com.github.DaiYuANg.modules.example.application.dto.CreateExampleProductCommand;
 import com.github.DaiYuANg.modules.example.application.dto.ExampleProductView;
 import com.github.DaiYuANg.modules.security.runtime.replay.ReplayProtected;
@@ -24,15 +24,15 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class ExampleProductResource {
 
-  private final ExampleProductApplicationService productApplicationService;
+  private final ExampleProductCatalogApi productCatalog;
 
   @POST
   public Result<ExampleProductView> create(@Valid CreateExampleProductCommand body) {
-    return Result.ok(productApplicationService.create(body));
+    return Result.ok(productCatalog.create(body));
   }
 
   @GET
   public Result<List<ExampleProductView>> list() {
-    return Result.ok(productApplicationService.listActive());
+    return Result.ok(productCatalog.listActive());
   }
 }

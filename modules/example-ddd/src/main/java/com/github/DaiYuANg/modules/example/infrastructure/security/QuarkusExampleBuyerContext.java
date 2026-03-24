@@ -2,7 +2,7 @@ package com.github.DaiYuANg.modules.example.infrastructure.security;
 
 import com.github.DaiYuANg.common.constant.ResultCode;
 import com.github.DaiYuANg.common.exception.BizException;
-import com.github.DaiYuANg.modules.example.application.port.ExampleBuyerContext;
+import com.github.DaiYuANg.modules.example.application.port.driven.ExampleBuyerContext;
 import com.github.DaiYuANg.security.access.CurrentUserAccess;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;

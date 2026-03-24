@@ -8,6 +8,7 @@ import com.github.DaiYuANg.modules.identity.application.AuthApplicationService;
 import com.github.DaiYuANg.modules.identity.application.dto.request.LoginRequest;
 import com.github.DaiYuANg.modules.identity.application.dto.response.MeResponse;
 import com.github.DaiYuANg.modules.identity.application.dto.response.UserDetailVo;
+import com.github.DaiYuANg.rest.support.RefreshTokenCookies;
 import com.github.DaiYuANg.security.config.AuthSecurityConfig;
 import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.PermitAll;
@@ -15,7 +16,6 @@ import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +45,13 @@ public class MobileAuthResource {
   public Response login(@Valid LoginRequest req, @Context UriInfo uriInfo) {
     var token = authApplicationService.login(req);
     return Response.ok(Result.ok(token))
-        .cookie(refreshTokenCookie(token.refreshToken(), isSecureRequest(uriInfo)))
+        .cookie(
+            RefreshTokenCookies.issue(
+                REFRESH_COOKIE_PATH,
+                REFRESH_TOKEN_COOKIE,
+                token.refreshToken(),
+                Math.toIntExact(authSecurityConfig.refreshTokenTtlSeconds()),
+                isSecureRequest(uriInfo)))
         .build();
   }
 
@@ -82,7 +88,11 @@ public class MobileAuthResource {
       throw new BizException(ResultCode.FORBIDDEN);
     }
     authApplicationService.logout(refreshToken);
-    return Response.ok(Result.ok()).cookie(clearRefreshTokenCookie(isSecureRequest(uriInfo))).build();
+    return Response.ok(Result.ok())
+        .cookie(
+            RefreshTokenCookies.cleared(
+                REFRESH_COOKIE_PATH, REFRESH_TOKEN_COOKIE, isSecureRequest(uriInfo)))
+        .build();
   }
 
   @POST
@@ -98,7 +108,13 @@ public class MobileAuthResource {
     }
     var token = authApplicationService.refreshToken(refreshToken);
     return Response.ok(Result.ok(token))
-        .cookie(refreshTokenCookie(token.refreshToken(), isSecureRequest(uriInfo)))
+        .cookie(
+            RefreshTokenCookies.issue(
+                REFRESH_COOKIE_PATH,
+                REFRESH_TOKEN_COOKIE,
+                token.refreshToken(),
+                Math.toIntExact(authSecurityConfig.refreshTokenTtlSeconds()),
+                isSecureRequest(uriInfo)))
         .build();
   }
 
@@ -127,34 +143,6 @@ public class MobileAuthResource {
       return cookieToken;
     }
     return null;
-  }
-
-  private NewCookie refreshTokenCookie(String refreshToken, boolean secure) {
-    return new NewCookie(
-        REFRESH_TOKEN_COOKIE,
-        refreshToken,
-        REFRESH_COOKIE_PATH,
-        null,
-        NewCookie.DEFAULT_VERSION,
-        "refresh token",
-        Math.toIntExact(authSecurityConfig.refreshTokenTtlSeconds()),
-        null,
-        secure,
-        true);
-  }
-
-  private NewCookie clearRefreshTokenCookie(boolean secure) {
-    return new NewCookie(
-        REFRESH_TOKEN_COOKIE,
-        "",
-        REFRESH_COOKIE_PATH,
-        null,
-        NewCookie.DEFAULT_VERSION,
-        "refresh token",
-        0,
-        null,
-        secure,
-        true);
   }
 
   private boolean isSecureRequest(UriInfo uriInfo) {

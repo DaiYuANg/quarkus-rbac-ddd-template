@@ -6,10 +6,11 @@ import com.github.DaiYuANg.modules.example.application.dto.ExampleOrderLineView;
 import com.github.DaiYuANg.modules.example.application.dto.ExampleOrderView;
 import com.github.DaiYuANg.modules.example.application.dto.ExampleProductView;
 import com.github.DaiYuANg.modules.example.application.dto.PlaceExampleOrderCommand;
-import com.github.DaiYuANg.modules.example.application.port.ExampleBuyerContext;
-import com.github.DaiYuANg.modules.example.application.port.ExampleCatalogStore;
-import com.github.DaiYuANg.modules.example.application.port.ExampleOrderStore;
-import com.github.DaiYuANg.modules.example.application.port.ExampleUserLookupPort;
+import com.github.DaiYuANg.modules.example.application.port.in.ExampleOrderPlacementApi;
+import com.github.DaiYuANg.modules.example.application.port.driven.ExampleBuyerContext;
+import com.github.DaiYuANg.modules.example.application.port.driven.ExampleCatalogStore;
+import com.github.DaiYuANg.modules.example.application.port.driven.ExampleOrderStore;
+import com.github.DaiYuANg.modules.example.application.port.driven.ExampleUserLookupPort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -19,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
-public class ExampleOrderApplicationService {
+public class ExampleOrderApplicationService implements ExampleOrderPlacementApi {
 
   private final ExampleBuyerContext buyerContext;
   private final ExampleUserLookupPort userLookup;

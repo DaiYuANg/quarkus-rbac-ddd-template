@@ -67,6 +67,8 @@ include("libs:cache")
 
 include("libs:security")
 
+include("libs:rest-support")
+
 include("modules:identity")
 
 include("modules:accesscontrol")

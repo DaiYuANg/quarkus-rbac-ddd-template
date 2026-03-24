@@ -1,17 +1,13 @@
-package com.github.DaiYuANg.modules.example.application.port;
+package com.github.DaiYuANg.modules.example.application.port.in;
 
 import com.github.DaiYuANg.modules.example.application.dto.CreateExampleProductCommand;
 import com.github.DaiYuANg.modules.example.application.dto.ExampleProductView;
 import java.util.List;
-import java.util.Optional;
 
-public interface ExampleCatalogStore {
+/** Inbound port: example catalog use cases exposed to driving adapters (REST). */
+public interface ExampleProductCatalogApi {
 
   ExampleProductView create(CreateExampleProductCommand command);
 
   List<ExampleProductView> listActive();
-
-  Optional<ExampleProductView> findById(Long id);
-
-  void updateStock(Long productId, int newStock);
 }

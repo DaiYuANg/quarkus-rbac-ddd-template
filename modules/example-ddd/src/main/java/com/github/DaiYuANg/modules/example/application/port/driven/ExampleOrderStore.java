@@ -1,4 +1,4 @@
-package com.github.DaiYuANg.modules.example.application.port;
+package com.github.DaiYuANg.modules.example.application.port.driven;
 
 import com.github.DaiYuANg.modules.example.application.dto.ExampleOrderLineView;
 import com.github.DaiYuANg.modules.example.application.dto.ExampleOrderView;

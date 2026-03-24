@@ -14,6 +14,7 @@ classDiagrams {
 dependencies {
   implementation(enforcedPlatform(libs.quarkus.bom))
   implementation(projects.libs.common)
+  implementation(projects.libs.restSupport)
   implementation(projects.modules.identity)
   implementation(projects.modules.accesscontrol)
   implementation(projects.modules.securityRuntime)

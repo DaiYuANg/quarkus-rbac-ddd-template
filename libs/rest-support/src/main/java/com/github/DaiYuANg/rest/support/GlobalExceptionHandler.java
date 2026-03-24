@@ -1,4 +1,4 @@
-package com.github.DaiYuANg.mobile.shared;
+package com.github.DaiYuANg.rest.support;
 
 import com.github.DaiYuANg.common.constant.ResultCode;
 import com.github.DaiYuANg.common.exception.BizException;
@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 @Provider
 @Slf4j
 public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
+
   @Override
   public Response toResponse(Exception exception) {
     if (!(exception instanceof BizException)) {
@@ -28,8 +29,8 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
       case ConstraintViolationException violation -> {
         var message =
             violation.getConstraintViolations().stream()
-                .findFirst()
                 .map(ConstraintViolation::getMessage)
+                .findFirst()
                 .orElse("validation failed");
         yield json(ResultCode.BAD_REQUEST.status(), Result.fail(ResultCode.BAD_REQUEST, message));
       }
@@ -43,7 +44,7 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
     };
   }
 
-  private Response json(Response.Status status, Object entity) {
+  private static Response json(Response.Status status, Object entity) {
     return Response.status(status).type(MediaType.APPLICATION_JSON).entity(entity).build();
   }
 }

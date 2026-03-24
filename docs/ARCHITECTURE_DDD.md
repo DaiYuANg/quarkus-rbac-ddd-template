@@ -2,74 +2,121 @@
 
 [中文](ARCHITECTURE_DDD.zh-CN.md)
 
-## Module Structure
+For **Mermaid architecture diagrams** (system context, Gradle layers, request flow), benefits, evolution notes, and the full technology matrix, see [PROJECT_DESIGN.md](PROJECT_DESIGN.md).
+
+The codebase separates **shared kernel** (`libs`), **application / use-case modules** (`modules`), and **deployable adapters** (`apps`). REST resources live in each app; domain logic and ports sit in `modules` and `libs`.
+
+## Layering: libs → modules → apps
+
+```
+libs/                    # Shared kernel (entities, repos, security primitives, Redis helpers)
+modules/                 # Application services, ports, and Quarkus-oriented wiring per context
+apps/                    # JAX-RS entrypoints, DTOs next to resources, process-specific config
+```
+
+## Repository layout
 
 ```
 libs/
-├── common              # Shared: Result, exceptions, PageQuery
-├── persistence         # Shared persistence base: BaseEntity, AuditEntityListener, Repository/Query base classes
-├── accesscontrol       # RBAC context: Role, Permission, PermissionGroup
-├── identity            # Identity context: User (depends on accesscontrol for Role)
-├── audit               # Audit context: OperationLog, LoginLog
-├── cache               # Valkey/Redis storage
-└── security            # Auth chain, JWT, ActorAuditor
+├── common              # Result, exceptions, PageQuery
+├── persistence         # BaseEntity, audit listener, repository/query base classes
+├── accesscontrol       # RBAC: Role, Permission, PermissionGroup
+├── identity            # User (depends on accesscontrol for roles)
+├── audit               # OperationLog, LoginLog
+├── cache               # Refresh tokens, authority version, login attempts, catalog cache, replay nonces
+├── security            # Auth provider chain, JWT helpers, config users
+└── rest-support        # Shared JAX-RS: GlobalExceptionHandler, RefreshTokenCookies
+
+modules/
+├── identity            # Auth application service, user profile, ports (uses libs above)
+├── accesscontrol       # User/role/permission application services, permission catalog loader
+├── security-runtime    # Quarkus wiring: DB/config login, JWT issue, permission augmentor, replay filter
+└── example-ddd         # Sample product/order bounded context (ports + Panache adapters)
 
 apps/
-├── admin-api           # Admin REST API, depends on identity, accesscontrol, audit
-└── migrator            # Flyway migration (standalone)
+├── admin-api           # Management REST under com.github.DaiYuANg.modules.* (+ example resources)
+├── mobile-api          # C-side REST under com.github.DaiYuANg.mobile.identity.* (auth/session sample)
+└── migrator            # Flyway (run before APIs when schema strategy is validate)
 ```
 
-## admin-api Package Structure (DDD Style)
+## admin-api package layout (driving adapters)
+
+REST classes and request DTOs sit beside each other under `modules` subpackages (not a separate `api/controller` tree):
 
 ```
-com.github.DaiYuANg
-├── api/                      # API layer
-│   ├── controller/           # REST resources (thin controllers)
-│   ├── dto.request/          # Form, Command (UserCreationForm, LoginRequest, etc.)
-│   ├── dto.response/         # VO, Result (UserVO, UserDetailVo, SystemAuthenticationToken)
-│   └── handler/              # GlobalExceptionHandler
-├── application/              # Application layer (by bounded context)
-│   ├── user/                 # UserApplicationService
-│   ├── role/                 # RoleApplicationService
-│   ├── permission/           # PermissionApplicationService
-│   ├── permissiongroup/      # PermissionGroupApplicationService
-│   ├── auth/                 # AuthApplicationService
-│   ├── audit/                # OperationLogService, LoginLogService, AuthorityVersionService
-│   └── converter/            # ViewMapper
-└── security/                 # Admin-specific auth/authorization adapters
+com.github.DaiYuANg.modules
+├── identity              # AuthResource, MeResource, LoginAuditEventObserver
+├── accesscontrol         # UserResource, RoleResource, Permission*, forms
+└── example               # ExampleProductResource, ExampleOrderResource (example-ddd)
 ```
 
-## Dependencies
+Shared HTTP concerns (`GlobalExceptionHandler`, refresh-token cookie helpers) come from **`libs:rest-support`** and are registered via CDI when the app depends on that library.
+
+## mobile-api package layout
+
+A second process with its own path prefix and `app.identity.*` typing for JWT principals:
+
+```
+com.github.DaiYuANg.mobile.identity
+├── MobileAuthResource
+├── MobileMeResource
+├── MobileSessionResource
+├── MobilePrincipalView
+└── LoginAuditEventObserver
+```
+
+It depends on **`modules:identity`** and **`modules:security-runtime`** (not full accesscontrol CRUD).
+
+## Gradle dependency sketch
 
 ```
 admin-api
-    ├── identity (User, UserRepository)
-    │       └── accesscontrol (User.roles → SysRole)
-    ├── accesscontrol (Role, Permission, PermissionGroup)
-    ├── audit (OperationLog, LoginLog)
-    └── persistence (BaseEntity, base classes)
+    ├── libs:common, libs:rest-support
+    ├── modules:identity, modules:accesscontrol, modules:security-runtime, modules:example-ddd
 
-identity ──────► accesscontrol
-     └─────────► persistence
+mobile-api
+    ├── libs:common, libs:rest-support
+    ├── modules:identity, modules:security-runtime
 
-accesscontrol ─► persistence
-audit ──────────► persistence (+ security for AuditSnapshot)
+modules:security-runtime
+    └── modules:identity (+ libs:cache, libs:security, …)
+
+modules:accesscontrol
+    └── libs:persistence, libs:identity, libs:accesscontrol, libs:audit, libs:cache, libs:security
+
+modules:identity
+    └── libs:identity, libs:accesscontrol, libs:audit, libs:cache, libs:security
+
+modules:example-ddd
+    └── libs:persistence, libs:identity, libs:security
 ```
 
-## Bounded Contexts
+(`libs:identity` depends on `libs:accesscontrol` and `libs:persistence`; diagram omits every transitive edge for brevity.)
 
-| Bounded Context | Entities | Responsibility |
-|-----------------|----------|----------------|
-| identity | SysUser | User, authentication, User-Role association |
-| accesscontrol | SysRole, SysPermission, SysPermissionGroup | RBAC roles and permissions |
-| audit | SysOperationLog, SysLoginLog | Operation and login audit |
+## Bounded contexts (RBAC + audit)
 
-## Schema (unchanged)
+| Bounded Context | Main persistence | Responsibility |
+|-----------------|------------------|----------------|
+| identity | `SysUser` | Users, authentication orchestration, user–role association |
+| accesscontrol | `SysRole`, `SysPermission`, `SysPermissionGroup` | RBAC model and permission catalog |
+| audit | `SysOperationLog`, `SysLoginLog` | Operation and login audit |
+
+## Example DDD module
+
+`modules:example-ddd` demonstrates ports/adapters for a small catalog and order flow. Flyway adds tables such as **`ex_product`**, **`ex_order`**, **`ex_order_line`** (see migrator scripts).
+
+- **`application.port.in`** — inbound ports driving adapters depend on (`ExampleProductCatalogApi`, `ExampleOrderPlacementApi`); application services implement them.
+- **`application.port.driven`** — driven-side ports implemented by infrastructure (`ExampleCatalogStore`, `ExampleOrderStore`, `ExampleUserLookupPort`, `ExampleBuyerContext`). (Named **`driven`** rather than `out` to avoid clashing with common `out/` entries in `.gitignore`.)
+
+Admin REST resources inject **port.in** only; Panache/security adapters live under **`infrastructure`** and implement **port.driven**.
+
+## Schema (core, illustrative)
 
 - `sys_user`, `sys_role`, `sys_permission`, `sys_permission_group`
 - `sys_user_ref_role`, `sys_role_ref_permission_group`, `sys_permission_group_ref_permission`
 - `sys_operation_log`, `sys_login_log`
+- Plus example tables above when migrations are applied
 
-## Gradle Note
+## Gradle note
 
-Module name uses `accesscontrol` (no hyphen) to support type-safe `projects.libs.accesscontrol`.
+Gradle project `libs:accesscontrol` is exposed as `projects.libs.accesscontrol` (no hyphen in the accessor). **`libs:rest-support`** is `projects.libs.restSupport`.

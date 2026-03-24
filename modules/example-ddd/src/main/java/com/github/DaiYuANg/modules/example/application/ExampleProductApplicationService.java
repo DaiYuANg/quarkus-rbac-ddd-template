@@ -2,7 +2,8 @@ package com.github.DaiYuANg.modules.example.application;
 
 import com.github.DaiYuANg.modules.example.application.dto.CreateExampleProductCommand;
 import com.github.DaiYuANg.modules.example.application.dto.ExampleProductView;
-import com.github.DaiYuANg.modules.example.application.port.ExampleCatalogStore;
+import com.github.DaiYuANg.modules.example.application.port.in.ExampleProductCatalogApi;
+import com.github.DaiYuANg.modules.example.application.port.driven.ExampleCatalogStore;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -11,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
-public class ExampleProductApplicationService {
+public class ExampleProductApplicationService implements ExampleProductCatalogApi {
 
   private final ExampleCatalogStore catalogStore;
 

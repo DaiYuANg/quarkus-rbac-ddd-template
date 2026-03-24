@@ -2,7 +2,7 @@ package com.github.DaiYuANg.modules.example.infrastructure.persistence;
 
 import com.github.DaiYuANg.modules.example.application.dto.CreateExampleProductCommand;
 import com.github.DaiYuANg.modules.example.application.dto.ExampleProductView;
-import com.github.DaiYuANg.modules.example.application.port.ExampleCatalogStore;
+import com.github.DaiYuANg.modules.example.application.port.driven.ExampleCatalogStore;
 import jakarta.enterprise.context.ApplicationScoped;
 import java.util.List;
 import java.util.Optional;
