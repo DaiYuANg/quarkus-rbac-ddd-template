@@ -1,4 +1,4 @@
-package com.github.DaiYuANg.modules.shared.interfaces.rest.handler;
+package com.github.DaiYuANg.modules.shared;
 
 import com.github.DaiYuANg.common.constant.ResultCode;
 import com.github.DaiYuANg.common.exception.BizException;

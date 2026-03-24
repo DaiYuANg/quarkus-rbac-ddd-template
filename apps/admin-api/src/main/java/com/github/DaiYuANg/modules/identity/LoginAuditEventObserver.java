@@ -1,4 +1,4 @@
-package com.github.DaiYuANg.modules.identity.interfaces.observer;
+package com.github.DaiYuANg.modules.identity;
 
 import com.github.DaiYuANg.audit.service.LoginLogService;
 import com.github.DaiYuANg.modules.identity.application.LoginAuditEvent;

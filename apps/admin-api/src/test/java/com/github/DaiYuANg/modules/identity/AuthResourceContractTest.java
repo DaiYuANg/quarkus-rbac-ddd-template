@@ -1,4 +1,4 @@
-package com.github.DaiYuANg.modules.identity.interfaces.rest;
+package com.github.DaiYuANg.modules.identity;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;

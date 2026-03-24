@@ -1,4 +1,4 @@
-package com.github.DaiYuANg.modules.accesscontrol.interfaces.rest;
+package com.github.DaiYuANg.modules.accesscontrol;
 
 import com.github.DaiYuANg.common.model.PageResult;
 import com.github.DaiYuANg.common.model.Result;
@@ -8,7 +8,7 @@ import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UserCre
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UserRefRoleForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.UserVO;
 import com.github.DaiYuANg.modules.accesscontrol.application.user.UserApplicationService;
-import com.github.DaiYuANg.modules.accesscontrol.interfaces.rest.dto.ChangePasswordForm;
+import com.github.DaiYuANg.modules.accesscontrol.dto.ChangePasswordForm;
 import io.quarkus.security.PermissionsAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;

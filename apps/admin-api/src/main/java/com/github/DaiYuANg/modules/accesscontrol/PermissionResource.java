@@ -1,4 +1,4 @@
-package com.github.DaiYuANg.modules.accesscontrol.interfaces.rest;
+package com.github.DaiYuANg.modules.accesscontrol;
 
 import com.github.DaiYuANg.accesscontrol.parameter.PermissionQuery;
 import com.github.DaiYuANg.common.model.PageResult;
@@ -6,7 +6,7 @@ import com.github.DaiYuANg.common.model.Result;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.PermissionVO;
 import com.github.DaiYuANg.modules.accesscontrol.application.permission.PermissionApplicationService;
 import com.github.DaiYuANg.modules.accesscontrol.application.permissiongroup.PermissionGroupApplicationService;
-import com.github.DaiYuANg.modules.accesscontrol.interfaces.rest.dto.PermissionGroupBindingForm;
+import com.github.DaiYuANg.modules.accesscontrol.dto.PermissionGroupBindingForm;
 import io.quarkus.security.PermissionsAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;

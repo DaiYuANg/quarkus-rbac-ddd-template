@@ -1,4 +1,4 @@
-package com.github.DaiYuANg.modules.identity.interfaces.rest;
+package com.github.DaiYuANg.modules.identity;
 
 import com.github.DaiYuANg.common.model.Result;
 import com.github.DaiYuANg.modules.identity.application.AuthApplicationService;

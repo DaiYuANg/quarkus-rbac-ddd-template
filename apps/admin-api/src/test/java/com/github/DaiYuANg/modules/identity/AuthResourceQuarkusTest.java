@@ -1,4 +1,4 @@
-package com.github.DaiYuANg.modules.identity.interfaces.rest;
+package com.github.DaiYuANg.modules.identity;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.containsString;

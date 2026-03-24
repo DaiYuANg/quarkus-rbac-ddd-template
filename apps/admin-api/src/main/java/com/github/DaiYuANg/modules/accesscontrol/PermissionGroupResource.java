@@ -1,4 +1,4 @@
-package com.github.DaiYuANg.modules.accesscontrol.interfaces.rest;
+package com.github.DaiYuANg.modules.accesscontrol;
 
 import com.github.DaiYuANg.accesscontrol.parameter.PermissionGroupQuery;
 import com.github.DaiYuANg.common.model.PageResult;

@@ -1,4 +1,4 @@
-package com.github.DaiYuANg.modules.identity.interfaces.rest;
+package com.github.DaiYuANg.modules.identity;
 
 import com.github.DaiYuANg.cache.RefreshTokenStore;
 import com.github.DaiYuANg.common.constant.ResultCode;

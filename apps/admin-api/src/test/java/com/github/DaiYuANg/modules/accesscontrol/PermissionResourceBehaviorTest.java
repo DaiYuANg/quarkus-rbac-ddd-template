@@ -1,11 +1,11 @@
-package com.github.DaiYuANg.modules.accesscontrol.interfaces.rest;
+package com.github.DaiYuANg.modules.accesscontrol;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import com.github.DaiYuANg.modules.accesscontrol.application.permission.PermissionApplicationService;
 import com.github.DaiYuANg.modules.accesscontrol.application.permissiongroup.PermissionGroupApplicationService;
-import com.github.DaiYuANg.modules.accesscontrol.interfaces.rest.dto.PermissionGroupBindingForm;
+import com.github.DaiYuANg.modules.accesscontrol.dto.PermissionGroupBindingForm;
 import org.junit.jupiter.api.Test;
 
 class PermissionResourceBehaviorTest {
