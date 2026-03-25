@@ -30,9 +30,9 @@ public final class BlazeQueryDSLSupport {
   /**
    * Executes a BlazeJPAQuery with Entity View projection and pagination.
    *
-   * @param query  BlazeJPAQuery with from/where/orderBy/select(root). Must select the root entity.
+   * @param query BlazeJPAQuery with from/where/orderBy/select(root). Must select the root entity.
    * @param offset zero-based offset
-   * @param limit  page size
+   * @param limit page size
    * @param mapper maps Entity View result to projection
    */
   @SuppressWarnings("unchecked")
@@ -43,7 +43,8 @@ public final class BlazeQueryDSLSupport {
       int limit,
       Function<V, P> mapper) {
     var renderer =
-        new BlazeCriteriaBuilderRenderer<>(criteriaBuilderFactory, entityManager, JPQLNextTemplates.DEFAULT);
+        new BlazeCriteriaBuilderRenderer<>(
+            criteriaBuilderFactory, entityManager, JPQLNextTemplates.DEFAULT);
     var criteriaBuilder = (CriteriaBuilder<E>) renderer.render(query);
     var setting = EntityViewSetting.create(entityViewClass, offset, limit);
     var results = entityViewManager.applySetting(setting, criteriaBuilder).getResultList();
@@ -56,25 +57,25 @@ public final class BlazeQueryDSLSupport {
   }
 
   /**
-   * Applies sorts to a BlazeJPAQuery using the given field mapper.
-   * Property names must match entity attribute names (e.g. from metamodel .getName()).
+   * Applies sorts to a BlazeJPAQuery using the given field mapper. Property names must match entity
+   * attribute names (e.g. from metamodel .getName()).
    */
-  public static <E> void applySorts(BlazeJPAQuery<E> query, List<QuerySort> sorts, SortFieldMapper fieldMapper) {
+  public static <E> void applySorts(
+      BlazeJPAQuery<E> query, List<QuerySort> sorts, SortFieldMapper fieldMapper) {
     if (sorts == null) return;
     for (var sort : sorts) {
       var expr = fieldMapper.get(sort.property());
       if (expr != null) {
-        query.orderBy(switch (sort.direction()) {
-          case ASC -> expr.asc();
-          case DESC -> expr.desc();
-        });
+        query.orderBy(
+            switch (sort.direction()) {
+              case ASC -> expr.asc();
+              case DESC -> expr.desc();
+            });
       }
     }
   }
 
-  /**
-   * Type-safe like for case-insensitive contains on string path.
-   */
+  /** Type-safe like for case-insensitive contains on string path. */
   public static String likePattern(String value) {
     if (value == null || value.isBlank()) {
       return null;

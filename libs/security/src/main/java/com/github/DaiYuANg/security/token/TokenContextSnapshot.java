@@ -11,9 +11,9 @@ public record TokenContextSnapshot(
     Set<String> roles,
     Set<String> permissions,
     Map<String, Object> attributes,
-    SecurityIdentity securityIdentity
-) implements java.io.Serializable {
-    public String actorKey() {
-        return userType == null || userType.isBlank() ? subject : userType + ":" + subject;
-    }
+    SecurityIdentity securityIdentity)
+    implements java.io.Serializable {
+  public String actorKey() {
+    return userType == null || userType.isBlank() ? subject : userType + ":" + subject;
+  }
 }

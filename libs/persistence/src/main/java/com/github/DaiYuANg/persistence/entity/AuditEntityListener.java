@@ -8,8 +8,7 @@ import java.time.Instant;
 import org.jspecify.annotations.NonNull;
 
 public class AuditEntityListener {
-  @Inject
-  ActorAuditor actorAuditor;
+  @Inject ActorAuditor actorAuditor;
 
   @PrePersist
   public void prePersist(@NonNull BaseEntity entity) {

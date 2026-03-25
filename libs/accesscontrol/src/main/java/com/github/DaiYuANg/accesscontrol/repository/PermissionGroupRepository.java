@@ -53,9 +53,10 @@ public class PermissionGroupRepository extends BasePanacheCommandRepository<SysP
 
   /** Returns permission ids for a group (from join table, no SysPermission load). */
   public List<Long> findPermissionIdsByGroupId(Long groupId) {
-    return entityManager.createQuery(
-        "SELECT p.id FROM SysPermissionGroup g JOIN g.permissions p WHERE g.id = :groupId",
-        Long.class)
+    return entityManager
+        .createQuery(
+            "SELECT p.id FROM SysPermissionGroup g JOIN g.permissions p WHERE g.id = :groupId",
+            Long.class)
         .setParameter("groupId", groupId)
         .getResultList();
   }
@@ -72,7 +73,8 @@ public class PermissionGroupRepository extends BasePanacheCommandRepository<SysP
 
     applyKeyword(blazeQuery, query.getKeyword());
     applyName(blazeQuery, filter.name());
-    BlazeQueryDSLSupport.applySorts(blazeQuery, spec.sorts(), PermissionGroupSortFieldMapper.INSTANCE);
+    BlazeQueryDSLSupport.applySorts(
+        blazeQuery, spec.sorts(), PermissionGroupSortFieldMapper.INSTANCE);
 
     return queryDslSupport.executeWithEntityView(
         blazeQuery,
@@ -96,11 +98,7 @@ public class PermissionGroupRepository extends BasePanacheCommandRepository<SysP
 
   private PermissionGroupListProjection toProjection(PermissionGroupListView view) {
     return new PermissionGroupListProjection(
-        view.getId(),
-        view.getName(),
-        view.getDescription(),
-        view.getCode(),
-        view.getSort());
+        view.getId(), view.getName(), view.getDescription(), view.getCode(), view.getSort());
   }
 
   @Override

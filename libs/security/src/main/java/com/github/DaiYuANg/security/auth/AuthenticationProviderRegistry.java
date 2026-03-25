@@ -8,12 +8,13 @@ import java.util.List;
 
 @ApplicationScoped
 public class AuthenticationProviderRegistry {
-    @Inject Instance<LoginAuthenticationProvider<?>> providers;
+  @Inject Instance<LoginAuthenticationProvider<?>> providers;
 
-    public List<LoginAuthenticationProvider<?>> orderedProviders() {
-        return providers.stream()
-            .sorted(Comparator.comparingInt((LoginAuthenticationProvider<?> p) -> p.order())
+  public List<LoginAuthenticationProvider<?>> orderedProviders() {
+    return providers.stream()
+        .sorted(
+            Comparator.comparingInt((LoginAuthenticationProvider<?> p) -> p.order())
                 .thenComparing(LoginAuthenticationProvider::providerId))
-            .toList();
-    }
+        .toList();
+  }
 }

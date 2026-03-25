@@ -35,8 +35,7 @@ class MobileIdentityRestJsonContractTest {
   @Test
   void mobileLoginUsesIsolatedCookiePathAndStableTokenJson() {
     when(authApplicationService.login(any()))
-        .thenReturn(
-            new SystemAuthenticationToken("ma", "mr", "Bearer", 60L, "mv"));
+        .thenReturn(new SystemAuthenticationToken("ma", "mr", "Bearer", 60L, "mv"));
 
     given()
         .contentType("application/json")
@@ -56,16 +55,14 @@ class MobileIdentityRestJsonContractTest {
   }
 
   @Test
-  @TestSecurity(user = "mobile-member", roles = {"member"})
+  @TestSecurity(
+      user = "mobile-member",
+      roles = {"member"})
   void mobileMeMatchesAdminMeEnvelope() {
     when(authApplicationService.me("mobile-member"))
         .thenReturn(
             new MeResponse(
-                "m1",
-                "Member",
-                "m@x",
-                List.of(new MeRoleItem("1", "member")),
-                Set.of()));
+                "m1", "Member", "m@x", List.of(new MeRoleItem("1", "member")), Set.of()));
 
     given()
         .when()

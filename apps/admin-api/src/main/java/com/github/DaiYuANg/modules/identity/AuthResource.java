@@ -26,109 +26,125 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 @Consumes("application/json")
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class AuthResource {
-    private static final String REFRESH_TOKEN_HEADER = "X-Refresh-Token";
-    private static final String REFRESH_TOKEN_COOKIE = "refresh_token";
-    private static final String REFRESH_COOKIE_PATH = "/api/v1/auth";
+  private static final String REFRESH_TOKEN_HEADER = "X-Refresh-Token";
+  private static final String REFRESH_TOKEN_COOKIE = "refresh_token";
+  private static final String REFRESH_COOKIE_PATH = "/api/v1/auth";
 
-    private final AuthApplicationService authApplicationService;
-    private final JsonWebToken jwt;
-    private final RefreshTokenStore refreshTokenStore;
-    private final AuthSecurityConfig authSecurityConfig;
+  private final AuthApplicationService authApplicationService;
+  private final JsonWebToken jwt;
+  private final RefreshTokenStore refreshTokenStore;
+  private final AuthSecurityConfig authSecurityConfig;
 
-    @POST @Path("/login") @PermitAll
-    public Response login(@Valid LoginRequest req, @Context UriInfo uriInfo) {
-        var token = authApplicationService.login(req);
-        return Response.ok(Result.ok(token))
-            .cookie(
-                RefreshTokenCookies.issue(
-                    REFRESH_COOKIE_PATH,
-                    REFRESH_TOKEN_COOKIE,
-                    token.refreshToken(),
-                    Math.toIntExact(authSecurityConfig.refreshTokenTtlSeconds()),
-                    isSecureRequest(uriInfo)))
-            .build();
+  @POST
+  @Path("/login")
+  @PermitAll
+  public Response login(@Valid LoginRequest req, @Context UriInfo uriInfo) {
+    var token = authApplicationService.login(req);
+    return Response.ok(Result.ok(token))
+        .cookie(
+            RefreshTokenCookies.issue(
+                REFRESH_COOKIE_PATH,
+                REFRESH_TOKEN_COOKIE,
+                token.refreshToken(),
+                Math.toIntExact(authSecurityConfig.refreshTokenTtlSeconds()),
+                isSecureRequest(uriInfo)))
+        .build();
+  }
+
+  @GET
+  @Path("/profile")
+  @Authenticated
+  public Result<UserDetailVo> profile() {
+    return Result.ok(authApplicationService.profile(jwt.getName()));
+  }
+
+  @GET
+  @Path("/me")
+  @Authenticated
+  public Result<MeResponse> me() {
+    return Result.ok(authApplicationService.me(jwt.getName()));
+  }
+
+  @POST
+  @Path("/logout")
+  @Authenticated
+  public Response logout(
+      @HeaderParam(REFRESH_TOKEN_HEADER) String refreshTokenHeader,
+      @CookieParam(REFRESH_TOKEN_COOKIE) String refreshTokenCookie,
+      @Context UriInfo uriInfo) {
+    var refreshToken = resolveRefreshToken(refreshTokenHeader, refreshTokenCookie);
+    if (refreshToken == null) {
+      throw new BizException(ResultCode.REFRESH_TOKEN_INVALID);
     }
-
-    @GET @Path("/profile") @Authenticated
-    public Result<UserDetailVo> profile() {
-        return Result.ok(authApplicationService.profile(jwt.getName()));
-    }
-
-    @GET @Path("/me") @Authenticated
-    public Result<MeResponse> me() {
-        return Result.ok(authApplicationService.me(jwt.getName()));
-    }
-
-    @POST @Path("/logout") @Authenticated
-    public Response logout(
-        @HeaderParam(REFRESH_TOKEN_HEADER) String refreshTokenHeader,
-        @CookieParam(REFRESH_TOKEN_COOKIE) String refreshTokenCookie,
-        @Context UriInfo uriInfo) {
-        var refreshToken = resolveRefreshToken(refreshTokenHeader, refreshTokenCookie);
-        if (refreshToken == null) {
-            throw new BizException(ResultCode.REFRESH_TOKEN_INVALID);
-        }
-        var owner = refreshTokenStore.getUsername(refreshToken)
+    var owner =
+        refreshTokenStore
+            .getUsername(refreshToken)
             .orElseThrow(() -> new BizException(ResultCode.REFRESH_TOKEN_INVALID));
-        if (!owner.equals(jwt.getName())) {
-            throw new BizException(ResultCode.FORBIDDEN);
-        }
-        authApplicationService.logout(refreshToken);
-        return Response.ok(Result.ok())
-            .cookie(
-                RefreshTokenCookies.cleared(
-                    REFRESH_COOKIE_PATH, REFRESH_TOKEN_COOKIE, isSecureRequest(uriInfo)))
-            .build();
+    if (!owner.equals(jwt.getName())) {
+      throw new BizException(ResultCode.FORBIDDEN);
     }
+    authApplicationService.logout(refreshToken);
+    return Response.ok(Result.ok())
+        .cookie(
+            RefreshTokenCookies.cleared(
+                REFRESH_COOKIE_PATH, REFRESH_TOKEN_COOKIE, isSecureRequest(uriInfo)))
+        .build();
+  }
 
-    @POST @Path("/auth-refresh") @PermitAll
-    public Response refresh(
-        @HeaderParam(REFRESH_TOKEN_HEADER) String refreshTokenHeader,
-        @CookieParam(REFRESH_TOKEN_COOKIE) String refreshTokenCookie,
-        @Context UriInfo uriInfo) {
-        var refreshToken = resolveRefreshToken(refreshTokenHeader, refreshTokenCookie);
-        if (refreshToken == null) {
-            throw new BizException(ResultCode.REFRESH_TOKEN_INVALID);
-        }
-        var token = authApplicationService.refreshToken(refreshToken);
-        return Response.ok(Result.ok(token))
-            .cookie(
-                RefreshTokenCookies.issue(
-                    REFRESH_COOKIE_PATH,
-                    REFRESH_TOKEN_COOKIE,
-                    token.refreshToken(),
-                    Math.toIntExact(authSecurityConfig.refreshTokenTtlSeconds()),
-                    isSecureRequest(uriInfo)))
-            .build();
+  @POST
+  @Path("/auth-refresh")
+  @PermitAll
+  public Response refresh(
+      @HeaderParam(REFRESH_TOKEN_HEADER) String refreshTokenHeader,
+      @CookieParam(REFRESH_TOKEN_COOKIE) String refreshTokenCookie,
+      @Context UriInfo uriInfo) {
+    var refreshToken = resolveRefreshToken(refreshTokenHeader, refreshTokenCookie);
+    if (refreshToken == null) {
+      throw new BizException(ResultCode.REFRESH_TOKEN_INVALID);
     }
+    var token = authApplicationService.refreshToken(refreshToken);
+    return Response.ok(Result.ok(token))
+        .cookie(
+            RefreshTokenCookies.issue(
+                REFRESH_COOKIE_PATH,
+                REFRESH_TOKEN_COOKIE,
+                token.refreshToken(),
+                Math.toIntExact(authSecurityConfig.refreshTokenTtlSeconds()),
+                isSecureRequest(uriInfo)))
+        .build();
+  }
 
-    // Alias for frontend contract (/auth/refresh).
-    @POST @Path("/refresh") @PermitAll
-    public Response refreshAlias(
-        @HeaderParam(REFRESH_TOKEN_HEADER) String refreshTokenHeader,
-        @CookieParam(REFRESH_TOKEN_COOKIE) String refreshTokenCookie,
-        @Context UriInfo uriInfo) {
-        return refresh(refreshTokenHeader, refreshTokenCookie, uriInfo);
-    }
+  // Alias for frontend contract (/auth/refresh).
+  @POST
+  @Path("/refresh")
+  @PermitAll
+  public Response refreshAlias(
+      @HeaderParam(REFRESH_TOKEN_HEADER) String refreshTokenHeader,
+      @CookieParam(REFRESH_TOKEN_COOKIE) String refreshTokenCookie,
+      @Context UriInfo uriInfo) {
+    return refresh(refreshTokenHeader, refreshTokenCookie, uriInfo);
+  }
 
-    @GET @Path("/check/authority") @Authenticated
-    public Result<String> authorityVersion() {
-        return Result.ok(authApplicationService.checkAuthorityVersion(jwt.getName()));
-    }
+  @GET
+  @Path("/check/authority")
+  @Authenticated
+  public Result<String> authorityVersion() {
+    return Result.ok(authApplicationService.checkAuthorityVersion(jwt.getName()));
+  }
 
-    private String resolveRefreshToken(String headerToken, String cookieToken) {
-        if (headerToken != null && !headerToken.isBlank()) {
-            return headerToken;
-        }
-        if (cookieToken != null && !cookieToken.isBlank()) {
-            return cookieToken;
-        }
-        return null;
+  private String resolveRefreshToken(String headerToken, String cookieToken) {
+    if (headerToken != null && !headerToken.isBlank()) {
+      return headerToken;
     }
+    if (cookieToken != null && !cookieToken.isBlank()) {
+      return cookieToken;
+    }
+    return null;
+  }
 
-    private boolean isSecureRequest(UriInfo uriInfo) {
-        return uriInfo != null
-            && uriInfo.getRequestUri() != null
-            && "https".equalsIgnoreCase(uriInfo.getRequestUri().getScheme());
-    }
+  private boolean isSecureRequest(UriInfo uriInfo) {
+    return uriInfo != null
+        && uriInfo.getRequestUri() != null
+        && "https".equalsIgnoreCase(uriInfo.getRequestUri().getScheme());
+  }
 }

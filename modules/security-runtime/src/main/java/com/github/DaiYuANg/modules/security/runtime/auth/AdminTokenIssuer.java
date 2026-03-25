@@ -6,10 +6,13 @@ import com.github.DaiYuANg.security.auth.RefreshTokenAuthenticator;
 import com.github.DaiYuANg.security.identity.AuthenticatedUser;
 import com.github.DaiYuANg.security.token.TokenIssuer;
 
-public interface AdminTokenIssuer extends AdminTokenIssuerPort, TokenIssuer<SystemAuthenticationToken>, RefreshTokenAuthenticator<SystemAuthenticationToken> {
-    @Override
-    SystemAuthenticationToken issue(AuthenticatedUser user);
+public interface AdminTokenIssuer
+    extends AdminTokenIssuerPort,
+        TokenIssuer<SystemAuthenticationToken>,
+        RefreshTokenAuthenticator<SystemAuthenticationToken> {
+  @Override
+  SystemAuthenticationToken issue(AuthenticatedUser user);
 
-    @Override
-    SystemAuthenticationToken authenticate(String refreshToken);
+  @Override
+  SystemAuthenticationToken authenticate(String refreshToken);
 }

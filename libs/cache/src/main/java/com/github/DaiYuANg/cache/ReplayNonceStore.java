@@ -10,8 +10,9 @@ import java.time.Duration;
 import java.util.HexFormat;
 
 /**
- * One-shot nonce storage for HTTP replay protection. Uses the default Quarkus {@link RedisDataSource}
- * (same {@code quarkus.redis.*} config as the rest of the app); no extra Redis client.
+ * One-shot nonce storage for HTTP replay protection. Uses the default Quarkus {@link
+ * RedisDataSource} (same {@code quarkus.redis.*} config as the rest of the app); no extra Redis
+ * client.
  */
 @ApplicationScoped
 public class ReplayNonceStore {
@@ -27,8 +28,8 @@ public class ReplayNonceStore {
   }
 
   /**
-   * @return {@code true} if this nonce was accepted (first use), {@code false} if already seen or Redis
-   *     rejected the write
+   * @return {@code true} if this nonce was accepted (first use), {@code false} if already seen or
+   *     Redis rejected the write
    */
   public boolean tryConsumeOnce(String nonce, Duration ttl) {
     if (nonce == null || nonce.isBlank()) {

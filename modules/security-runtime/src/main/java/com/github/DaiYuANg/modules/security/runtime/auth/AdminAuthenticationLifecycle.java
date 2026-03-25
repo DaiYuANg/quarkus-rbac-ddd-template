@@ -13,17 +13,18 @@ import lombok.RequiredArgsConstructor;
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class AdminAuthenticationLifecycle implements AuthenticationLifecyclePort {
-    private final AuthorityVersionStore authorityVersionStore;
-    private final RefreshTokenStore refreshTokenStore;
-    private final PermissionSnapshotStore permissionSnapshotStore;
+  private final AuthorityVersionStore authorityVersionStore;
+  private final RefreshTokenStore refreshTokenStore;
+  private final PermissionSnapshotStore permissionSnapshotStore;
 
-    public String authorityVersion(String username) {
-        return authorityVersionStore.versionFor(username);
-    }
+  public String authorityVersion(String username) {
+    return authorityVersionStore.versionFor(username);
+  }
 
-    @Override
-    public void publishSnapshot(AuthenticatedUser user) {
-        var snapshot = new PermissionSnapshot(
+  @Override
+  public void publishSnapshot(AuthenticatedUser user) {
+    var snapshot =
+        new PermissionSnapshot(
             user.username(),
             user.displayName(),
             user.userType(),
@@ -35,17 +36,15 @@ public class AdminAuthenticationLifecycle implements AuthenticationLifecyclePort
                 "userType", user.userType(),
                 "roles", user.roles(),
                 "permissions", user.permissions(),
-                "authorityVersion", authorityVersion(user.username())
-            ),
-            user.userId()
-        );
-        permissionSnapshotStore.save(snapshot);
-    }
+                "authorityVersion", authorityVersion(user.username())),
+            user.userId());
+    permissionSnapshotStore.save(snapshot);
+  }
 
-    @Override
-    public void revokeRefreshToken(String refreshToken) {
-        if (refreshToken != null && !refreshToken.isBlank()) {
-            refreshTokenStore.delete(refreshToken);
-        }
+  @Override
+  public void revokeRefreshToken(String refreshToken) {
+    if (refreshToken != null && !refreshToken.isBlank()) {
+      refreshTokenStore.delete(refreshToken);
     }
+  }
 }

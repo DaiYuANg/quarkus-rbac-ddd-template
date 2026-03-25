@@ -19,7 +19,8 @@ class PermissionResourceBehaviorTest {
 
     resource.bindGroupBulk("1, 2,3", new PermissionGroupBindingForm(9L));
 
-    verify(permissionGroupApplicationService).bindPermissionsToGroup(9L, java.util.List.of(1L, 2L, 3L));
+    verify(permissionGroupApplicationService)
+        .bindPermissionsToGroup(9L, java.util.List.of(1L, 2L, 3L));
   }
 
   @Test

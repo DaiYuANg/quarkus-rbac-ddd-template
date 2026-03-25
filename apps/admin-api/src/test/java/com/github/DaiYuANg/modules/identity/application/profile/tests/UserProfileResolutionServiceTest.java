@@ -26,8 +26,7 @@ class UserProfileResolutionServiceTest {
     var p200 = mock(UserProfileProvider.class);
     when(p100.order()).thenReturn(100);
     when(p200.order()).thenReturn(200);
-    var current =
-        new CurrentAuthenticatedUser("u", "U", "ADMIN", Set.of(), Set.of(), Map.of());
+    var current = new CurrentAuthenticatedUser("u", "U", "ADMIN", Set.of(), Set.of(), Map.of());
     when(p100.supports(current)).thenReturn(false);
     when(p200.supports(current)).thenReturn(true);
     var expected = new UserDetailVo(1L, "u", "U", Set.of(), Set.of(), "k");

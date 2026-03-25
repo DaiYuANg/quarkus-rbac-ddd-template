@@ -25,7 +25,8 @@ import lombok.RequiredArgsConstructor;
 
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
-public class UserRepository extends BasePanacheCommandRepository<SysUser> implements UserQueryRepository {
+public class UserRepository extends BasePanacheCommandRepository<SysUser>
+    implements UserQueryRepository {
 
   private static final QSysUser u = new QSysUser("user");
 
@@ -60,9 +61,7 @@ public class UserRepository extends BasePanacheCommandRepository<SysUser> implem
     var filter = spec.filter();
 
     var blazeQuery =
-        new BlazeJPAQuery<SysUser>(entityManager, criteriaBuilderFactory)
-            .from(u)
-            .select(u);
+        new BlazeJPAQuery<SysUser>(entityManager, criteriaBuilderFactory).from(u).select(u);
 
     applyKeyword(blazeQuery, query.getKeyword());
     applyUsername(blazeQuery, filter.username());
@@ -70,11 +69,7 @@ public class UserRepository extends BasePanacheCommandRepository<SysUser> implem
     BlazeQueryDSLSupport.applySorts(blazeQuery, spec.sorts(), UserSortFieldMapper.INSTANCE);
 
     return queryDslSupport.executeWithEntityView(
-        blazeQuery,
-        UserListView.class,
-        query.offset(),
-        query.getPageSize(),
-        this::toProjection);
+        blazeQuery, UserListView.class, query.offset(), query.getPageSize(), this::toProjection);
   }
 
   private void applyKeyword(BlazeJPAQuery<SysUser> q, String keyword) {

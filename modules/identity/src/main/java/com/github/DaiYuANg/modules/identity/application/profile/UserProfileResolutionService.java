@@ -28,8 +28,7 @@ public class UserProfileResolutionService {
         .orElseThrow(
             () ->
                 new BizException(
-                    ResultCode.DATA_NOT_FOUND,
-                    "no profile provider for user: " + user.username()));
+                    ResultCode.DATA_NOT_FOUND, "no profile provider for user: " + user.username()));
   }
 
   private java.util.stream.Stream<UserProfileProvider> orderedProviders() {

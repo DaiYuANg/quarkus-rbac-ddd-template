@@ -4,4 +4,12 @@ import com.github.DaiYuANg.accesscontrol.constant.RoleStatus;
 import java.time.Instant;
 import java.util.Set;
 
-public record RoleVO(Long id, String name, String code, RoleStatus status, Integer sort, Instant createAt, Instant updateAt, Set<PermissionGroupVO> permissionGroups) {}
+public record RoleVO(
+    Long id,
+    String name,
+    String code,
+    RoleStatus status,
+    Integer sort,
+    Instant createAt,
+    Instant updateAt,
+    Set<PermissionGroupVO> permissionGroups) {}

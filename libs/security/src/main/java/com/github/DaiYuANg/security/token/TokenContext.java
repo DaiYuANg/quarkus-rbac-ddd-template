@@ -13,18 +13,17 @@ public record TokenContext(
     Set<String> roles,
     Set<String> permissions,
     Map<String, Object> attributes,
-    SecurityIdentity securityIdentity
-) {
-    public Optional<String> attributeAsString(String name) {
-        Object value = attributes == null ? null : attributes.get(name);
-        return value == null ? Optional.empty() : Optional.of(String.valueOf(value));
-    }
+    SecurityIdentity securityIdentity) {
+  public Optional<String> attributeAsString(String name) {
+    Object value = attributes == null ? null : attributes.get(name);
+    return value == null ? Optional.empty() : Optional.of(String.valueOf(value));
+  }
 
-    public Optional<Principal> principal() {
-        return Optional.ofNullable(securityIdentity).map(SecurityIdentity::getPrincipal);
-    }
+  public Optional<Principal> principal() {
+    return Optional.ofNullable(securityIdentity).map(SecurityIdentity::getPrincipal);
+  }
 
-    public String actorKey() {
-        return userType == null || userType.isBlank() ? subject : userType + ":" + subject;
-    }
+  public String actorKey() {
+    return userType == null || userType.isBlank() ? subject : userType + ":" + subject;
+  }
 }

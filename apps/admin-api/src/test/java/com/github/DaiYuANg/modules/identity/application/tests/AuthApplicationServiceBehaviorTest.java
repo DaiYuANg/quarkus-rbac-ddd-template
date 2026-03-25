@@ -115,8 +115,7 @@ class AuthApplicationServiceBehaviorTest {
 
   @Test
   void profileForbiddenWhenUsernameDoesNotMatchCurrentSubject() {
-    var current =
-        new CurrentAuthenticatedUser("alice", "A", "ADMIN", Set.of(), Set.of(), Map.of());
+    var current = new CurrentAuthenticatedUser("alice", "A", "ADMIN", Set.of(), Set.of(), Map.of());
     var currentUserAccess = mock(CurrentUserAccess.class);
     when(currentUserAccess.currentUser()).thenReturn(Optional.of(current));
 

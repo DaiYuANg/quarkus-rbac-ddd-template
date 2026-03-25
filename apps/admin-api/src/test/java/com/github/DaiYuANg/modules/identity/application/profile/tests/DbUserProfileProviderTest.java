@@ -22,20 +22,16 @@ class DbUserProfileProviderTest {
   void buildProfileThrowsWhenUserMissingInDatabase() {
     var repo = mock(UserRepository.class);
     when(repo.findByUsername("ghost")).thenReturn(Optional.empty());
-    var provider =
-        new DbUserProfileProvider(repo, mock(AuthorityVersionStore.class));
-    var current =
-        new CurrentAuthenticatedUser("ghost", "G", "ADMIN", Set.of(), Set.of(), Map.of());
-    var ex =
-        assertThrows(BizException.class, () -> provider.buildProfile(current));
+    var provider = new DbUserProfileProvider(repo, mock(AuthorityVersionStore.class));
+    var current = new CurrentAuthenticatedUser("ghost", "G", "ADMIN", Set.of(), Set.of(), Map.of());
+    var ex = assertThrows(BizException.class, () -> provider.buildProfile(current));
     assertEquals(ResultCode.DATA_NOT_FOUND, ex.getResultCode());
   }
 
   @Test
   void supportsNonConfigUserTypes() {
     var provider =
-        new DbUserProfileProvider(
-            mock(UserRepository.class), mock(AuthorityVersionStore.class));
+        new DbUserProfileProvider(mock(UserRepository.class), mock(AuthorityVersionStore.class));
     assertEquals(
         true,
         provider.supports(

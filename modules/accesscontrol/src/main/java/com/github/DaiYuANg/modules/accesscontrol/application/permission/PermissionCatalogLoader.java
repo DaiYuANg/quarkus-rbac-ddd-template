@@ -12,8 +12,8 @@ import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NonNull;
 
 /**
- * Loads all permissions from DB into Redis at startup.
- * Runtime permission reads then go through Redis only.
+ * Loads all permissions from DB into Redis at startup. Runtime permission reads then go through
+ * Redis only.
  *
  * <p>Uses StartupEvent (after Flyway migrations and datasource init).
  */
@@ -24,7 +24,8 @@ public class PermissionCatalogLoader {
   private final PermissionRepository permissionRepository;
   private final PermissionCatalogStore catalogStore;
 
-  public PermissionCatalogLoader(PermissionRepository permissionRepository, PermissionCatalogStore catalogStore) {
+  public PermissionCatalogLoader(
+      PermissionRepository permissionRepository, PermissionCatalogStore catalogStore) {
     this.permissionRepository = permissionRepository;
     this.catalogStore = catalogStore;
   }
@@ -37,9 +38,7 @@ public class PermissionCatalogLoader {
   public void reload() {
     try {
       var all = permissionRepository.listAll();
-      var entries = all.stream()
-        .map(this::toEntry)
-        .toList();
+      var entries = all.stream().map(this::toEntry).toList();
       catalogStore.loadAll(entries);
       log.info("Loaded {} permissions into Redis catalog", entries.size());
     } catch (Exception e) {
@@ -51,16 +50,15 @@ public class PermissionCatalogLoader {
   @Contract("_ -> new")
   private @NonNull PermissionCatalogEntry toEntry(@NonNull SysPermission p) {
     return new PermissionCatalogEntry(
-      p.id,
-      p.name,
-      p.code,
-      p.resource,
-      p.action,
-      p.groupCode,
-      p.description,
-      p.expression,
-      p.createAt,
-      p.updateAt
-    );
+        p.id,
+        p.name,
+        p.code,
+        p.resource,
+        p.action,
+        p.groupCode,
+        p.description,
+        p.expression,
+        p.createAt,
+        p.updateAt);
   }
 }

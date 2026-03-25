@@ -15,12 +15,12 @@ import lombok.RequiredArgsConstructor;
 @Produces("application/json")
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class MeResource {
-    private final AuthApplicationService authApplicationService;
-    private final SecurityIdentity securityIdentity;
+  private final AuthApplicationService authApplicationService;
+  private final SecurityIdentity securityIdentity;
 
-    @GET
-    @Authenticated
-    public Result<MeResponse> me() {
-        return Result.ok(authApplicationService.me(securityIdentity.getPrincipal().getName()));
-    }
+  @GET
+  @Authenticated
+  public Result<MeResponse> me() {
+    return Result.ok(authApplicationService.me(securityIdentity.getPrincipal().getName()));
+  }
 }

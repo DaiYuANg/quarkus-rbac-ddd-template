@@ -10,12 +10,12 @@ import lombok.RequiredArgsConstructor;
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class RequestMetadataAccess {
-    private final Instance<RequestMetadataProvider> provider;
+  private final Instance<RequestMetadataProvider> provider;
 
-    public RequestMetadata current() {
-        if (provider.isUnsatisfied()) {
-            return RequestMetadata.empty();
-        }
-        return provider.get().currentRequest().orElse(RequestMetadata.empty());
+  public RequestMetadata current() {
+    if (provider.isUnsatisfied()) {
+      return RequestMetadata.empty();
     }
+    return provider.get().currentRequest().orElse(RequestMetadata.empty());
+  }
 }

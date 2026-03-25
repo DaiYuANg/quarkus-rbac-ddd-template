@@ -9,9 +9,9 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UserQuery extends PageQuery {
-    @QueryParam("username")
-    private String username;
+  @QueryParam("username")
+  private String username;
 
-    @QueryParam("userStatus")
-    private UserStatus userStatus;
+  @QueryParam("userStatus")
+  private UserStatus userStatus;
 }

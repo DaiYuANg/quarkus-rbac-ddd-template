@@ -8,9 +8,7 @@ import io.quarkus.redis.datasource.value.ValueCommands;
 import jakarta.enterprise.context.ApplicationScoped;
 import java.util.Set;
 
-/**
- * Reference counting for shared role/permission Redis sets used by {@link UserAuthorityStore}.
- */
+/** Reference counting for shared role/permission Redis sets used by {@link UserAuthorityStore}. */
 @ApplicationScoped
 public class UserAuthorityRefCounter {
 

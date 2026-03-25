@@ -7,9 +7,10 @@ import com.github.DaiYuANg.persistence.query.SortFieldMapper;
 import com.querydsl.core.types.dsl.ComparableExpressionBase;
 import java.util.Map;
 
-/** Maps entity property names (from metamodel) to QueryDSL sort expressions for SysPermissionGroup. */
+/**
+ * Maps entity property names (from metamodel) to QueryDSL sort expressions for SysPermissionGroup.
+ */
 public enum PermissionGroupSortFieldMapper implements SortFieldMapper {
-
   INSTANCE;
 
   private static final QSysPermissionGroup g = new QSysPermissionGroup("permissionGroup");

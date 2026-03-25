@@ -8,5 +8,4 @@ public record PermissionListProjection(
     String action,
     String groupCode,
     String description,
-    String expression
-) {}
+    String expression) {}

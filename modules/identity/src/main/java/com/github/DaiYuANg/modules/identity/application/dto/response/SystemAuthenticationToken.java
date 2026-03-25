@@ -8,5 +8,4 @@ public record SystemAuthenticationToken(
     String refreshToken,
     String tokenType,
     Long expiresIn,
-    String authorityVersion
-) {}
+    String authorityVersion) {}

@@ -13,7 +13,8 @@ import org.junit.jupiter.api.Test;
 
 /**
  * Full-stack mobile flow for the {@code mobile-member} config user (password {@code root}). Refresh
- * is omitted: refresh resolution is DB-user-only in the current security provider (same as admin IT).
+ * is omitted: refresh resolution is DB-user-only in the current security provider (same as admin
+ * IT).
  */
 @QuarkusTest
 @QuarkusTestResource(ValkeyTestResource.class)

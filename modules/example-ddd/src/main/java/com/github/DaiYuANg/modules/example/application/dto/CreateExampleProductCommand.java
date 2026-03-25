@@ -5,6 +5,4 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public record CreateExampleProductCommand(
-    @NotBlank @Size(max = 255) String name,
-    @Min(0) long priceMinor,
-    @Min(0) int stock) {}
+    @NotBlank @Size(max = 255) String name, @Min(0) long priceMinor, @Min(0) int stock) {}

@@ -72,7 +72,8 @@ public class UserAuthorityStore {
     var authorityHashKey = props.authorityHashKey(userId);
 
     var existingRoleHash = hashCommands.hget(authorityHashKey, props.authorityHashRefRoleKey());
-    var existingPermissionHash = hashCommands.hget(authorityHashKey, props.authorityHashRefPermissionKey());
+    var existingPermissionHash =
+        hashCommands.hget(authorityHashKey, props.authorityHashRefPermissionKey());
     if (existingRoleHash != null) {
       refCounter.releaseRoleSet(existingRoleHash);
     }

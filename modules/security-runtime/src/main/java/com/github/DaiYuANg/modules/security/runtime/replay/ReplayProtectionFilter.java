@@ -16,7 +16,8 @@ import java.time.Instant;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 /**
- * Settings use {@code app.replay.*} (see {@code application.yaml}); Redis uses existing {@code quarkus.redis.*} only.
+ * Settings use {@code app.replay.*} (see {@code application.yaml}); Redis uses existing {@code
+ * quarkus.redis.*} only.
  */
 @Provider
 @ReplayProtected

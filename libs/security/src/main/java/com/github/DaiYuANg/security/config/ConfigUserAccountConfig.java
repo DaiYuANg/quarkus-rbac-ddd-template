@@ -8,19 +8,26 @@ import java.util.Optional;
 
 @ConfigMapping(prefix = "app.security")
 public interface ConfigUserAccountConfig {
-    @WithName("config-users")
-    Map<String, ConfigUser> users();
+  @WithName("config-users")
+  Map<String, ConfigUser> users();
 
-    interface ConfigUser {
-        String username();
-        @WithName("password-hash")
-        String passwordHash();
-        Optional<String> displayName();
-        Optional<List<String>> roles();
-        Optional<List<String>> permissions();
+  interface ConfigUser {
+    String username();
 
-        /** Overrides {@code app.identity.config-user-fallback-type} for this account (e.g. MERCHANT vs MEMBER). */
-        @WithName("principal-user-type")
-        Optional<String> principalUserType();
-    }
+    @WithName("password-hash")
+    String passwordHash();
+
+    Optional<String> displayName();
+
+    Optional<List<String>> roles();
+
+    Optional<List<String>> permissions();
+
+    /**
+     * Overrides {@code app.identity.config-user-fallback-type} for this account (e.g. MERCHANT vs
+     * MEMBER).
+     */
+    @WithName("principal-user-type")
+    Optional<String> principalUserType();
+  }
 }

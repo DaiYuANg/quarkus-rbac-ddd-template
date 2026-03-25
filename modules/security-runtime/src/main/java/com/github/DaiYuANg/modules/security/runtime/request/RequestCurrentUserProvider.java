@@ -12,11 +12,11 @@ import lombok.RequiredArgsConstructor;
 @RequestScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class RequestCurrentUserProvider implements CurrentAuthenticatedUserProvider {
-    private final SecurityIdentity securityIdentity;
-    private final AuthenticatedPrincipalResolver principalResolver;
+  private final SecurityIdentity securityIdentity;
+  private final AuthenticatedPrincipalResolver principalResolver;
 
-    @Override
-    public Optional<CurrentAuthenticatedUser> getCurrentUser() {
-        return principalResolver.resolve(securityIdentity);
-    }
+  @Override
+  public Optional<CurrentAuthenticatedUser> getCurrentUser() {
+    return principalResolver.resolve(securityIdentity);
+  }
 }

@@ -68,8 +68,7 @@ class AuthResourceBehaviorTest {
     var resource =
         new AuthResource(authApplicationService, jwt, refreshTokenStore, authSecurityConfig);
 
-    Response response =
-        resource.refresh("header-token", "cookie-token", uriInfo("https://a.test"));
+    Response response = resource.refresh("header-token", "cookie-token", uriInfo("https://a.test"));
 
     assertEquals(200, response.getStatus());
     verify(authApplicationService).refreshToken("header-token");
@@ -111,8 +110,7 @@ class AuthResourceBehaviorTest {
 
     var ex =
         assertThrows(
-            BizException.class,
-            () -> resource.logout("rt-1", null, uriInfo("https://a.test")));
+            BizException.class, () -> resource.logout("rt-1", null, uriInfo("https://a.test")));
     assertEquals(ResultCode.FORBIDDEN, ex.getResultCode());
   }
 
@@ -125,7 +123,11 @@ class AuthResourceBehaviorTest {
     when(jwt.getName()).thenReturn("root");
     var me =
         new MeResponse(
-            "1", "Root", "root@example.com", List.of(new MeRoleItem("1", "admin")), Set.of("user:view"));
+            "1",
+            "Root",
+            "root@example.com",
+            List.of(new MeRoleItem("1", "admin")),
+            Set.of("user:view"));
     when(authApplicationService.me("root")).thenReturn(me);
 
     var resource =

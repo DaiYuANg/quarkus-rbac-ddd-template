@@ -17,11 +17,19 @@ public class LoginAuditEventObserver {
 
   void onLoginAudit(@ObservesAsync @NonNull LoginAuditEvent event) {
     if (event.success()) {
-      log.atDebug().addKeyValue("username", event.username()).addKeyValue("remoteIp", event.remoteIp()).log("login audit (success)");
+      log.atDebug()
+          .addKeyValue("username", event.username())
+          .addKeyValue("remoteIp", event.remoteIp())
+          .log("login audit (success)");
       loginLogService.recordSuccess(event.username(), event.remoteIp(), event.userAgent());
     } else {
-      log.atDebug().addKeyValue("username", event.username()).addKeyValue("reason", event.reason()).addKeyValue("remoteIp", event.remoteIp()).log("login audit (failure)");
-      loginLogService.recordFailure(event.username(), event.remoteIp(), event.userAgent(), event.reason());
+      log.atDebug()
+          .addKeyValue("username", event.username())
+          .addKeyValue("reason", event.reason())
+          .addKeyValue("remoteIp", event.remoteIp())
+          .log("login audit (failure)");
+      loginLogService.recordFailure(
+          event.username(), event.remoteIp(), event.userAgent(), event.reason());
     }
   }
 }

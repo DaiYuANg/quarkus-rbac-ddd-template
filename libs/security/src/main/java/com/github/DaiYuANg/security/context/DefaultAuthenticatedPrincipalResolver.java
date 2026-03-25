@@ -12,17 +12,20 @@ import lombok.RequiredArgsConstructor;
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class DefaultAuthenticatedPrincipalResolver implements AuthenticatedPrincipalResolver {
-    private final TokenContextResolver tokenContextResolver;
+  private final TokenContextResolver tokenContextResolver;
 
-    @Override
-    public Optional<CurrentAuthenticatedUser> resolve(SecurityIdentity identity) {
-        return tokenContextResolver.resolve(identity).map(token -> new CurrentAuthenticatedUser(
-            token.subject(),
-            token.displayName(),
-            token.userType(),
-            token.roles(),
-            token.permissions(),
-            token.attributes()
-        ));
-    }
+  @Override
+  public Optional<CurrentAuthenticatedUser> resolve(SecurityIdentity identity) {
+    return tokenContextResolver
+        .resolve(identity)
+        .map(
+            token ->
+                new CurrentAuthenticatedUser(
+                    token.subject(),
+                    token.displayName(),
+                    token.userType(),
+                    token.roles(),
+                    token.permissions(),
+                    token.attributes()));
+  }
 }

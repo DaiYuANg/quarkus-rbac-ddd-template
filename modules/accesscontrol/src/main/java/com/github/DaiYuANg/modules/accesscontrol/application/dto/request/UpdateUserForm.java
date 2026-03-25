@@ -10,5 +10,4 @@ public record UpdateUserForm(
     @Size(max = 128) String nickname,
     @Size(max = 128) String email,
     UserStatus status,
-    List<Long> roleIds
-) {}
+    List<Long> roleIds) {}

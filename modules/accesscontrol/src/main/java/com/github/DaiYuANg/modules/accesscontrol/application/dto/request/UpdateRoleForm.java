@@ -10,5 +10,4 @@ public record UpdateRoleForm(
     RoleStatus status,
     Integer sort,
     @Size(max = 255) String description,
-    List<Long> permissionGroupIds
-) {}
+    List<Long> permissionGroupIds) {}

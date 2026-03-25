@@ -7,8 +7,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Requires {@code app.replay.*} headers (default {@code X-Timestamp}, {@code X-Nonce}): timestamp within skew and a
- * fresh nonce (stored once in Redis via the default Quarkus Redis client).
+ * Requires {@code app.replay.*} headers (default {@code X-Timestamp}, {@code X-Nonce}): timestamp
+ * within skew and a fresh nonce (stored once in Redis via the default Quarkus Redis client).
  */
 @NameBinding
 @Retention(RetentionPolicy.RUNTIME)

@@ -33,8 +33,6 @@ public class MobileSessionResource {
     }
     return Result.ok(
         new MobilePrincipalView(
-            jwt.getName(),
-            userType == null ? "" : String.valueOf(userType),
-            List.copyOf(roles)));
+            jwt.getName(), userType == null ? "" : String.valueOf(userType), List.copyOf(roles)));
   }
 }

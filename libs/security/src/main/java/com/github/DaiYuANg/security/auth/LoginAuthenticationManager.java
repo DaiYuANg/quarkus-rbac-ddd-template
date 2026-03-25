@@ -15,7 +15,9 @@ public class LoginAuthenticationManager {
   private final AuthenticationFailureHandler failureHandler;
 
   public AuthenticationResult authenticate(@NonNull LoginAuthenticationRequest request) {
-    log.atDebug().addKeyValue("requestType", request.getClass().getSimpleName()).log("authenticate");
+    log.atDebug()
+        .addKeyValue("requestType", request.getClass().getSimpleName())
+        .log("authenticate");
     AuthenticationProviderResult lastFailure = null;
     for (var provider : authenticationProviders.orderedProviders()) {
       if (!provider.supports(request)) {

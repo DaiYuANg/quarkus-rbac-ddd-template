@@ -2,8 +2,8 @@ package com.github.DaiYuANg.modules.example.application;
 
 import com.github.DaiYuANg.modules.example.application.dto.CreateExampleProductCommand;
 import com.github.DaiYuANg.modules.example.application.dto.ExampleProductView;
-import com.github.DaiYuANg.modules.example.application.port.in.ExampleProductCatalogApi;
 import com.github.DaiYuANg.modules.example.application.port.driven.ExampleCatalogStore;
+import com.github.DaiYuANg.modules.example.application.port.in.ExampleProductCatalogApi;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;

@@ -12,26 +12,22 @@ import org.jspecify.annotations.Nullable;
 
 @RequestScoped
 public class JaxRsRequestMetadataProvider implements RequestMetadataProvider {
-  @Context
-  HttpHeaders headers;
+  @Context HttpHeaders headers;
 
   @Override
   public Optional<RequestMetadata> currentRequest() {
     if (headers == null) {
       return Optional.empty();
     }
-    String remoteIp = firstHeader(
-      "X-Forwarded-For",
-      "X-Real-IP",
-      "CF-Connecting-IP",
-      "True-Client-IP"
-    );
+    String remoteIp =
+        firstHeader("X-Forwarded-For", "X-Real-IP", "CF-Connecting-IP", "True-Client-IP");
     if (remoteIp != null && remoteIp.contains(",")) {
       remoteIp = remoteIp.split(",")[0].trim();
     }
     String userAgent = firstHeader("User-Agent");
     String requestId = firstHeader("X-Request-Id", "X-Correlation-Id");
-    return Optional.of(new RequestMetadata(blankToNull(remoteIp), blankToNull(userAgent), blankToNull(requestId)));
+    return Optional.of(
+        new RequestMetadata(blankToNull(remoteIp), blankToNull(userAgent), blankToNull(requestId)));
   }
 
   private @Nullable String firstHeader(String @NonNull ... names) {

@@ -49,7 +49,6 @@ public class PanacheExampleOrderStore implements ExampleOrderStore {
         o.lines.stream()
             .map(l -> new ExampleOrderLineView(l.productId, l.quantity, l.unitPriceMinor))
             .toList();
-    return new ExampleOrderView(
-        o.id, o.buyerUsername, o.status.name(), o.totalMinor, lineViews);
+    return new ExampleOrderView(o.id, o.buyerUsername, o.status.name(), o.totalMinor, lineViews);
   }
 }

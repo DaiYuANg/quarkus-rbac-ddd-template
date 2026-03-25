@@ -8,9 +8,9 @@ import lombok.RequiredArgsConstructor;
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class AuthenticationProviders {
-    private final AuthenticationProviderRegistry registry;
+  private final AuthenticationProviderRegistry registry;
 
-    public List<LoginAuthenticationProvider<?>> orderedProviders() {
-        return registry.orderedProviders();
-    }
+  public List<LoginAuthenticationProvider<?>> orderedProviders() {
+    return registry.orderedProviders();
+  }
 }

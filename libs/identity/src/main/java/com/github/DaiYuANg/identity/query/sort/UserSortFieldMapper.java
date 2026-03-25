@@ -9,7 +9,6 @@ import java.util.Map;
 
 /** Maps entity property names (from metamodel) to QueryDSL sort expressions for SysUser. */
 public enum UserSortFieldMapper implements SortFieldMapper {
-
   INSTANCE;
 
   private static final QSysUser u = new QSysUser("user");

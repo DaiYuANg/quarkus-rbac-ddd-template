@@ -5,8 +5,8 @@ import java.util.Map;
 
 /**
  * Shared test profile: Testcontainers PostgreSQL JDBC + Valkey from {@link ValkeyTestResource}
- * ({@code test.redis.hosts}), Hibernate {@code drop-and-create}. Use for full-stack HTTP tests
- * that must not mock core services.
+ * ({@code test.redis.hosts}), Hibernate {@code drop-and-create}. Use for full-stack HTTP tests that
+ * must not mock core services.
  */
 public final class QuarkusPostgresValkeyTestProfile implements QuarkusTestProfile {
 
@@ -23,7 +23,8 @@ public final class QuarkusPostgresValkeyTestProfile implements QuarkusTestProfil
         Map.entry("quarkus.redis.hosts", "${test.redis.hosts}"),
         Map.entry("quarkus.redis.devservices.enabled", "false"),
         Map.entry("quarkus.http.test-port", "0"),
-        // Main app YAML uses a separate management port; disable for tests so /q/health/* is on the test HTTP port.
+        // Main app YAML uses a separate management port; disable for tests so /q/health/* is on the
+        // test HTTP port.
         Map.entry("quarkus.management.enabled", "false"),
         Map.entry("quarkus.log.console.json.enabled", "false"),
         Map.entry("quarkus.otel.enabled", "false"));

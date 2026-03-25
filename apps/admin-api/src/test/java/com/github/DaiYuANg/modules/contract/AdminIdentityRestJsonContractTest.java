@@ -37,8 +37,7 @@ class AdminIdentityRestJsonContractTest {
   @Test
   void loginWrapsTokenInResultEnvelopeWithStableFieldNames() {
     when(authApplicationService.login(any()))
-        .thenReturn(
-            new SystemAuthenticationToken("a", "r", "Bearer", 120L, "v-contract"));
+        .thenReturn(new SystemAuthenticationToken("a", "r", "Bearer", 120L, "v-contract"));
 
     given()
         .contentType("application/json")
@@ -57,16 +56,14 @@ class AdminIdentityRestJsonContractTest {
   }
 
   @Test
-  @TestSecurity(user = "u1", roles = {"r1"})
+  @TestSecurity(
+      user = "u1",
+      roles = {"r1"})
   void meExposesStableProfileShapeUnderData() {
     when(authApplicationService.me("u1"))
         .thenReturn(
             new MeResponse(
-                "id-1",
-                "N",
-                "e@x",
-                List.of(new MeRoleItem("rid", "rname")),
-                Set.of("p1")));
+                "id-1", "N", "e@x", List.of(new MeRoleItem("rid", "rname")), Set.of("p1")));
 
     given()
         .when()

@@ -9,7 +9,6 @@ import java.util.Map;
 
 /** Maps entity property names (from metamodel) to QueryDSL sort expressions for SysRole. */
 public enum RoleSortFieldMapper implements SortFieldMapper {
-
   INSTANCE;
 
   private static final QSysRole r = new QSysRole("role");

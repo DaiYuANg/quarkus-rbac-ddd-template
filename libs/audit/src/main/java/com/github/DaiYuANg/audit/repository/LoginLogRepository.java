@@ -7,8 +7,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 public class LoginLogRepository extends BasePanacheCommandRepository<SysLoginLog> {
-    @Override
-    protected ResultCode notFoundCode() {
-        return ResultCode.INTERNAL_ERROR;
-    }
+  @Override
+  protected ResultCode notFoundCode() {
+    return ResultCode.INTERNAL_ERROR;
+  }
 }

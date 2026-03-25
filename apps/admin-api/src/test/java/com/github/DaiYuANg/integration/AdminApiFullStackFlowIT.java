@@ -12,11 +12,12 @@ import io.quarkus.test.junit.TestProfile;
 import org.junit.jupiter.api.Test;
 
 /**
- * End-to-end HTTP flow: real {@code AuthApplicationService}, JWT, Redis, PostgreSQL (Testcontainers).
- * Uses the built-in <strong>config user</strong> {@code root} / {@code root} (no {@code sys_user} row).
+ * End-to-end HTTP flow: real {@code AuthApplicationService}, JWT, Redis, PostgreSQL
+ * (Testcontainers). Uses the built-in <strong>config user</strong> {@code root} / {@code root} (no
+ * {@code sys_user} row).
  *
- * <p><strong>Refresh tokens</strong> are currently resolved only for <strong>database</strong> users in
- * {@code AdminRefreshTokenAuthenticationProvider}, so refresh is not asserted here.
+ * <p><strong>Refresh tokens</strong> are currently resolved only for <strong>database</strong>
+ * users in {@code AdminRefreshTokenAuthenticationProvider}, so refresh is not asserted here.
  */
 @QuarkusTest
 @QuarkusTestResource(ValkeyTestResource.class)
@@ -53,7 +54,8 @@ class AdminApiFullStackFlowIT {
         .statusCode(200)
         .body("code", equalTo("00000"))
         .body("data.id", equalTo("root"))
-        // JWT claim mapping may expose displayName as subject until custom claims are mapped everywhere
+        // JWT claim mapping may expose displayName as subject until custom claims are mapped
+        // everywhere
         .body("data.name", notNullValue())
         .body("data.permissions", notNullValue());
   }

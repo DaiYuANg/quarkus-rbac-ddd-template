@@ -6,11 +6,11 @@ import com.github.DaiYuANg.modules.example.application.dto.ExampleOrderLineView;
 import com.github.DaiYuANg.modules.example.application.dto.ExampleOrderView;
 import com.github.DaiYuANg.modules.example.application.dto.ExampleProductView;
 import com.github.DaiYuANg.modules.example.application.dto.PlaceExampleOrderCommand;
-import com.github.DaiYuANg.modules.example.application.port.in.ExampleOrderPlacementApi;
 import com.github.DaiYuANg.modules.example.application.port.driven.ExampleBuyerContext;
 import com.github.DaiYuANg.modules.example.application.port.driven.ExampleCatalogStore;
 import com.github.DaiYuANg.modules.example.application.port.driven.ExampleOrderStore;
 import com.github.DaiYuANg.modules.example.application.port.driven.ExampleUserLookupPort;
+import com.github.DaiYuANg.modules.example.application.port.in.ExampleOrderPlacementApi;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -39,9 +39,11 @@ public class ExampleOrderApplicationService implements ExampleOrderPlacementApi 
           catalogStore
               .findById(line.productId())
               .filter(ExampleProductView::active)
-              .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND, "product not available"));
+              .orElseThrow(
+                  () -> new BizException(ResultCode.DATA_NOT_FOUND, "product not available"));
       if (product.stock() < line.quantity()) {
-        throw new BizException(ResultCode.BAD_REQUEST, "insufficient stock for product " + product.id());
+        throw new BizException(
+            ResultCode.BAD_REQUEST, "insufficient stock for product " + product.id());
       }
       var lineTotal = Math.multiplyExact(product.priceMinor(), line.quantity());
       totalMinor = Math.addExact(totalMinor, lineTotal);

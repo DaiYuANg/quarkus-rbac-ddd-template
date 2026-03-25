@@ -10,9 +10,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import lombok.RequiredArgsConstructor;
 
-/**
- * Profile backed by {@code sys_user} and RBAC graph (roles, permission groups).
- */
+/** Profile backed by {@code sys_user} and RBAC graph (roles, permission groups). */
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class DbUserProfileProvider implements UserProfileProvider {
@@ -57,15 +55,17 @@ public class DbUserProfileProvider implements UserProfileProvider {
   }
 
   private UserDetailVo toUserDetail(com.github.DaiYuANg.identity.entity.SysUser user) {
-    var permissions = user.roles.stream()
-        .flatMap(r -> r.permissionGroups.stream())
-        .flatMap(g -> g.permissions.stream())
-        .map(p -> p.code)
-        .collect(java.util.stream.Collectors.toCollection(java.util.LinkedHashSet::new));
-    var roleCodes = user.roles.stream()
-        .map(r -> r.code)
-        .filter(java.util.Objects::nonNull)
-        .collect(java.util.stream.Collectors.toCollection(java.util.LinkedHashSet::new));
+    var permissions =
+        user.roles.stream()
+            .flatMap(r -> r.permissionGroups.stream())
+            .flatMap(g -> g.permissions.stream())
+            .map(p -> p.code)
+            .collect(java.util.stream.Collectors.toCollection(java.util.LinkedHashSet::new));
+    var roleCodes =
+        user.roles.stream()
+            .map(r -> r.code)
+            .filter(java.util.Objects::nonNull)
+            .collect(java.util.stream.Collectors.toCollection(java.util.LinkedHashSet::new));
     return new UserDetailVo(
         user.id,
         user.username,

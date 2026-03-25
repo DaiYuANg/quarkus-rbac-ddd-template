@@ -37,7 +37,9 @@ class LoginAuthenticationManagerIntegrationTest {
 
     var manager =
         new LoginAuthenticationManager(
-            providers, new DefaultAuthenticationSuccessHandler(), new DefaultAuthenticationFailureHandler());
+            providers,
+            new DefaultAuthenticationSuccessHandler(),
+            new DefaultAuthenticationFailureHandler());
 
     var result =
         manager.authenticate(new UsernamePasswordAuthenticationRequest("chain-user", "password"));
@@ -49,11 +51,14 @@ class LoginAuthenticationManagerIntegrationTest {
   @Test
   void providerChainThrowsWhenAllProvidersAbstain() {
     var providers = mock(AuthenticationProviders.class);
-    when(providers.orderedProviders()).thenReturn(List.of(new AbstainProvider(), new AbstainProvider()));
+    when(providers.orderedProviders())
+        .thenReturn(List.of(new AbstainProvider(), new AbstainProvider()));
 
     var manager =
         new LoginAuthenticationManager(
-            providers, new DefaultAuthenticationSuccessHandler(), new DefaultAuthenticationFailureHandler());
+            providers,
+            new DefaultAuthenticationSuccessHandler(),
+            new DefaultAuthenticationFailureHandler());
 
     var ex =
         assertThrows(
@@ -76,7 +81,8 @@ class LoginAuthenticationManagerIntegrationTest {
     }
 
     @Override
-    public AuthenticationProviderResult authenticate(UsernamePasswordAuthenticationRequest request) {
+    public AuthenticationProviderResult authenticate(
+        UsernamePasswordAuthenticationRequest request) {
       return AuthenticationProviderResult.abstain();
     }
   }
@@ -94,7 +100,8 @@ class LoginAuthenticationManagerIntegrationTest {
     }
 
     @Override
-    public AuthenticationProviderResult authenticate(UsernamePasswordAuthenticationRequest request) {
+    public AuthenticationProviderResult authenticate(
+        UsernamePasswordAuthenticationRequest request) {
       return AuthenticationProviderResult.failure(ResultCode.USERNAME_OR_PASSWORD_INVALID);
     }
   }
@@ -118,7 +125,8 @@ class LoginAuthenticationManagerIntegrationTest {
     }
 
     @Override
-    public AuthenticationProviderResult authenticate(UsernamePasswordAuthenticationRequest request) {
+    public AuthenticationProviderResult authenticate(
+        UsernamePasswordAuthenticationRequest request) {
       var user =
           new AuthenticatedUser(
               username, "Chain User", "ADMIN", Set.of("ops"), Set.of("user:view"), Map.of(), 1L);

@@ -8,18 +8,18 @@ import lombok.Setter;
 @Getter
 @Setter
 public class PermissionQuery extends PageQuery {
-    @QueryParam("name")
-    private String name;
+  @QueryParam("name")
+  private String name;
 
-    @QueryParam("code")
-    private String code;
+  @QueryParam("code")
+  private String code;
 
-    @QueryParam("resource")
-    private String resource;
+  @QueryParam("resource")
+  private String resource;
 
-    @QueryParam("action")
-    private String action;
+  @QueryParam("action")
+  private String action;
 
-    @QueryParam("groupCode")
-    private String groupCode;
+  @QueryParam("groupCode")
+  private String groupCode;
 }

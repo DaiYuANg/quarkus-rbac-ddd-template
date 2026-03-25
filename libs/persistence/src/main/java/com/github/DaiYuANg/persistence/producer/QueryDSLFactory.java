@@ -11,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 public class QueryDSLFactory {
 
   @Produces
-  JPAQueryFactory jpaQueryFactory(EntityManager entityManager){
+  JPAQueryFactory jpaQueryFactory(EntityManager entityManager) {
     return new JPAQueryFactory(entityManager);
   }
 }

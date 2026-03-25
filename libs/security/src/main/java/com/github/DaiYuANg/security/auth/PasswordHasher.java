@@ -5,6 +5,11 @@ import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 public class PasswordHasher {
-    public String hash(String raw) { return BcryptUtil.bcryptHash(raw); }
-    public boolean verify(String raw, String encoded) { return BcryptUtil.matches(raw, encoded); }
+  public String hash(String raw) {
+    return BcryptUtil.bcryptHash(raw);
+  }
+
+  public boolean verify(String raw, String encoded) {
+    return BcryptUtil.matches(raw, encoded);
+  }
 }

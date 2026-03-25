@@ -34,7 +34,8 @@ class AuthResourceQuarkusTest {
   @Test
   void loginReturnsTokenAndSetsRefreshCookie() {
     when(authApplicationService.login(any()))
-        .thenReturn(new SystemAuthenticationToken("access-login", "rt-login", "Bearer", 120L, "v1"));
+        .thenReturn(
+            new SystemAuthenticationToken("access-login", "rt-login", "Bearer", 120L, "v1"));
 
     given()
         .contentType("application/json")
@@ -60,7 +61,8 @@ class AuthResourceQuarkusTest {
   @Test
   void refreshPrefersHeaderTokenOverCookieToken() {
     when(authApplicationService.refreshToken("rt-header"))
-        .thenReturn(new SystemAuthenticationToken("access-header", "rt-next", "Bearer", 120L, "v2"));
+        .thenReturn(
+            new SystemAuthenticationToken("access-header", "rt-next", "Bearer", 120L, "v2"));
 
     given()
         .contentType("application/json")
@@ -81,7 +83,8 @@ class AuthResourceQuarkusTest {
   @Test
   void refreshUsesCookieTokenWhenHeaderMissing() {
     when(authApplicationService.refreshToken("rt-cookie"))
-        .thenReturn(new SystemAuthenticationToken("access-cookie", "rt-next-2", "Bearer", 120L, "v3"));
+        .thenReturn(
+            new SystemAuthenticationToken("access-cookie", "rt-next-2", "Bearer", 120L, "v3"));
 
     given()
         .contentType("application/json")
@@ -98,7 +101,9 @@ class AuthResourceQuarkusTest {
   }
 
   @Test
-  @TestSecurity(user = "root", roles = {"user:view"})
+  @TestSecurity(
+      user = "root",
+      roles = {"user:view"})
   void meEndpointReturnsFrontendContractShape() {
     when(authApplicationService.me("root"))
         .thenReturn(
@@ -127,7 +132,8 @@ class AuthResourceQuarkusTest {
   @Test
   void refreshAliasUsesSameFlowAsAuthRefresh() {
     when(authApplicationService.refreshToken("rt-cookie-alias"))
-        .thenReturn(new SystemAuthenticationToken("access-alias", "rt-next-alias", "Bearer", 120L, "v4"));
+        .thenReturn(
+            new SystemAuthenticationToken("access-alias", "rt-next-alias", "Bearer", 120L, "v4"));
 
     given()
         .contentType("application/json")

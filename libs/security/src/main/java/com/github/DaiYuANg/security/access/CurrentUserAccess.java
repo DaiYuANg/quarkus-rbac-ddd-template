@@ -11,12 +11,12 @@ import lombok.RequiredArgsConstructor;
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class CurrentUserAccess {
-    private final Instance<CurrentAuthenticatedUserProvider> provider;
+  private final Instance<CurrentAuthenticatedUserProvider> provider;
 
-    public Optional<CurrentAuthenticatedUser> currentUser() {
-        if (provider.isUnsatisfied()) {
-            return Optional.empty();
-        }
-        return provider.get().getCurrentUser();
+  public Optional<CurrentAuthenticatedUser> currentUser() {
+    if (provider.isUnsatisfied()) {
+      return Optional.empty();
     }
+    return provider.get().getCurrentUser();
+  }
 }

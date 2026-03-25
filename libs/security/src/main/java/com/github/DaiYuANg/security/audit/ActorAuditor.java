@@ -13,8 +13,9 @@ public class ActorAuditor {
   private final CurrentUserAccess currentUserAccess;
 
   public String currentActorKey() {
-    return currentUserAccess.currentUser()
-      .map(user -> user.userType() + ":" + user.username())
-      .orElse("SYSTEM:anonymous");
+    return currentUserAccess
+        .currentUser()
+        .map(user -> user.userType() + ":" + user.username())
+        .orElse("SYSTEM:anonymous");
   }
 }

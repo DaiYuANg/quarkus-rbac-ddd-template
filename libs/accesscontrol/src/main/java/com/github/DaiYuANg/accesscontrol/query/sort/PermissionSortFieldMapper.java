@@ -9,7 +9,6 @@ import java.util.Map;
 
 /** Maps entity property names (from metamodel) to QueryDSL sort expressions for SysPermission. */
 public enum PermissionSortFieldMapper implements SortFieldMapper {
-
   INSTANCE;
 
   private static final QSysPermission p = new QSysPermission("permission");

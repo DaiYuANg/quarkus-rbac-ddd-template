@@ -17,33 +17,43 @@ import lombok.RequiredArgsConstructor;
 @ApplicationScoped
 @Priority(300)
 @RequiredArgsConstructor(onConstructor_ = @Inject)
-public class AdminRefreshTokenAuthenticationProvider implements LoginAuthenticationProvider<RefreshTokenAuthenticationRequest> {
-    private final RefreshTokenStore refreshTokenStore;
-    private final UserRepository userRepository;
-    private final AdminSecurityPrincipalAssembler principalAssembler;
+public class AdminRefreshTokenAuthenticationProvider
+    implements LoginAuthenticationProvider<RefreshTokenAuthenticationRequest> {
+  private final RefreshTokenStore refreshTokenStore;
+  private final UserRepository userRepository;
+  private final AdminSecurityPrincipalAssembler principalAssembler;
 
-    @Override
-    public String providerId() {
-        return "refresh-token";
-    }
+  @Override
+  public String providerId() {
+    return "refresh-token";
+  }
 
-    @Override
-    public boolean supports(LoginAuthenticationRequest request) {
-        return request instanceof RefreshTokenAuthenticationRequest;
-    }
+  @Override
+  public boolean supports(LoginAuthenticationRequest request) {
+    return request instanceof RefreshTokenAuthenticationRequest;
+  }
 
-    @Override
-    public AuthenticationProviderResult authenticate(RefreshTokenAuthenticationRequest request) {
-        return refreshTokenStore.getUsername(request.refreshToken())
-            .filter(username -> !username.isBlank())
-            .map(username -> userRepository.findByUsername(username)
-                .map(user -> {
-                    if (user.userStatus != UserStatus.ENABLED) {
-                        return AuthenticationProviderResult.failure(ResultCode.USER_ACCESS_BLOCKED);
-                    }
-                    return AuthenticationProviderResult.success(new AuthenticationResult(principalAssembler.fromDbUser(user), providerId()));
-                })
-                .orElseGet(() -> AuthenticationProviderResult.failure(ResultCode.DATA_NOT_FOUND)))
-            .orElseGet(() -> AuthenticationProviderResult.failure(ResultCode.REFRESH_TOKEN_INVALID));
-    }
+  @Override
+  public AuthenticationProviderResult authenticate(RefreshTokenAuthenticationRequest request) {
+    return refreshTokenStore
+        .getUsername(request.refreshToken())
+        .filter(username -> !username.isBlank())
+        .map(
+            username ->
+                userRepository
+                    .findByUsername(username)
+                    .map(
+                        user -> {
+                          if (user.userStatus != UserStatus.ENABLED) {
+                            return AuthenticationProviderResult.failure(
+                                ResultCode.USER_ACCESS_BLOCKED);
+                          }
+                          return AuthenticationProviderResult.success(
+                              new AuthenticationResult(
+                                  principalAssembler.fromDbUser(user), providerId()));
+                        })
+                    .orElseGet(
+                        () -> AuthenticationProviderResult.failure(ResultCode.DATA_NOT_FOUND)))
+        .orElseGet(() -> AuthenticationProviderResult.failure(ResultCode.REFRESH_TOKEN_INVALID));
+  }
 }

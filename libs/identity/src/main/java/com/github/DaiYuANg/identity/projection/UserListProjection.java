@@ -10,5 +10,4 @@ public record UserListProjection(
     String mobilePhone,
     String identifier,
     String userStatus,
-    Instant latestSignIn
-) {}
+    Instant latestSignIn) {}

@@ -54,8 +54,8 @@ subprojects {
     configDirectory.set(rootProject.layout.projectDirectory.dir("config/checkstyle"))
   }
   tasks
-      .matching { it.name.startsWith("checkstyle") }
-      .configureEach { tasks.findByName("jandex")?.let { dependsOn(it) } }
+    .matching { it.name.startsWith("checkstyle") }
+    .configureEach { tasks.findByName("jandex")?.let { dependsOn(it) } }
 
   spotbugs {
     reportLevel = Confidence.MEDIUM
@@ -67,7 +67,7 @@ subprojects {
     reports.create("html") { required.set(true) }
   }
 
-  extensions.configure<JacocoPluginExtension> { toolVersion = "0.8.12" }
+  extensions.configure<JacocoPluginExtension> { toolVersion = "0.8.14" }
 
   extensions.configure<JavaPluginExtension> {
     toolchain { languageVersion = JavaLanguageVersion.of(rootLibs.versions.jdk.get()) }
@@ -99,11 +99,11 @@ subprojects {
   }
 
   extensions
-      .findByType<org.owasp.dependencycheck.gradle.extension.DependencyCheckExtension>()
-      ?.apply {
-        formats.set(listOf("HTML", "JSON"))
-        suppressionFile.set(rootProject.file("config/owasp/suppressions.xml").absolutePath)
-      }
+    .findByType<org.owasp.dependencycheck.gradle.extension.DependencyCheckExtension>()
+    ?.apply {
+      formats.set(listOf("HTML", "JSON"))
+      suppressionFile.set(rootProject.file("config/owasp/suppressions.xml").absolutePath)
+    }
 }
 
 spotless {
@@ -113,12 +113,12 @@ spotless {
   }
   java {
     target("**/*.java")
-    importOrder()
-    removeUnusedImports()
+    // GOOGLE style: 2-space indent (AOSP uses 4). Imports are handled by the formatter.
+    googleJavaFormat(libs.versions.googleJavaFormat.get())
   }
   kotlinGradle {
     target("**/*.gradle.kts")
-    ktfmt()
+    ktfmt(libs.versions.ktfmt.get()).googleStyle()
   }
 }
 

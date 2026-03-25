@@ -8,5 +8,4 @@ public record PermissionVO(
     String action,
     String groupCode,
     String description,
-    String expression
-) {}
+    String expression) {}

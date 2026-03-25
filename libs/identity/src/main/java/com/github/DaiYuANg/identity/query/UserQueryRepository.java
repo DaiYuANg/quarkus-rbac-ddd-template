@@ -7,5 +7,4 @@ import com.github.DaiYuANg.persistence.query.BaseQueryRepository;
 /**
  * Query repository boundary reserved for Blaze-Persistence + static metamodel style implementation.
  */
-public interface UserQueryRepository extends BaseQueryRepository<UserQuery, UserListProjection> {
-}
+public interface UserQueryRepository extends BaseQueryRepository<UserQuery, UserListProjection> {}

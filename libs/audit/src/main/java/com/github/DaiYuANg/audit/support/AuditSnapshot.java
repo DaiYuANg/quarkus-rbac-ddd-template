@@ -6,9 +6,8 @@ public record AuditSnapshot(
     String actorType,
     String remoteIp,
     String userAgent,
-    String requestId
-) {
-    public static AuditSnapshot system() {
-        return new AuditSnapshot("system", "system", "SYSTEM", null, null, null);
-    }
+    String requestId) {
+  public static AuditSnapshot system() {
+    return new AuditSnapshot("system", "system", "SYSTEM", null, null, null);
+  }
 }

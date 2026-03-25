@@ -14,32 +14,33 @@ import lombok.RequiredArgsConstructor;
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class PermissionApplicationService {
-    private final PermissionCatalogStore catalogStore;
-    private final PermissionCatalogLoader catalogLoader;
-    private final AuthorizationService authorizationService;
+  private final PermissionCatalogStore catalogStore;
+  private final PermissionCatalogLoader catalogLoader;
+  private final AuthorizationService authorizationService;
 
-    public Optional<PermissionVO> getPermissionById(Long id) {
-        authorizationService.check("permission", "view");
-        ensureCatalogLoaded();
-        return catalogStore.getById(id).map(this::toVO);
-    }
+  public Optional<PermissionVO> getPermissionById(Long id) {
+    authorizationService.check("permission", "view");
+    ensureCatalogLoaded();
+    return catalogStore.getById(id).map(this::toVO);
+  }
 
-    public Optional<PermissionVO> getPermissionByName(String name) {
-        authorizationService.check("permission", "view");
-        ensureCatalogLoaded();
-        return catalogStore.getByName(name).map(this::toVO);
-    }
+  public Optional<PermissionVO> getPermissionByName(String name) {
+    authorizationService.check("permission", "view");
+    ensureCatalogLoaded();
+    return catalogStore.getByName(name).map(this::toVO);
+  }
 
-    public List<PermissionVO> getAllPermissions() {
-        authorizationService.check("permission", "view");
-        ensureCatalogLoaded();
-        return catalogStore.getAll().stream().map(this::toVO).toList();
-    }
+  public List<PermissionVO> getAllPermissions() {
+    authorizationService.check("permission", "view");
+    ensureCatalogLoaded();
+    return catalogStore.getAll().stream().map(this::toVO).toList();
+  }
 
-    public PageResult<PermissionVO> queryPermissionPage(PermissionQuery query) {
-        authorizationService.check("permission", "view");
-        ensureCatalogLoaded();
-        var page = catalogStore.findPage(
+  public PageResult<PermissionVO> queryPermissionPage(PermissionQuery query) {
+    authorizationService.check("permission", "view");
+    ensureCatalogLoaded();
+    var page =
+        catalogStore.findPage(
             query.getKeyword(),
             query.getName(),
             query.getCode(),
@@ -49,19 +50,29 @@ public class PermissionApplicationService {
             query.getSortBy(),
             query.getSortDirection(),
             query.offset(),
-            query.getPageSize()
-        );
-        return PageResult.of(page.total(), query.getPageNum(), query.getPageSize(),
-            page.content().stream().map(this::toVO).toList());
-    }
+            query.getPageSize());
+    return PageResult.of(
+        page.total(),
+        query.getPageNum(),
+        query.getPageSize(),
+        page.content().stream().map(this::toVO).toList());
+  }
 
-    private void ensureCatalogLoaded() {
-        if (catalogStore.isEmpty()) {
-            catalogLoader.reload();
-        }
+  private void ensureCatalogLoaded() {
+    if (catalogStore.isEmpty()) {
+      catalogLoader.reload();
     }
+  }
 
-    private PermissionVO toVO(com.github.DaiYuANg.cache.PermissionCatalogEntry e) {
-        return new PermissionVO(e.id(), e.name(), e.code(), e.resource(), e.action(), e.groupCode(), e.description(), e.expression());
-    }
+  private PermissionVO toVO(com.github.DaiYuANg.cache.PermissionCatalogEntry e) {
+    return new PermissionVO(
+        e.id(),
+        e.name(),
+        e.code(),
+        e.resource(),
+        e.action(),
+        e.groupCode(),
+        e.description(),
+        e.expression());
+  }
 }

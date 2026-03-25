@@ -24,7 +24,8 @@ import lombok.RequiredArgsConstructor;
 
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
-public class RoleRepository extends BasePanacheCommandRepository<SysRole> implements RoleQueryRepository {
+public class RoleRepository extends BasePanacheCommandRepository<SysRole>
+    implements RoleQueryRepository {
 
   private static final QSysRole r = new QSysRole("role");
 
@@ -51,9 +52,7 @@ public class RoleRepository extends BasePanacheCommandRepository<SysRole> implem
     var filter = spec.filter();
 
     var blazeQuery =
-        new BlazeJPAQuery<SysRole>(entityManager, criteriaBuilderFactory)
-            .from(r)
-            .select(r);
+        new BlazeJPAQuery<SysRole>(entityManager, criteriaBuilderFactory).from(r).select(r);
 
     applyKeyword(blazeQuery, query.getKeyword());
     applyName(blazeQuery, filter.name());
@@ -61,11 +60,7 @@ public class RoleRepository extends BasePanacheCommandRepository<SysRole> implem
     BlazeQueryDSLSupport.applySorts(blazeQuery, spec.sorts(), RoleSortFieldMapper.INSTANCE);
 
     return queryDslSupport.executeWithEntityView(
-        blazeQuery,
-        RoleListView.class,
-        query.offset(),
-        query.getPageSize(),
-        this::toProjection);
+        blazeQuery, RoleListView.class, query.offset(), query.getPageSize(), this::toProjection);
   }
 
   private void applyKeyword(BlazeJPAQuery<SysRole> q, String keyword) {

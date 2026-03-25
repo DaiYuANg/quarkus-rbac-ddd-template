@@ -21,23 +21,13 @@ class ConfigUserProfileProviderTest {
   @Test
   void buildProfileUsesFullCatalogAndPrincipalRoles() {
     var catalog = mock(PermissionCatalogStore.class);
-    when(catalog.getAll())
-        .thenReturn(
-            List.of(
-                entry(1L, "a"),
-                entry(2L, "b"),
-                entry(3L, "")));
+    when(catalog.getAll()).thenReturn(List.of(entry(1L, "a"), entry(2L, "b"), entry(3L, "")));
     var authority = mock(AuthorityVersionStore.class);
     when(authority.currentVersion()).thenReturn("v9");
     var provider = new ConfigUserProfileProvider(catalog, authority);
     var current =
         new CurrentAuthenticatedUser(
-            "root",
-            "Root",
-            "CONFIG",
-            Set.of("admin", "", "  "),
-            Set.of("x"),
-            Map.of());
+            "root", "Root", "CONFIG", Set.of("admin", "", "  "), Set.of("x"), Map.of());
     var vo = provider.buildProfile(current);
     assertEquals("root", vo.username());
     assertEquals("Root", vo.nickname());
@@ -62,15 +52,6 @@ class ConfigUserProfileProviderTest {
 
   private static PermissionCatalogEntry entry(long id, String code) {
     return new PermissionCatalogEntry(
-        id,
-        "",
-        code,
-        "",
-        "",
-        "",
-        "",
-        "",
-        Instant.EPOCH,
-        Instant.EPOCH);
+        id, "", code, "", "", "", "", "", Instant.EPOCH, Instant.EPOCH);
   }
 }

@@ -52,9 +52,7 @@ public class PermissionRepository extends BasePanacheCommandRepository<SysPermis
     var filter = spec.filter();
 
     var blazeQuery =
-        new BlazeJPAQuery<SysPermission>(entityManager, criteriaBuilderFactory)
-            .from(p)
-            .select(p);
+        new BlazeJPAQuery<SysPermission>(entityManager, criteriaBuilderFactory).from(p).select(p);
 
     applyKeyword(blazeQuery, query.getKeyword());
     applyLike(blazeQuery, p.name, filter.name());
@@ -86,18 +84,14 @@ public class PermissionRepository extends BasePanacheCommandRepository<SysPermis
   }
 
   private void applyLike(
-      BlazeJPAQuery<SysPermission> q,
-      com.querydsl.core.types.dsl.StringPath path,
-      String value) {
+      BlazeJPAQuery<SysPermission> q, com.querydsl.core.types.dsl.StringPath path, String value) {
     var like = BlazeQueryDSLSupport.likePattern(value);
     if (like == null) return;
     q.where(path.lower().like(like));
   }
 
   private void applyEquals(
-      BlazeJPAQuery<SysPermission> q,
-      com.querydsl.core.types.dsl.StringPath path,
-      String value) {
+      BlazeJPAQuery<SysPermission> q, com.querydsl.core.types.dsl.StringPath path, String value) {
     if (value == null || value.isBlank()) return;
     q.where(path.eq(value));
   }

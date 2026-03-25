@@ -10,14 +10,13 @@ public record CurrentAuthenticatedUser(
     String userType,
     Set<String> roles,
     Set<String> permissions,
-    Map<String, Object> attributes
-) {
-    public Optional<String> attributeAsString(String name) {
-        Object value = attributes == null ? null : attributes.get(name);
-        return value == null ? Optional.empty() : Optional.of(String.valueOf(value));
-    }
+    Map<String, Object> attributes) {
+  public Optional<String> attributeAsString(String name) {
+    Object value = attributes == null ? null : attributes.get(name);
+    return value == null ? Optional.empty() : Optional.of(String.valueOf(value));
+  }
 
-    public String actorKey() {
-        return userType == null || userType.isBlank() ? username : userType + ":" + username;
-    }
+  public String actorKey() {
+    return userType == null || userType.isBlank() ? username : userType + ":" + username;
+  }
 }

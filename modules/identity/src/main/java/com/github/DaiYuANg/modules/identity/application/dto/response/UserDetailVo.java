@@ -15,26 +15,29 @@ public record UserDetailVo(
     String nickname,
     Set<String> permissions,
     Set<String> roleCodes,
-    String authorityKey
-) {
-    @JsonProperty
-    public Map<String, List<String>> groupedPermission() {
-        return permissions == null ? Map.of() : permissions.stream()
+    String authorityKey) {
+  @JsonProperty
+  public Map<String, List<String>> groupedPermission() {
+    return permissions == null
+        ? Map.of()
+        : permissions.stream()
             .filter(perm -> perm != null && perm.contains(":"))
-            .collect(Collectors.groupingBy(
-                perm -> perm.substring(0, perm.indexOf(':')),
-                Collectors.toList()
-            ));
-    }
+            .collect(
+                Collectors.groupingBy(
+                    perm -> perm.substring(0, perm.indexOf(':')), Collectors.toList()));
+  }
 
-    @JsonIgnore
-    public Object getUserId() {
-        return userid;
-    }
+  @JsonIgnore
+  public Object getUserId() {
+    return userid;
+  }
 
-    public static String encodeAuthorityKey(Set<String> permissions, Set<String> roleCodes) {
-        var permissionPart = permissions == null ? "" : permissions.stream().sorted().collect(Collectors.joining(","));
-        var rolePart = roleCodes == null ? "" : roleCodes.stream().sorted().collect(Collectors.joining(","));
-        return Base64.getEncoder().encodeToString((rolePart + "|" + permissionPart).getBytes(StandardCharsets.UTF_8));
-    }
+  public static String encodeAuthorityKey(Set<String> permissions, Set<String> roleCodes) {
+    var permissionPart =
+        permissions == null ? "" : permissions.stream().sorted().collect(Collectors.joining(","));
+    var rolePart =
+        roleCodes == null ? "" : roleCodes.stream().sorted().collect(Collectors.joining(","));
+    return Base64.getEncoder()
+        .encodeToString((rolePart + "|" + permissionPart).getBytes(StandardCharsets.UTF_8));
+  }
 }

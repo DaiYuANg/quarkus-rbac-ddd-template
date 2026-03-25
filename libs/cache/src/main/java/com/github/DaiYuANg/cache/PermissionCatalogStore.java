@@ -27,13 +27,15 @@ import java.util.Set;
  *   <li>getAll: 1 round trip via JSON list
  *   <li>clearCatalog: uses Sets instead of KEYS (no blocking)
  *   <li>code/name index: ValueCommands (simple key→id)
- *   <li>findPage: Caffeine local cache (60s TTL); filtering/sorting in {@link PermissionCatalogSearchSupport}
+ *   <li>findPage: Caffeine local cache (60s TTL); filtering/sorting in {@link
+ *       PermissionCatalogSearchSupport}
  * </ul>
  */
 @ApplicationScoped
 public class PermissionCatalogStore {
 
-  private static final TypeReference<List<PermissionCatalogEntry>> LIST_TYPE = new TypeReference<>() {};
+  private static final TypeReference<List<PermissionCatalogEntry>> LIST_TYPE =
+      new TypeReference<>() {};
 
   private final HashCommands<String, String, String> hashCommands;
   private final SetCommands<String, String> setCommands;
@@ -167,7 +169,8 @@ public class PermissionCatalogStore {
   }
 
   /**
-   * Returns all permissions. Single Redis GET of JSON list. Results are cached locally (Caffeine) for 60s.
+   * Returns all permissions. Single Redis GET of JSON list. Results are cached locally (Caffeine)
+   * for 60s.
    */
   public List<PermissionCatalogEntry> getAll() {
     var cached = localCache.getIfPresent(cacheKey());
@@ -204,7 +207,17 @@ public class PermissionCatalogStore {
       int offset,
       int limit) {
     return PermissionCatalogSearchSupport.findPage(
-        getAll(), keyword, name, code, resource, action, groupCode, sortBy, sortDirection, offset, limit);
+        getAll(),
+        keyword,
+        name,
+        code,
+        resource,
+        action,
+        groupCode,
+        sortBy,
+        sortDirection,
+        offset,
+        limit);
   }
 
   /** Returns true if catalog has any entries (for empty-catalog fallback check). */

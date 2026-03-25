@@ -107,11 +107,7 @@ class UserApplicationServiceSessionInvalidationTest {
             permissionSnapshotStore,
             refreshTokenStore);
     return new Fixtures(
-        service,
-        userRepository,
-        passwordHasher,
-        currentUserAccess,
-        refreshTokenStore);
+        service, userRepository, passwordHasher, currentUserAccess, refreshTokenStore);
   }
 
   private record Fixtures(

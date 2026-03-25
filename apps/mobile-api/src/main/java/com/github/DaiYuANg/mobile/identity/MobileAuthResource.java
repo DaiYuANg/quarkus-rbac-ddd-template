@@ -21,9 +21,7 @@ import jakarta.ws.rs.core.UriInfo;
 import lombok.RequiredArgsConstructor;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
-/**
- * 移动端认证入口：复用 {@link AuthApplicationService}，路径与 Cookie 作用域与 admin-api 隔离，避免进程间串 Cookie。
- */
+/** 移动端认证入口：复用 {@link AuthApplicationService}，路径与 Cookie 作用域与 admin-api 隔离，避免进程间串 Cookie。 */
 @Path("/api/mobile/v1/auth")
 @Produces("application/json")
 @Consumes("application/json")

@@ -6,10 +6,14 @@ import com.github.DaiYuANg.accesscontrol.entity.SysPermissionGroup;
 
 @EntityView(SysPermissionGroup.class)
 public interface PermissionGroupListView {
-    @IdMapping
-    Long getId();
-    String getName();
-    String getDescription();
-    String getCode();
-    Integer getSort();
+  @IdMapping
+  Long getId();
+
+  String getName();
+
+  String getDescription();
+
+  String getCode();
+
+  Integer getSort();
 }

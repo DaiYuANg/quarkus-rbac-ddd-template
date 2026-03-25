@@ -9,5 +9,4 @@ public record RoleCreationForm(
     @NotBlank @Size(max = 128) String code,
     RoleStatus status,
     Integer sort,
-    @Size(max = 255) String description
-) {}
+    @Size(max = 255) String description) {}
