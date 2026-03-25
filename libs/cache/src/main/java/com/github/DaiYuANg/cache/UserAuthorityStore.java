@@ -2,6 +2,7 @@ package com.github.DaiYuANg.cache;
 
 import com.github.DaiYuANg.cache.calculator.AuthorityHashCalculator;
 import com.github.DaiYuANg.cache.config.RBACCacheProperties;
+import com.github.DaiYuANg.security.identity.PrincipalAttributeKeys;
 import com.github.DaiYuANg.security.snapshot.PermissionSnapshot;
 import io.quarkus.redis.datasource.RedisDataSource;
 import io.quarkus.redis.datasource.hash.HashCommands;
@@ -29,11 +30,6 @@ import java.util.Set;
  */
 @ApplicationScoped
 public class UserAuthorityStore {
-
-  private static final String HASH_FIELD_USERNAME = "username";
-  private static final String HASH_FIELD_DISPLAY_NAME = "displayName";
-  private static final String HASH_FIELD_USER_TYPE = "userType";
-  private static final String HASH_FIELD_AUTHORITY_VERSION = "authorityVersion";
 
   private final ValueCommands<String, String> valueCommands;
   private final HashCommands<String, String, String> hashCommands;
@@ -86,10 +82,11 @@ public class UserAuthorityStore {
 
     hashCommands.hset(authorityHashKey, props.authorityHashRefRoleKey(), roleHash);
     hashCommands.hset(authorityHashKey, props.authorityHashRefPermissionKey(), permissionHash);
-    hashCommands.hset(authorityHashKey, HASH_FIELD_USERNAME, username);
-    hashCommands.hset(authorityHashKey, HASH_FIELD_DISPLAY_NAME, displayName);
-    hashCommands.hset(authorityHashKey, HASH_FIELD_USER_TYPE, userType);
-    hashCommands.hset(authorityHashKey, HASH_FIELD_AUTHORITY_VERSION, snapshot.authorityVersion());
+    hashCommands.hset(authorityHashKey, PrincipalAttributeKeys.USERNAME, username);
+    hashCommands.hset(authorityHashKey, PrincipalAttributeKeys.DISPLAY_NAME, displayName);
+    hashCommands.hset(authorityHashKey, PrincipalAttributeKeys.USER_TYPE, userType);
+    hashCommands.hset(
+        authorityHashKey, PrincipalAttributeKeys.AUTHORITY_VERSION, snapshot.authorityVersion());
 
     valueCommands.set(props.authorityKey(userId), authorityHash);
     valueCommands.set(props.usernameToUserIdKey(username), String.valueOf(userId));
@@ -104,10 +101,11 @@ public class UserAuthorityStore {
     var authorityHashKey = props.authorityHashKey(userId);
     var roleHash = hashCommands.hget(authorityHashKey, props.authorityHashRefRoleKey());
     var permissionHash = hashCommands.hget(authorityHashKey, props.authorityHashRefPermissionKey());
-    var username = hashCommands.hget(authorityHashKey, HASH_FIELD_USERNAME);
-    var displayName = hashCommands.hget(authorityHashKey, HASH_FIELD_DISPLAY_NAME);
-    var userType = hashCommands.hget(authorityHashKey, HASH_FIELD_USER_TYPE);
-    var authorityVersion = hashCommands.hget(authorityHashKey, HASH_FIELD_AUTHORITY_VERSION);
+    var username = hashCommands.hget(authorityHashKey, PrincipalAttributeKeys.USERNAME);
+    var displayName = hashCommands.hget(authorityHashKey, PrincipalAttributeKeys.DISPLAY_NAME);
+    var userType = hashCommands.hget(authorityHashKey, PrincipalAttributeKeys.USER_TYPE);
+    var authorityVersion =
+        hashCommands.hget(authorityHashKey, PrincipalAttributeKeys.AUTHORITY_VERSION);
 
     if (username == null) {
       return Optional.empty();
@@ -124,11 +122,12 @@ public class UserAuthorityStore {
 
     var versionForReuse = authorityVersion != null ? authorityVersion : "";
     var attributes = new LinkedHashMap<String, Object>();
-    attributes.put("displayName", displayName != null ? displayName : username);
-    attributes.put("userType", userType != null ? userType : "ADMIN");
-    attributes.put("roles", roleCodes);
-    attributes.put("permissions", permissionCodes);
-    attributes.put("authorityVersion", versionForReuse);
+    attributes.put(
+        PrincipalAttributeKeys.DISPLAY_NAME, displayName != null ? displayName : username);
+    attributes.put(PrincipalAttributeKeys.USER_TYPE, userType != null ? userType : "ADMIN");
+    attributes.put(PrincipalAttributeKeys.ROLES, roleCodes);
+    attributes.put(PrincipalAttributeKeys.PERMISSIONS, permissionCodes);
+    attributes.put(PrincipalAttributeKeys.AUTHORITY_VERSION, versionForReuse);
 
     return Optional.of(
         new PermissionSnapshot(
@@ -158,7 +157,7 @@ public class UserAuthorityStore {
     var authorityHashKey = props.authorityHashKey(userId);
     var roleHash = hashCommands.hget(authorityHashKey, props.authorityHashRefRoleKey());
     var permissionHash = hashCommands.hget(authorityHashKey, props.authorityHashRefPermissionKey());
-    var username = hashCommands.hget(authorityHashKey, HASH_FIELD_USERNAME);
+    var username = hashCommands.hget(authorityHashKey, PrincipalAttributeKeys.USERNAME);
 
     keyCommands.del(props.authorityKey(userId));
     keyCommands.del(authorityHashKey);

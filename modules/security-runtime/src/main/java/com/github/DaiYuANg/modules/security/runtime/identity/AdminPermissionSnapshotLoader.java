@@ -5,6 +5,7 @@ import com.github.DaiYuANg.identity.repository.UserRepository;
 import com.github.DaiYuANg.security.config.ConfigUserAccountConfig;
 import com.github.DaiYuANg.security.config.ConfigUserAccounts;
 import com.github.DaiYuANg.security.config.ConfigUserAuthorityId;
+import com.github.DaiYuANg.security.identity.PrincipalAttributeKeys;
 import com.github.DaiYuANg.security.snapshot.PermissionSnapshot;
 import com.github.DaiYuANg.security.snapshot.PermissionSnapshotLoader;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -40,11 +41,12 @@ public class AdminPermissionSnapshotLoader implements PermissionSnapshotLoader {
       var roles = roleCodes(user);
       var permissions = permissionIdentifiers(user);
       var attributes = new LinkedHashMap<String, Object>();
-      attributes.put("source", "db");
-      attributes.put("displayName", user.nickname);
-      attributes.put("roles", roles);
-      attributes.put("permissions", permissions);
-      attributes.put("authorityVersion", authorityVersionStore.versionFor(username));
+      attributes.put(PrincipalAttributeKeys.SOURCE, "db");
+      attributes.put(PrincipalAttributeKeys.DISPLAY_NAME, user.nickname);
+      attributes.put(PrincipalAttributeKeys.ROLES, roles);
+      attributes.put(PrincipalAttributeKeys.PERMISSIONS, permissions);
+      attributes.put(
+          PrincipalAttributeKeys.AUTHORITY_VERSION, authorityVersionStore.versionFor(username));
       return Optional.of(
           new PermissionSnapshot(
               user.username,
@@ -80,11 +82,11 @@ public class AdminPermissionSnapshotLoader implements PermissionSnapshotLoader {
     var version = authorityVersionStore.versionFor(lookupUsername);
     var principalType = entry.principalUserType().orElse(configUserFallbackType);
     var attributes = new LinkedHashMap<String, Object>();
-    attributes.put("source", "config");
-    attributes.put("displayName", displayName);
-    attributes.put("roles", roles);
-    attributes.put("permissions", permissions);
-    attributes.put("authorityVersion", version);
+    attributes.put(PrincipalAttributeKeys.SOURCE, "config");
+    attributes.put(PrincipalAttributeKeys.DISPLAY_NAME, displayName);
+    attributes.put(PrincipalAttributeKeys.ROLES, roles);
+    attributes.put(PrincipalAttributeKeys.PERMISSIONS, permissions);
+    attributes.put(PrincipalAttributeKeys.AUTHORITY_VERSION, version);
     return new PermissionSnapshot(
         entry.username(),
         displayName.isBlank() ? entry.username() : displayName,

@@ -2,6 +2,7 @@ package com.github.DaiYuANg.security.token;
 
 import com.github.DaiYuANg.security.identity.AuthenticatedUser;
 import com.github.DaiYuANg.security.identity.CurrentAuthenticatedUser;
+import com.github.DaiYuANg.security.identity.PrincipalAttributeKeys;
 import jakarta.enterprise.context.ApplicationScoped;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -15,11 +16,11 @@ public class PrincipalAttributesSerializer {
     if (user.attributes() != null) {
       attributes.putAll(user.attributes());
     }
-    attributes.put("subject", user.username());
-    attributes.put("displayName", user.displayName());
-    attributes.put("userType", user.userType());
-    attributes.put("roles", immutableCopy(user.roles()));
-    attributes.put("permissions", immutableCopy(user.permissions()));
+    attributes.put(PrincipalAttributeKeys.SUBJECT, user.username());
+    attributes.put(PrincipalAttributeKeys.DISPLAY_NAME, user.displayName());
+    attributes.put(PrincipalAttributeKeys.USER_TYPE, user.userType());
+    attributes.put(PrincipalAttributeKeys.ROLES, immutableCopy(user.roles()));
+    attributes.put(PrincipalAttributeKeys.PERMISSIONS, immutableCopy(user.permissions()));
     return attributes;
   }
 
@@ -32,11 +33,12 @@ public class PrincipalAttributesSerializer {
       Map<String, Object> attributes, String principalName) {
     var values = attributes == null ? Map.<String, Object>of() : attributes;
     return new CurrentAuthenticatedUser(
-        stringValue(values.getOrDefault("subject", principalName), principalName),
-        stringValue(values.getOrDefault("displayName", principalName), principalName),
-        stringValue(values.getOrDefault("userType", "SYSTEM"), "SYSTEM"),
-        asSet(values.get("roles")),
-        asSet(values.get("permissions")),
+        stringValue(values.getOrDefault(PrincipalAttributeKeys.SUBJECT, principalName), principalName),
+        stringValue(
+            values.getOrDefault(PrincipalAttributeKeys.DISPLAY_NAME, principalName), principalName),
+        stringValue(values.getOrDefault(PrincipalAttributeKeys.USER_TYPE, "SYSTEM"), "SYSTEM"),
+        asSet(values.get(PrincipalAttributeKeys.ROLES)),
+        asSet(values.get(PrincipalAttributeKeys.PERMISSIONS)),
         values);
   }
 

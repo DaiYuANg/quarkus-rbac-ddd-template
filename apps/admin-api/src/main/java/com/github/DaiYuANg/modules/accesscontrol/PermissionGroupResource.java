@@ -8,6 +8,7 @@ import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.Permiss
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UpdatePermissionGroupForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.PermissionGroupVO;
 import com.github.DaiYuANg.modules.accesscontrol.application.permissiongroup.PermissionGroupApplicationService;
+import com.github.DaiYuANg.security.authorization.RbacPermissionCodes.PermissionGroup;
 import io.quarkus.security.PermissionsAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -24,21 +25,21 @@ public class PermissionGroupResource {
   private final PermissionGroupApplicationService permissionGroupApplicationService;
 
   @POST
-  @PermissionsAllowed("permission-group:add")
+  @PermissionsAllowed(PermissionGroup.ADD)
   public Result<PermissionGroupVO> create(@Valid PermissionGroupCreationForm form) {
     return Result.ok(permissionGroupApplicationService.createPermissionGroup(form));
   }
 
   @GET
   @Path("/{id}")
-  @PermissionsAllowed("permission-group:view")
+  @PermissionsAllowed(PermissionGroup.VIEW)
   public Result<Optional<PermissionGroupVO>> getById(@PathParam("id") Long id) {
     return Result.ok(permissionGroupApplicationService.getPermissionGroupById(id));
   }
 
   @PUT
   @Path("/{id}")
-  @PermissionsAllowed("permission-group:edit")
+  @PermissionsAllowed(PermissionGroup.EDIT)
   public Result<PermissionGroupVO> update(
       @PathParam("id") Long id, @Valid UpdatePermissionGroupForm form) {
     return Result.ok(permissionGroupApplicationService.updatePermissionGroup(id, form));
@@ -46,28 +47,28 @@ public class PermissionGroupResource {
 
   @DELETE
   @Path("/{id}")
-  @PermissionsAllowed("permission-group:delete")
+  @PermissionsAllowed(PermissionGroup.DELETE)
   public Result<Void> delete(@PathParam("id") Long id) {
     permissionGroupApplicationService.deletePermissionGroup(id);
     return Result.ok();
   }
 
   @GET
-  @PermissionsAllowed("permission-group:view")
+  @PermissionsAllowed(PermissionGroup.VIEW)
   public Result<PageResult<PermissionGroupVO>> query(@BeanParam @Valid PermissionGroupQuery query) {
     return Result.ok(permissionGroupApplicationService.queryPermissionGroupPage(query));
   }
 
   @GET
   @Path("/name/{name}")
-  @PermissionsAllowed("permission-group:view")
+  @PermissionsAllowed(PermissionGroup.VIEW)
   public Result<Optional<PermissionGroupVO>> getByName(@PathParam("name") String name) {
     return Result.ok(permissionGroupApplicationService.getPermissionGroupByName(name));
   }
 
   @POST
   @Path("/assign/permission")
-  @PermissionsAllowed("permission-group:edit")
+  @PermissionsAllowed(PermissionGroup.EDIT)
   public Result<Void> assignPermissions(@Valid PermissionGroupRefPermissionForm form) {
     permissionGroupApplicationService.assignPermissions(form);
     return Result.ok();
@@ -75,7 +76,7 @@ public class PermissionGroupResource {
 
   @GET
   @Path("/list")
-  @PermissionsAllowed("permission-group:view")
+  @PermissionsAllowed(PermissionGroup.VIEW)
   public Result<List<PermissionGroupVO>> list() {
     return Result.ok(permissionGroupApplicationService.getAllPermissionGroups());
   }

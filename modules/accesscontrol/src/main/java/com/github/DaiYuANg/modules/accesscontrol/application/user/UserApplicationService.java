@@ -21,6 +21,8 @@ import com.github.DaiYuANg.modules.accesscontrol.application.support.AccessContr
 import com.github.DaiYuANg.security.access.CurrentUserAccess;
 import com.github.DaiYuANg.security.auth.PasswordHasher;
 import com.github.DaiYuANg.security.authorization.AuthorizationService;
+import com.github.DaiYuANg.security.authorization.RbacPermissionCodes.Auth;
+import com.github.DaiYuANg.security.authorization.RbacPermissionCodes.User;
 import com.github.DaiYuANg.security.identity.CurrentAuthenticatedUser;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -44,7 +46,7 @@ public class UserApplicationService {
   private final RefreshTokenStore refreshTokenStore;
 
   public PageResult<UserVO> queryUserPage(UserQuery query) {
-    authorizationService.check("user", "view");
+    authorizationService.check(User.VIEW);
     var slice = userRepository.page(query);
     return PageResult.of(
         slice.total(),
@@ -55,7 +57,7 @@ public class UserApplicationService {
 
   @Transactional
   public UserVO createUser(UserCreationForm form) {
-    authorizationService.check("user", "add");
+    authorizationService.check(User.ADD);
     if (userRepository.countByUsername(form.username()) > 0)
       throw new BizException(ResultCode.DATA_ALREADY_EXISTS, "username already exists");
     if (form.email() != null
@@ -88,9 +90,10 @@ public class UserApplicationService {
     var currentUsername =
         currentUserAccess.currentUser().map(CurrentAuthenticatedUser::username).orElse(null);
     if (currentUsername != null && currentUsername.equals(user.username)) {
-      authorizationService.checkAny("auth:change-password", "user:reset-password", "user:edit");
+      authorizationService.checkAny(
+          Auth.CHANGE_PASSWORD, User.RESET_PASSWORD, User.EDIT);
     } else {
-      authorizationService.checkAny("user:reset-password", "user:edit");
+      authorizationService.checkAny(User.RESET_PASSWORD, User.EDIT);
     }
     user.password = passwordHasher.hash(newPassword);
     refreshTokenStore.deleteByUsername(user.username);
@@ -99,18 +102,18 @@ public class UserApplicationService {
   }
 
   public Optional<UserVO> getUserById(Long id) {
-    authorizationService.check("user", "view");
+    authorizationService.check(User.VIEW);
     return userRepository.findByIdOptional(id).map(this::toUserVO);
   }
 
   public List<UserVO> getAllUsers() {
-    authorizationService.check("user", "view");
+    authorizationService.check(User.VIEW);
     return userRepository.listAll().stream().map(this::toUserVO).toList();
   }
 
   @Transactional
   public UserVO updateUser(Long id, UpdateUserForm form) {
-    authorizationService.check("user", "edit");
+    authorizationService.check(User.EDIT);
     var user =
         userRepository
             .findByIdOptional(id)
@@ -147,7 +150,7 @@ public class UserApplicationService {
 
   @Transactional
   public void deleteUser(Long id) {
-    authorizationService.check("user", "delete");
+    authorizationService.check(User.DELETE);
     userRepository
         .findByIdOptional(id)
         .ifPresent(user -> refreshTokenStore.deleteByUsername(user.username));
@@ -158,13 +161,13 @@ public class UserApplicationService {
   }
 
   public Optional<UserVO> getUserByUsername(String username) {
-    authorizationService.check("user", "view");
+    authorizationService.check(User.VIEW);
     return userRepository.findByUsername(username).map(this::toUserVO);
   }
 
   @Transactional
   public void assignRole(UserRefRoleForm form) {
-    authorizationService.checkAny("user:edit", "user:assign-role");
+    authorizationService.checkAny(User.EDIT, User.ASSIGN_ROLE);
     var user =
         userRepository
             .findByIdOptional(form.userId())
@@ -181,7 +184,7 @@ public class UserApplicationService {
 
   @Transactional
   public void updateUserStatus(Long id, Integer status) {
-    authorizationService.check("user", "edit");
+    authorizationService.check(User.EDIT);
     var user =
         userRepository
             .findByIdOptional(id)

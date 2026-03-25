@@ -1,6 +1,7 @@
 package com.github.DaiYuANg.modules.security.runtime.identity;
 
 import com.github.DaiYuANg.cache.PermissionSnapshotStore;
+import com.github.DaiYuANg.security.identity.PrincipalAttributeKeys;
 import com.github.DaiYuANg.security.identity.QuarkusSecurityIdentityFactory;
 import com.github.DaiYuANg.security.snapshot.PermissionSnapshotLoader;
 import com.github.DaiYuANg.security.snapshot.PermissionSnapshotRefreshPolicy;
@@ -46,12 +47,12 @@ public class AdminPermissionSecurityIdentityAugmentor implements SecurityIdentit
   }
 
   private String extractAuthorityVersion(SecurityIdentity identity) {
-    Object direct = identity.getAttribute("authorityVersion");
+    Object direct = identity.getAttribute(PrincipalAttributeKeys.AUTHORITY_VERSION);
     if (direct != null) {
       return String.valueOf(direct);
     }
     if (identity.getPrincipal() instanceof JsonWebToken jwt) {
-      Object claim = jwt.getClaim("authorityVersion");
+      Object claim = jwt.getClaim(PrincipalAttributeKeys.AUTHORITY_VERSION);
       return claim == null ? null : String.valueOf(claim);
     }
     return null;

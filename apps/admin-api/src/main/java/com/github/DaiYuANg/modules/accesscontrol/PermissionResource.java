@@ -7,6 +7,7 @@ import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.Permis
 import com.github.DaiYuANg.modules.accesscontrol.application.permission.PermissionApplicationService;
 import com.github.DaiYuANg.modules.accesscontrol.application.permissiongroup.PermissionGroupApplicationService;
 import com.github.DaiYuANg.modules.accesscontrol.dto.PermissionGroupBindingForm;
+import com.github.DaiYuANg.security.authorization.RbacPermissionCodes.Permission;
 import io.quarkus.security.PermissionsAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -25,34 +26,34 @@ public class PermissionResource {
 
   @GET
   @Path("/{id}")
-  @PermissionsAllowed("permission:view")
+  @PermissionsAllowed(Permission.VIEW)
   public Result<Optional<PermissionVO>> getById(@PathParam("id") Long id) {
     return Result.ok(permissionApplicationService.getPermissionById(id));
   }
 
   @GET
   @Path("/name/{name}")
-  @PermissionsAllowed("permission:view")
+  @PermissionsAllowed(Permission.VIEW)
   public Result<Optional<PermissionVO>> getByName(@PathParam("name") String name) {
     return Result.ok(permissionApplicationService.getPermissionByName(name));
   }
 
   @GET
-  @PermissionsAllowed("permission:view")
+  @PermissionsAllowed(Permission.VIEW)
   public Result<PageResult<PermissionVO>> query(@BeanParam @Valid PermissionQuery query) {
     return Result.ok(permissionApplicationService.queryPermissionPage(query));
   }
 
   @GET
   @Path("/list")
-  @PermissionsAllowed("permission:view")
+  @PermissionsAllowed(Permission.VIEW)
   public Result<List<PermissionVO>> list() {
     return Result.ok(permissionApplicationService.getAllPermissions());
   }
 
   @PATCH
   @Path("/{id}")
-  @PermissionsAllowed("permission:edit")
+  @PermissionsAllowed(Permission.EDIT)
   public Result<Void> bindGroup(@PathParam("id") Long id, PermissionGroupBindingForm form) {
     permissionGroupApplicationService.bindPermissionsToGroup(
         form == null ? null : form.groupId(), List.of(id));
@@ -61,7 +62,7 @@ public class PermissionResource {
 
   @PATCH
   @Path("/bulk")
-  @PermissionsAllowed("permission:edit")
+  @PermissionsAllowed(Permission.EDIT)
   public Result<Void> bindGroupBulk(@QueryParam("id") String ids, PermissionGroupBindingForm form) {
     var permissionIds = parseIds(ids);
     permissionGroupApplicationService.bindPermissionsToGroup(

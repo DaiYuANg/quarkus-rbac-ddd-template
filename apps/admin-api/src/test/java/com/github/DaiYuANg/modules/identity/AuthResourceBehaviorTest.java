@@ -16,6 +16,7 @@ import com.github.DaiYuANg.modules.identity.application.dto.request.LoginRequest
 import com.github.DaiYuANg.modules.identity.application.dto.response.MeResponse;
 import com.github.DaiYuANg.modules.identity.application.dto.response.MeRoleItem;
 import com.github.DaiYuANg.modules.identity.application.dto.response.SystemAuthenticationToken;
+import com.github.DaiYuANg.security.authorization.RbacPermissionCodes.User;
 import com.github.DaiYuANg.security.config.AuthSecurityConfig;
 import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
@@ -127,7 +128,7 @@ class AuthResourceBehaviorTest {
             "Root",
             "root@example.com",
             List.of(new MeRoleItem("1", "admin")),
-            Set.of("user:view"));
+            Set.of(User.VIEW));
     when(authApplicationService.me("root")).thenReturn(me);
 
     var resource =

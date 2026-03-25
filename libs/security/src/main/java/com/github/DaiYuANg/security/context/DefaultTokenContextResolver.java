@@ -1,5 +1,6 @@
 package com.github.DaiYuANg.security.context;
 
+import com.github.DaiYuANg.security.identity.PrincipalAttributeKeys;
 import com.github.DaiYuANg.security.token.PrincipalAttributesSerializer;
 import com.github.DaiYuANg.security.token.TokenContext;
 import com.github.DaiYuANg.security.token.TokenContextResolver;
@@ -25,10 +26,12 @@ public class DefaultTokenContextResolver implements TokenContextResolver {
     return Optional.of(
         new TokenContext(
             identity.getPrincipal().getName(),
-            (String) attributes.getOrDefault("userType", "UNKNOWN"),
-            (String) attributes.getOrDefault("displayName", identity.getPrincipal().getName()),
-            castSet(attributes.get("roles")),
-            castSet(attributes.get("permissions")),
+            (String) attributes.getOrDefault(PrincipalAttributeKeys.USER_TYPE, "UNKNOWN"),
+            (String)
+                attributes.getOrDefault(
+                    PrincipalAttributeKeys.DISPLAY_NAME, identity.getPrincipal().getName()),
+            castSet(attributes.get(PrincipalAttributeKeys.ROLES)),
+            castSet(attributes.get(PrincipalAttributeKeys.PERMISSIONS)),
             attributes,
             identity));
   }

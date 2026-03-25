@@ -5,6 +5,7 @@ import com.github.DaiYuANg.cache.PermissionCatalogStore;
 import com.github.DaiYuANg.common.model.PageResult;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.PermissionVO;
 import com.github.DaiYuANg.security.authorization.AuthorizationService;
+import com.github.DaiYuANg.security.authorization.RbacPermissionCodes.Permission;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.List;
@@ -19,25 +20,25 @@ public class PermissionApplicationService {
   private final AuthorizationService authorizationService;
 
   public Optional<PermissionVO> getPermissionById(Long id) {
-    authorizationService.check("permission", "view");
+    authorizationService.check(Permission.VIEW);
     ensureCatalogLoaded();
     return catalogStore.getById(id).map(this::toVO);
   }
 
   public Optional<PermissionVO> getPermissionByName(String name) {
-    authorizationService.check("permission", "view");
+    authorizationService.check(Permission.VIEW);
     ensureCatalogLoaded();
     return catalogStore.getByName(name).map(this::toVO);
   }
 
   public List<PermissionVO> getAllPermissions() {
-    authorizationService.check("permission", "view");
+    authorizationService.check(Permission.VIEW);
     ensureCatalogLoaded();
     return catalogStore.getAll().stream().map(this::toVO).toList();
   }
 
   public PageResult<PermissionVO> queryPermissionPage(PermissionQuery query) {
-    authorizationService.check("permission", "view");
+    authorizationService.check(Permission.VIEW);
     ensureCatalogLoaded();
     var page =
         catalogStore.findPage(

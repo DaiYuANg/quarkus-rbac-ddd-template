@@ -5,6 +5,7 @@ import com.github.DaiYuANg.security.config.ConfigUserAccountConfig;
 import com.github.DaiYuANg.security.config.ConfigUserAccounts;
 import com.github.DaiYuANg.security.config.ConfigUserAuthorityId;
 import com.github.DaiYuANg.security.identity.AuthenticatedUser;
+import com.github.DaiYuANg.security.identity.PrincipalAttributeKeys;
 import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -59,10 +60,12 @@ public class ConfigUserAuthenticationProvider
     }
     log.atDebug().addKeyValue("username", request.username()).log("config-user: authenticated");
     Map<String, Object> attributes = new LinkedHashMap<>();
-    attributes.put("source", "config");
-    attributes.put("providerId", providerId());
-    attributes.put("permissions", new LinkedHashSet<>(entry.permissions().orElseGet(List::of)));
-    attributes.put("roles", new LinkedHashSet<>(entry.roles().orElseGet(List::of)));
+    attributes.put(PrincipalAttributeKeys.SOURCE, "config");
+    attributes.put(PrincipalAttributeKeys.PROVIDER_ID, providerId());
+    attributes.put(
+        PrincipalAttributeKeys.PERMISSIONS,
+        new LinkedHashSet<>(entry.permissions().orElseGet(List::of)));
+    attributes.put(PrincipalAttributeKeys.ROLES, new LinkedHashSet<>(entry.roles().orElseGet(List::of)));
     String principalType = entry.principalUserType().orElse(configUserFallbackType);
     return AuthenticationProviderResult.success(
         new AuthenticationResult(

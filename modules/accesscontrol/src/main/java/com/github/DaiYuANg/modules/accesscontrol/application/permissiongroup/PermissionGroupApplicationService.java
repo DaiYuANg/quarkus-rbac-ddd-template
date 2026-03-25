@@ -16,6 +16,7 @@ import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.Permis
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.PermissionVO;
 import com.github.DaiYuANg.modules.accesscontrol.application.support.AccessControlAuditSupport;
 import com.github.DaiYuANg.security.authorization.AuthorizationService;
+import com.github.DaiYuANg.security.authorization.RbacPermissionCodes.PermissionGroup;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -37,7 +38,7 @@ public class PermissionGroupApplicationService {
 
   @Transactional
   public PermissionGroupVO createPermissionGroup(PermissionGroupCreationForm form) {
-    authorizationService.check("permission-group", "add");
+    authorizationService.check(PermissionGroup.ADD);
     if (repository.countByName(form.name()) > 0)
       throw new BizException(
           ResultCode.DATA_ALREADY_EXISTS, "permission group name already exists");
@@ -53,13 +54,13 @@ public class PermissionGroupApplicationService {
   }
 
   public Optional<PermissionGroupVO> getPermissionGroupById(Long id) {
-    authorizationService.check("permission-group", "view");
+    authorizationService.check(PermissionGroup.VIEW);
     return repository.findByIdOptional(id).map(this::toPermissionGroupVOWithCatalog);
   }
 
   @Transactional
   public PermissionGroupVO updatePermissionGroup(Long id, UpdatePermissionGroupForm form) {
-    authorizationService.check("permission-group", "edit");
+    authorizationService.check(PermissionGroup.EDIT);
     var group =
         repository
             .findByIdOptional(id)
@@ -81,7 +82,7 @@ public class PermissionGroupApplicationService {
 
   @Transactional
   public void deletePermissionGroup(Long id) {
-    authorizationService.check("permission-group", "delete");
+    authorizationService.check(PermissionGroup.DELETE);
     repository.deleteById(id);
     auditSupport.bumpGlobalVersion();
     auditSupport.record(
@@ -89,7 +90,7 @@ public class PermissionGroupApplicationService {
   }
 
   public PageResult<PermissionGroupVO> queryPermissionGroupPage(PermissionGroupQuery query) {
-    authorizationService.check("permission-group", "view");
+    authorizationService.check(PermissionGroup.VIEW);
     var slice = repository.page(query);
     return PageResult.of(
         slice.total(),
@@ -99,13 +100,13 @@ public class PermissionGroupApplicationService {
   }
 
   public Optional<PermissionGroupVO> getPermissionGroupByName(String name) {
-    authorizationService.check("permission-group", "view");
+    authorizationService.check(PermissionGroup.VIEW);
     return repository.findByName(name).map(this::toPermissionGroupVOWithCatalog);
   }
 
   @Transactional
   public void assignPermissions(PermissionGroupRefPermissionForm form) {
-    authorizationService.checkAny("permission-group:edit", "permission-group:assign-permission");
+    authorizationService.checkAny(PermissionGroup.EDIT, PermissionGroup.ASSIGN_PERMISSION);
     var group =
         repository
             .findByIdOptional(form.permissionGroupId())
@@ -130,13 +131,13 @@ public class PermissionGroupApplicationService {
   }
 
   public List<PermissionGroupVO> getAllPermissionGroups() {
-    authorizationService.check("permission-group", "view");
+    authorizationService.check(PermissionGroup.VIEW);
     return repository.listAll().stream().map(this::toPermissionGroupVOWithCatalog).toList();
   }
 
   @Transactional
   public void bindPermissionsToGroup(Long targetGroupId, List<Long> permissionIds) {
-    authorizationService.checkAny("permission-group:edit", "permission-group:assign-permission");
+    authorizationService.checkAny(PermissionGroup.EDIT, PermissionGroup.ASSIGN_PERMISSION);
     if (permissionIds == null || permissionIds.isEmpty()) {
       return;
     }

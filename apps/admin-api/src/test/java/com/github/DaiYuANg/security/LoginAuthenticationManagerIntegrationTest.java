@@ -16,6 +16,7 @@ import com.github.DaiYuANg.security.auth.LoginAuthenticationManager;
 import com.github.DaiYuANg.security.auth.LoginAuthenticationProvider;
 import com.github.DaiYuANg.security.auth.LoginAuthenticationRequest;
 import com.github.DaiYuANg.security.auth.UsernamePasswordAuthenticationRequest;
+import com.github.DaiYuANg.security.authorization.RbacPermissionCodes.User;
 import com.github.DaiYuANg.security.identity.AuthenticatedUser;
 import java.util.List;
 import java.util.Map;
@@ -129,7 +130,7 @@ class LoginAuthenticationManagerIntegrationTest {
         UsernamePasswordAuthenticationRequest request) {
       var user =
           new AuthenticatedUser(
-              username, "Chain User", "ADMIN", Set.of("ops"), Set.of("user:view"), Map.of(), 1L);
+              username, "Chain User", "ADMIN", Set.of("ops"), Set.of(User.VIEW), Map.of(), 1L);
       return AuthenticationProviderResult.success(new AuthenticationResult(user, providerId()));
     }
   }

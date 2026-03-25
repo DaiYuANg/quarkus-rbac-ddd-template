@@ -22,6 +22,7 @@ import com.github.DaiYuANg.modules.identity.application.profile.UserProfileResol
 import com.github.DaiYuANg.modules.security.runtime.auth.AdminAuthenticationLifecycle;
 import com.github.DaiYuANg.modules.security.runtime.auth.AdminTokenIssuer;
 import com.github.DaiYuANg.security.access.CurrentUserAccess;
+import com.github.DaiYuANg.security.authorization.RbacPermissionCodes.User;
 import com.github.DaiYuANg.security.auth.AuthenticationResult;
 import com.github.DaiYuANg.security.auth.LoginAuthenticationManager;
 import com.github.DaiYuANg.security.config.AuthSecurityConfig;
@@ -44,7 +45,7 @@ class AuthApplicationServiceBehaviorTest {
   void refreshRevokesOldTokenBeforeIssuingNewToken() {
     var user =
         new AuthenticatedUser(
-            "alice", "Alice", "ADMIN", Set.of("admin"), Set.of("user:view"), Map.of(), 1L);
+            "alice", "Alice", "ADMIN", Set.of("admin"), Set.of(User.VIEW), Map.of(), 1L);
     var authResult = new AuthenticationResult(user, "refresh-token");
     var issued = new SystemAuthenticationToken("access", "refresh-new", "Bearer", 120L, "v1");
 

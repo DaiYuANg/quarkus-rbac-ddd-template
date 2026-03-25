@@ -9,6 +9,7 @@ import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UserRef
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.UserVO;
 import com.github.DaiYuANg.modules.accesscontrol.application.user.UserApplicationService;
 import com.github.DaiYuANg.modules.accesscontrol.dto.ChangePasswordForm;
+import com.github.DaiYuANg.security.authorization.RbacPermissionCodes.User;
 import io.quarkus.security.PermissionsAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -26,20 +27,20 @@ public class UserResource {
   private final UserApplicationService userApplicationService;
 
   @GET
-  @PermissionsAllowed("user:view")
+  @PermissionsAllowed(User.VIEW)
   public Result<PageResult<UserVO>> queryUserPage(@BeanParam @Valid UserQuery query) {
     return Result.ok(userApplicationService.queryUserPage(query));
   }
 
   @POST
-  @PermissionsAllowed("user:add")
+  @PermissionsAllowed(User.ADD)
   public Result<UserVO> createUser(@Valid UserCreationForm form) {
     return Result.ok(userApplicationService.createUser(form));
   }
 
   @PUT
   @Path("/{id}/password")
-  @PermissionsAllowed("user:edit")
+  @PermissionsAllowed(User.EDIT)
   public Result<Void> updateUserPassword(@PathParam("id") Long id, @Valid ChangePasswordForm form) {
     userApplicationService.updateUserPassword(id, form.newPassword());
     return Result.ok();
@@ -47,28 +48,28 @@ public class UserResource {
 
   @GET
   @Path("/{id}")
-  @PermissionsAllowed("user:view")
+  @PermissionsAllowed(User.VIEW)
   public Result<Optional<UserVO>> getUserById(@PathParam("id") Long id) {
     return Result.ok(userApplicationService.getUserById(id));
   }
 
   @GET
   @Path("/list")
-  @PermissionsAllowed("user:view")
+  @PermissionsAllowed(User.VIEW)
   public Result<List<UserVO>> getAllUsers() {
     return Result.ok(userApplicationService.getAllUsers());
   }
 
   @PUT
   @Path("/{id}")
-  @PermissionsAllowed("user:edit")
+  @PermissionsAllowed(User.EDIT)
   public Result<UserVO> updateUser(@PathParam("id") Long id, @Valid UpdateUserForm form) {
     return Result.ok(userApplicationService.updateUser(id, form));
   }
 
   @DELETE
   @Path("/{id}")
-  @PermissionsAllowed("user:delete")
+  @PermissionsAllowed(User.DELETE)
   public Result<Void> deleteUser(@PathParam("id") Long id) {
     userApplicationService.deleteUser(id);
     return Result.ok();
@@ -76,14 +77,14 @@ public class UserResource {
 
   @GET
   @Path("/username/{username}")
-  @PermissionsAllowed("user:view")
+  @PermissionsAllowed(User.VIEW)
   public Result<Optional<UserVO>> getUserByUsername(@PathParam("username") String username) {
     return Result.ok(userApplicationService.getUserByUsername(username));
   }
 
   @POST
   @Path("/assign/role")
-  @PermissionsAllowed("user:edit")
+  @PermissionsAllowed(User.EDIT)
   public Result<Void> assignRole(@Valid UserRefRoleForm form) {
     userApplicationService.assignRole(form);
     return Result.ok();
@@ -115,7 +116,7 @@ public class UserResource {
 
   @PUT
   @Path("/{id}/status")
-  @PermissionsAllowed("user:edit")
+  @PermissionsAllowed(User.EDIT)
   public Result<Void> updateUserStatus(
       @PathParam("id") Long id, @QueryParam("status") Integer status) {
     userApplicationService.updateUserStatus(id, status);

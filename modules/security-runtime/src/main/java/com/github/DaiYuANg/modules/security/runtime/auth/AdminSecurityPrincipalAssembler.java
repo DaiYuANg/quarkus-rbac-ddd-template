@@ -2,6 +2,7 @@ package com.github.DaiYuANg.modules.security.runtime.auth;
 
 import com.github.DaiYuANg.identity.entity.SysUser;
 import com.github.DaiYuANg.security.identity.AuthenticatedUser;
+import com.github.DaiYuANg.security.identity.PrincipalAttributeKeys;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.LinkedHashMap;
@@ -22,10 +23,10 @@ public class AdminSecurityPrincipalAssembler {
     var roles = roleCodes(user);
     var permissions = permissionIdentifiers(user);
     var attributes = new LinkedHashMap<String, Object>();
-    attributes.put("source", "db");
-    attributes.put("nickname", user.nickname);
-    attributes.put("permissions", permissions);
-    attributes.put("roles", roles);
+    attributes.put(PrincipalAttributeKeys.SOURCE, "db");
+    attributes.put(PrincipalAttributeKeys.NICKNAME, user.nickname);
+    attributes.put(PrincipalAttributeKeys.PERMISSIONS, permissions);
+    attributes.put(PrincipalAttributeKeys.ROLES, roles);
     return new AuthenticatedUser(
         user.username,
         user.nickname == null || user.nickname.isBlank() ? user.username : user.nickname,

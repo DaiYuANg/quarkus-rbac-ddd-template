@@ -1,6 +1,7 @@
 package com.github.DaiYuANg.security.authorization;
 
 import com.github.DaiYuANg.security.identity.CurrentAuthenticatedUser;
+import com.github.DaiYuANg.security.identity.PrincipalAttributeKeys;
 
 public record AuthorizationDecision(
     boolean allowed,
@@ -17,8 +18,10 @@ public record AuthorizationDecision(
         permission,
         "matched",
         current == null ? null : current.actorKey(),
-        current == null ? null : current.attributeAsString("authorityVersion").orElse(null),
-        current == null ? null : current.attributeAsString("source").orElse(null),
+        current == null
+            ? null
+            : current.attributeAsString(PrincipalAttributeKeys.AUTHORITY_VERSION).orElse(null),
+        current == null ? null : current.attributeAsString(PrincipalAttributeKeys.SOURCE).orElse(null),
         matchedBy);
   }
 
@@ -29,8 +32,10 @@ public record AuthorizationDecision(
         permission,
         reason,
         current == null ? null : current.actorKey(),
-        current == null ? null : current.attributeAsString("authorityVersion").orElse(null),
-        current == null ? null : current.attributeAsString("source").orElse(null),
+        current == null
+            ? null
+            : current.attributeAsString(PrincipalAttributeKeys.AUTHORITY_VERSION).orElse(null),
+        current == null ? null : current.attributeAsString(PrincipalAttributeKeys.SOURCE).orElse(null),
         null);
   }
 

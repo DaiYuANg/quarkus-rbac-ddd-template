@@ -12,6 +12,8 @@ import com.github.DaiYuANg.modules.identity.application.AuthApplicationService;
 import com.github.DaiYuANg.modules.identity.application.dto.response.MeResponse;
 import com.github.DaiYuANg.modules.identity.application.dto.response.MeRoleItem;
 import com.github.DaiYuANg.modules.identity.application.dto.response.SystemAuthenticationToken;
+import com.github.DaiYuANg.security.authorization.RbacPermissionCodes.Role;
+import com.github.DaiYuANg.security.authorization.RbacPermissionCodes.User;
 import com.github.DaiYuANg.testsupport.QuarkusPostgresValkeyTestProfile;
 import com.github.DaiYuANg.testsupport.ValkeyTestResource;
 import io.quarkus.test.InjectMock;
@@ -101,9 +103,7 @@ class AuthResourceQuarkusTest {
   }
 
   @Test
-  @TestSecurity(
-      user = "root",
-      roles = {"user:view"})
+  @TestSecurity(user = "root", roles = {User.VIEW})
   void meEndpointReturnsFrontendContractShape() {
     when(authApplicationService.me("root"))
         .thenReturn(
@@ -112,7 +112,7 @@ class AuthResourceQuarkusTest {
                 "Root Admin",
                 "root@example.com",
                 List.of(new MeRoleItem("1", "admin")),
-                Set.of("user:view", "role:view")));
+                Set.of(User.VIEW, Role.VIEW)));
 
     given()
         .when()

@@ -15,6 +15,7 @@ import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.RoleVO
 import com.github.DaiYuANg.modules.accesscontrol.application.permissiongroup.PermissionGroupApplicationService;
 import com.github.DaiYuANg.modules.accesscontrol.application.support.AccessControlAuditSupport;
 import com.github.DaiYuANg.security.authorization.AuthorizationService;
+import com.github.DaiYuANg.security.authorization.RbacPermissionCodes.Role;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -35,7 +36,7 @@ public class RoleApplicationService {
 
   @Transactional
   public RoleVO createRole(RoleCreationForm form) {
-    authorizationService.check("role", "add");
+    authorizationService.check(Role.ADD);
     if (roleRepository.countByCode(form.code()) > 0)
       throw new BizException(ResultCode.DATA_ALREADY_EXISTS, "role code already exists");
     var role = new SysRole();
@@ -51,7 +52,7 @@ public class RoleApplicationService {
   }
 
   public PageResult<RoleVO> queryRolePage(RoleQuery query) {
-    authorizationService.check("role", "view");
+    authorizationService.check(Role.VIEW);
     var slice = roleRepository.page(query);
     return PageResult.of(
         slice.total(),
@@ -61,13 +62,13 @@ public class RoleApplicationService {
   }
 
   public Optional<RoleVO> getRoleById(Long id) {
-    authorizationService.check("role", "view");
+    authorizationService.check(Role.VIEW);
     return roleRepository.findByIdOptional(id).map(this::toRoleVOWithCatalog);
   }
 
   @Transactional
   public RoleVO updateRole(Long id, UpdateRoleForm form) {
-    authorizationService.check("role", "edit");
+    authorizationService.check(Role.EDIT);
     var role =
         roleRepository
             .findByIdOptional(id)
@@ -97,20 +98,20 @@ public class RoleApplicationService {
 
   @Transactional
   public void deleteRole(Long id) {
-    authorizationService.check("role", "delete");
+    authorizationService.check(Role.DELETE);
     roleRepository.deleteById(id);
     auditSupport.bumpGlobalVersion();
     auditSupport.record("role", "delete", String.valueOf(id), true, "delete role");
   }
 
   public Optional<RoleVO> getRoleByName(String name) {
-    authorizationService.check("role", "view");
+    authorizationService.check(Role.VIEW);
     return roleRepository.findByName(name).map(this::toRoleVOWithCatalog);
   }
 
   @Transactional
   public void assignPermissionGroups(RoleRefPermissionGroupForm form) {
-    authorizationService.checkAny("role:edit", "role:assign-permission-group");
+    authorizationService.checkAny(Role.EDIT, Role.ASSIGN_PERMISSION_GROUP);
     var role =
         roleRepository
             .findByIdOptional(form.roleId())
@@ -134,7 +135,7 @@ public class RoleApplicationService {
   }
 
   public List<RoleVO> getAllRoles() {
-    authorizationService.check("role", "view");
+    authorizationService.check(Role.VIEW);
     return roleRepository.listAll().stream().map(this::toRoleVOWithCatalog).toList();
   }
 

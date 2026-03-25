@@ -1,6 +1,7 @@
 package com.github.DaiYuANg.mobile.identity;
 
 import com.github.DaiYuANg.common.model.Result;
+import com.github.DaiYuANg.security.identity.PrincipalAttributeKeys;
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
@@ -21,8 +22,8 @@ public class MobileSessionResource {
   @GET
   @Authenticated
   public Result<MobilePrincipalView> currentPrincipal() {
-    Object userType = jwt.getClaim("userType");
-    Object rolesClaim = jwt.getClaim("roles");
+    Object userType = jwt.getClaim(PrincipalAttributeKeys.USER_TYPE);
+    Object rolesClaim = jwt.getClaim(PrincipalAttributeKeys.ROLES);
     List<String> roles = new ArrayList<>();
     if (rolesClaim instanceof List<?> list) {
       for (Object o : list) {

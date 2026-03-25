@@ -5,6 +5,7 @@ import com.github.DaiYuANg.cache.PermissionSnapshotStore;
 import com.github.DaiYuANg.cache.RefreshTokenStore;
 import com.github.DaiYuANg.modules.identity.application.port.AuthenticationLifecyclePort;
 import com.github.DaiYuANg.security.identity.AuthenticatedUser;
+import com.github.DaiYuANg.security.identity.PrincipalAttributeKeys;
 import com.github.DaiYuANg.security.snapshot.PermissionSnapshot;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -32,11 +33,16 @@ public class AdminAuthenticationLifecycle implements AuthenticationLifecyclePort
             user.permissions(),
             authorityVersion(user.username()),
             java.util.Map.of(
-                "displayName", user.displayName(),
-                "userType", user.userType(),
-                "roles", user.roles(),
-                "permissions", user.permissions(),
-                "authorityVersion", authorityVersion(user.username())),
+                PrincipalAttributeKeys.DISPLAY_NAME,
+                user.displayName(),
+                PrincipalAttributeKeys.USER_TYPE,
+                user.userType(),
+                PrincipalAttributeKeys.ROLES,
+                user.roles(),
+                PrincipalAttributeKeys.PERMISSIONS,
+                user.permissions(),
+                PrincipalAttributeKeys.AUTHORITY_VERSION,
+                authorityVersion(user.username())),
             user.userId());
     permissionSnapshotStore.save(snapshot);
   }
