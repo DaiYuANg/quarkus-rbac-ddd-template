@@ -8,6 +8,7 @@ import com.github.DaiYuANg.modules.identity.application.dto.response.UserDetailV
 import com.github.DaiYuANg.security.identity.CurrentAuthenticatedUser;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import java.util.LinkedHashSet;
 import lombok.RequiredArgsConstructor;
 
 /** Profile backed by {@code sys_user} and RBAC graph (roles, permission groups). */
@@ -56,16 +57,8 @@ public class DbUserProfileProvider implements UserProfileProvider {
 
   private UserDetailVo toUserDetail(com.github.DaiYuANg.identity.entity.SysUser user) {
     var permissions =
-        user.roles.stream()
-            .flatMap(r -> r.permissionGroups.stream())
-            .flatMap(g -> g.permissions.stream())
-            .map(p -> p.code)
-            .collect(java.util.stream.Collectors.toCollection(java.util.LinkedHashSet::new));
-    var roleCodes =
-        user.roles.stream()
-            .map(r -> r.code)
-            .filter(java.util.Objects::nonNull)
-            .collect(java.util.stream.Collectors.toCollection(java.util.LinkedHashSet::new));
+        new LinkedHashSet<>(userRepository.findPermissionCodesByUsername(user.username));
+    var roleCodes = new LinkedHashSet<>(userRepository.findRoleCodesByUsername(user.username));
     return new UserDetailVo(
         user.id,
         user.username,

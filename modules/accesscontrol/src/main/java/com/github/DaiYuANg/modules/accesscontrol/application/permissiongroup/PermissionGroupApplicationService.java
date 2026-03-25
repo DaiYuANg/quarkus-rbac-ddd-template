@@ -111,16 +111,15 @@ public class PermissionGroupApplicationService {
         repository
             .findByIdOptional(form.permissionGroupId())
             .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
-    group.permissions.clear();
-    if (form.permissionIds() != null) {
-      form.permissionIds()
-          .forEach(
-              id -> {
-                if (catalogStore.getById(id).isPresent()) {
-                  group.permissions.add(entityManager.getReference(SysPermission.class, id));
-                }
-              });
-    }
+    var ids =
+        form.permissionIds() == null
+            ? List.<Long>of()
+            : form.permissionIds().stream()
+                .filter(java.util.Objects::nonNull)
+                .filter(id -> catalogStore.getById(id).isPresent())
+                .distinct()
+                .toList();
+    repository.replacePermissionRefs(group.id, ids);
     auditSupport.bumpGlobalVersion();
     auditSupport.record(
         "permission-group",
@@ -132,7 +131,24 @@ public class PermissionGroupApplicationService {
 
   public List<PermissionGroupVO> getAllPermissionGroups() {
     authorizationService.check(PermissionGroup.VIEW);
-    return repository.listAll().stream().map(this::toPermissionGroupVOWithCatalog).toList();
+    var groups = repository.listAll();
+    if (groups == null || groups.isEmpty()) {
+      return List.of();
+    }
+    var groupIds = groups.stream().map(g -> g == null ? null : g.id).toList();
+    var permissionIdsByGroupId = repository.findPermissionIdsByGroupIds(groupIds);
+    return groups.stream()
+        .map(
+            g -> {
+              if (g == null) {
+                return null;
+              }
+              var permissionIds =
+                  permissionIdsByGroupId.getOrDefault(g.id, java.util.Set.of()).stream().toList();
+              return toPermissionGroupVOWithCatalog(g, permissionIds);
+            })
+        .filter(java.util.Objects::nonNull)
+        .toList();
   }
 
   @Transactional
@@ -166,13 +182,8 @@ public class PermissionGroupApplicationService {
       return;
     }
 
-    var allGroups = repository.listAll();
-    for (var group : allGroups) {
-      if (target != null && group.id.equals(target.id)) {
-        continue;
-      }
-      group.permissions.removeIf(permission -> normalizedIds.contains(permission.id));
-    }
+    // Avoid N+1 lazy loads on group.permissions by deleting join rows in bulk.
+    repository.deletePermissionRefsByPermissionIds(normalizedIds.stream().toList(), target == null ? null : target.id);
     if (target != null) {
       target.permissions.addAll(refs);
     }
@@ -208,8 +219,14 @@ public class PermissionGroupApplicationService {
 
   public PermissionGroupVO toPermissionGroupVOWithCatalog(SysPermissionGroup group) {
     var permissionIds = repository.findPermissionIdsByGroupId(group.id);
+    return toPermissionGroupVOWithCatalog(group, permissionIds);
+  }
+
+  public PermissionGroupVO toPermissionGroupVOWithCatalog(
+      SysPermissionGroup group, List<Long> permissionIds) {
     var permissions =
-        permissionIds.stream()
+        (permissionIds == null ? List.<Long>of() : permissionIds)
+            .stream()
             .map(catalogStore::getById)
             .flatMap(Optional::stream)
             .map(this::toPermissionVO)

@@ -4,7 +4,6 @@ import com.blazebit.persistence.CriteriaBuilderFactory;
 import com.blazebit.persistence.querydsl.BlazeJPAQuery;
 import com.github.DaiYuANg.accesscontrol.entity.QSysPermission;
 import com.github.DaiYuANg.accesscontrol.entity.SysPermission;
-import com.github.DaiYuANg.accesscontrol.entity.SysPermission_;
 import com.github.DaiYuANg.accesscontrol.parameter.PermissionQuery;
 import com.github.DaiYuANg.accesscontrol.projection.PermissionListProjection;
 import com.github.DaiYuANg.accesscontrol.query.MetamodelPermissionQueryBuilder;
@@ -35,15 +34,44 @@ public class PermissionRepository extends BasePanacheCommandRepository<SysPermis
   private final MetamodelPermissionQueryBuilder queryBuilder;
 
   public Optional<SysPermission> findByCode(String code) {
-    return find(SysPermission_.code.getName(), code).firstResultOptional();
+    if (code == null || code.isBlank()) {
+      return Optional.empty();
+    }
+    var rows =
+        new BlazeJPAQuery<SysPermission>(entityManager, criteriaBuilderFactory)
+            .from(p)
+            .select(p)
+            .where(p.code.eq(code))
+            .limit(1)
+            .fetch();
+    return rows.stream().findFirst();
   }
 
   public Optional<SysPermission> findByName(String name) {
-    return find(SysPermission_.name.getName(), name).firstResultOptional();
+    if (name == null || name.isBlank()) {
+      return Optional.empty();
+    }
+    var rows =
+        new BlazeJPAQuery<SysPermission>(entityManager, criteriaBuilderFactory)
+            .from(p)
+            .select(p)
+            .where(p.name.eq(name))
+            .limit(1)
+            .fetch();
+    return rows.stream().findFirst();
   }
 
   public long countByCode(String code) {
-    return count(SysPermission_.code.getName(), code);
+    if (code == null || code.isBlank()) {
+      return 0L;
+    }
+    Long value =
+        new BlazeJPAQuery<Long>(entityManager, criteriaBuilderFactory)
+            .from(p)
+            .select(p.id.count())
+            .where(p.code.eq(code))
+            .fetchOne();
+    return value == null ? 0L : value;
   }
 
   @Override

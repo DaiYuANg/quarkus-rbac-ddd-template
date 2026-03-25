@@ -3,8 +3,8 @@ package com.github.DaiYuANg.accesscontrol.repository;
 import com.blazebit.persistence.CriteriaBuilderFactory;
 import com.blazebit.persistence.querydsl.BlazeJPAQuery;
 import com.github.DaiYuANg.accesscontrol.entity.QSysRole;
+import com.github.DaiYuANg.accesscontrol.entity.QSysPermissionGroup;
 import com.github.DaiYuANg.accesscontrol.entity.SysRole;
-import com.github.DaiYuANg.accesscontrol.entity.SysRole_;
 import com.github.DaiYuANg.accesscontrol.parameter.RoleQuery;
 import com.github.DaiYuANg.accesscontrol.projection.RoleListProjection;
 import com.github.DaiYuANg.accesscontrol.query.MetamodelRoleQueryBuilder;
@@ -19,6 +19,8 @@ import com.querydsl.core.types.dsl.Expressions;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 
@@ -28,6 +30,7 @@ public class RoleRepository extends BasePanacheCommandRepository<SysRole>
     implements RoleQueryRepository {
 
   private static final QSysRole r = new QSysRole("role");
+  private static final QSysPermissionGroup g = new QSysPermissionGroup("permissionGroup");
 
   private final EntityManager entityManager;
   private final CriteriaBuilderFactory criteriaBuilderFactory;
@@ -35,15 +38,68 @@ public class RoleRepository extends BasePanacheCommandRepository<SysRole>
   private final MetamodelRoleQueryBuilder queryBuilder;
 
   public Optional<SysRole> findByName(String name) {
-    return find(SysRole_.name.getName(), name).firstResultOptional();
+    if (name == null || name.isBlank()) {
+      return Optional.empty();
+    }
+    var rows =
+        new BlazeJPAQuery<SysRole>(entityManager, criteriaBuilderFactory)
+            .from(r)
+            .select(r)
+            .where(r.name.eq(name))
+            .limit(1)
+            .fetch();
+    return rows.stream().findFirst();
   }
 
   public Optional<SysRole> findByCode(String code) {
-    return find(SysRole_.code.getName(), code).firstResultOptional();
+    if (code == null || code.isBlank()) {
+      return Optional.empty();
+    }
+    var rows =
+        new BlazeJPAQuery<SysRole>(entityManager, criteriaBuilderFactory)
+            .from(r)
+            .select(r)
+            .where(r.code.eq(code))
+            .limit(1)
+            .fetch();
+    return rows.stream().findFirst();
   }
 
   public long countByCode(String code) {
-    return count(SysRole_.code.getName(), code);
+    if (code == null || code.isBlank()) {
+      return 0L;
+    }
+    Long value =
+        new BlazeJPAQuery<Long>(entityManager, criteriaBuilderFactory)
+            .from(r)
+            .select(r.id.count())
+            .where(r.code.eq(code))
+            .fetchOne();
+    return value == null ? 0L : value;
+  }
+
+  public List<SysRole> listAllWithPermissionGroups() {
+    return new BlazeJPAQuery<SysRole>(entityManager, criteriaBuilderFactory)
+        .from(r)
+        .leftJoin(r.permissionGroups, g).fetchJoin()
+        .select(r)
+        .distinct()
+        .fetch();
+  }
+
+  public List<SysRole> findAllByIds(Collection<Long> ids) {
+    if (ids == null || ids.isEmpty()) {
+      return List.of();
+    }
+    var normalized = ids.stream().filter(java.util.Objects::nonNull).distinct().toList();
+    if (normalized.isEmpty()) {
+      return List.of();
+    }
+    return new BlazeJPAQuery<SysRole>(entityManager, criteriaBuilderFactory)
+        .from(r)
+        .select(r)
+        .where(r.id.in(normalized))
+        .fetch();
   }
 
   @Override

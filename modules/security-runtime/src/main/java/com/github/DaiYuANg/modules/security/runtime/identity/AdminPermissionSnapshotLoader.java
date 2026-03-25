@@ -16,7 +16,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
@@ -38,8 +37,8 @@ public class AdminPermissionSnapshotLoader implements PermissionSnapshotLoader {
   public Optional<PermissionSnapshot> load(String username) {
     var user = userRepository.findByUsername(username).orElse(null);
     if (user != null) {
-      var roles = roleCodes(user);
-      var permissions = permissionIdentifiers(user);
+      var roles = new LinkedHashSet<>(userRepository.findRoleCodesByUsername(username));
+      var permissions = new LinkedHashSet<>(userRepository.findPermissionCodesByUsername(username));
       var attributes = new LinkedHashMap<String, Object>();
       attributes.put(PrincipalAttributeKeys.SOURCE, "db");
       attributes.put(PrincipalAttributeKeys.DISPLAY_NAME, user.nickname);
@@ -98,19 +97,5 @@ public class AdminPermissionSnapshotLoader implements PermissionSnapshotLoader {
         ConfigUserAuthorityId.forUsername(entry.username()));
   }
 
-  private LinkedHashSet<String> permissionIdentifiers(
-      com.github.DaiYuANg.identity.entity.SysUser user) {
-    return user.roles.stream()
-        .flatMap(r -> r.permissionGroups.stream())
-        .flatMap(g -> g.permissions.stream())
-        .map(p -> p.code)
-        .collect(Collectors.toCollection(LinkedHashSet::new));
-  }
-
-  private LinkedHashSet<String> roleCodes(com.github.DaiYuANg.identity.entity.SysUser user) {
-    return user.roles.stream()
-        .map(r -> r.code)
-        .filter(Objects::nonNull)
-        .collect(Collectors.toCollection(LinkedHashSet::new));
-  }
+  // DB permissions/roles are resolved via UserRepository queries to avoid N+1 lazy loads.
 }

@@ -103,12 +103,12 @@ public class UserApplicationService {
 
   public Optional<UserVO> getUserById(Long id) {
     authorizationService.check(User.VIEW);
-    return userRepository.findByIdOptional(id).map(this::toUserVO);
+    return userRepository.findByIdWithRbacGraph(id).map(this::toUserVO);
   }
 
   public List<UserVO> getAllUsers() {
     authorizationService.check(User.VIEW);
-    return userRepository.listAll().stream().map(this::toUserVO).toList();
+    return userRepository.listAllWithRbacGraph().stream().map(this::toUserVO).toList();
   }
 
   @Transactional
@@ -137,15 +137,18 @@ public class UserApplicationService {
     if (form.status() != null) user.userStatus = form.status();
     if (form.roleIds() != null) {
       user.roles.clear();
-      form.roleIds()
-          .forEach(rid -> roleRepository.findByIdOptional(rid).ifPresent(user.roles::add));
+      roleRepository.findAllByIds(form.roleIds()).forEach(user.roles::add);
     }
     if (user.userStatus == UserStatus.DISABLED) {
       refreshTokenStore.deleteByUsername(user.username);
     }
     auditSupport.bumpGlobalVersion();
     auditSupport.record("user", "update", user.username, true, "update user");
-    return toUserVO(user);
+    // Avoid N+1 lazy loads when mapping nested RBAC graph in UserVO.
+    return userRepository
+        .findByIdWithRbacGraph(user.id)
+        .map(this::toUserVO)
+        .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
   }
 
   @Transactional
@@ -162,7 +165,7 @@ public class UserApplicationService {
 
   public Optional<UserVO> getUserByUsername(String username) {
     authorizationService.check(User.VIEW);
-    return userRepository.findByUsername(username).map(this::toUserVO);
+    return userRepository.findByUsernameWithRbacGraph(username).map(this::toUserVO);
   }
 
   @Transactional
@@ -174,8 +177,7 @@ public class UserApplicationService {
             .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
     user.roles.clear();
     if (form.roleIds() != null) {
-      form.roleIds()
-          .forEach(rid -> roleRepository.findByIdOptional(rid).ifPresent(user.roles::add));
+      roleRepository.findAllByIds(form.roleIds()).forEach(user.roles::add);
     }
     auditSupport.bumpGlobalVersion();
     auditSupport.record(
@@ -218,7 +220,7 @@ public class UserApplicationService {
   }
 
   public long countUserLoginTotal() {
-    return userRepository.count("latestSignIn is not null");
+    return userRepository.countUserLoginTotal();
   }
 
   private UserVO toUserVO(com.github.DaiYuANg.identity.projection.UserListProjection user) {

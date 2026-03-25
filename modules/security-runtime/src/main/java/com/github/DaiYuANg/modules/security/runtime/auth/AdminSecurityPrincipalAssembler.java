@@ -1,14 +1,13 @@
 package com.github.DaiYuANg.modules.security.runtime.auth;
 
 import com.github.DaiYuANg.identity.entity.SysUser;
+import com.github.DaiYuANg.identity.repository.UserRepository;
 import com.github.DaiYuANg.security.identity.AuthenticatedUser;
 import com.github.DaiYuANg.security.identity.PrincipalAttributeKeys;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.Objects;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
@@ -19,9 +18,11 @@ public class AdminSecurityPrincipalAssembler {
   @ConfigProperty(name = "app.identity.db-user-type", defaultValue = "ADMIN")
   String dbUserType;
 
+  private final UserRepository userRepository;
+
   public AuthenticatedUser fromDbUser(SysUser user) {
-    var roles = roleCodes(user);
-    var permissions = permissionIdentifiers(user);
+    var roles = new LinkedHashSet<>(userRepository.findRoleCodesByUsername(user.username));
+    var permissions = new LinkedHashSet<>(userRepository.findPermissionCodesByUsername(user.username));
     var attributes = new LinkedHashMap<String, Object>();
     attributes.put(PrincipalAttributeKeys.SOURCE, "db");
     attributes.put(PrincipalAttributeKeys.NICKNAME, user.nickname);
@@ -35,20 +36,5 @@ public class AdminSecurityPrincipalAssembler {
         permissions,
         attributes,
         user.id);
-  }
-
-  private LinkedHashSet<String> permissionIdentifiers(SysUser user) {
-    return user.roles.stream()
-        .flatMap(r -> r.permissionGroups.stream())
-        .flatMap(g -> g.permissions.stream())
-        .map(p -> p.code)
-        .collect(Collectors.toCollection(LinkedHashSet::new));
-  }
-
-  private LinkedHashSet<String> roleCodes(SysUser user) {
-    return user.roles.stream()
-        .map(r -> r.code)
-        .filter(Objects::nonNull)
-        .collect(Collectors.toCollection(LinkedHashSet::new));
   }
 }

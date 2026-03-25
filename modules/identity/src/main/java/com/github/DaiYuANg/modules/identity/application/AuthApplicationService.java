@@ -25,6 +25,7 @@ import jakarta.enterprise.event.Event;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import java.time.Duration;
+import java.util.LinkedHashSet;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -111,7 +112,7 @@ public class AuthApplicationService {
       throw new BizException(ResultCode.FORBIDDEN);
     }
 
-    var user = userRepository.findByUsername(username).orElse(null);
+    var user = userRepository.findByUsernameWithRbacGraph(username).orElse(null);
     if (user != null) {
       var roles =
           user.roles.stream()
@@ -146,7 +147,9 @@ public class AuthApplicationService {
     if (user == null) {
       return authorityVersionStore.currentVersion() + ":config";
     }
-    return composeAuthorityVersion(permissionIdentifiers(user), roleCodes(user));
+    var permissions = new LinkedHashSet<>(userRepository.findPermissionCodesByUsername(username));
+    var roles = new LinkedHashSet<>(userRepository.findRoleCodesByUsername(username));
+    return composeAuthorityVersion(permissions, roles);
   }
 
   private void onLoginFailure(String username, String reason, AuditSnapshot snapshot) {
@@ -176,19 +179,5 @@ public class AuthApplicationService {
         + UserDetailVo.encodeAuthorityKey(permissions, roleCodes);
   }
 
-  private java.util.Set<String> permissionIdentifiers(
-      com.github.DaiYuANg.identity.entity.SysUser user) {
-    return user.roles.stream()
-        .flatMap(r -> r.permissionGroups.stream())
-        .flatMap(g -> g.permissions.stream())
-        .map(p -> p.code)
-        .collect(java.util.stream.Collectors.toCollection(java.util.LinkedHashSet::new));
-  }
-
-  private java.util.Set<String> roleCodes(com.github.DaiYuANg.identity.entity.SysUser user) {
-    return user.roles.stream()
-        .map(r -> r.code)
-        .filter(java.util.Objects::nonNull)
-        .collect(java.util.stream.Collectors.toCollection(java.util.LinkedHashSet::new));
-  }
+  // DB permissions/roles are resolved via UserRepository queries to avoid N+1 lazy loads.
 }

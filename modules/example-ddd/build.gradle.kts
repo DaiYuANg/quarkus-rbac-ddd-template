@@ -8,4 +8,9 @@ dependencies {
   api(libs.quarkus.arc)
   api(libs.quarkus.hibernate.orm.panache)
   api(libs.quarkus.hibernate.validator)
+
+  val queryDSLApt = variantOf(libs.querydsl.apt) { classifier(JAKARTA) }
+  compileOnly(queryDSLApt)
+  annotationProcessor(queryDSLApt)
+  annotationProcessor(libs.bundles.persistence.annotation.processor)
 }
