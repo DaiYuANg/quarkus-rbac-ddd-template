@@ -11,15 +11,14 @@ import com.github.DaiYuANg.modules.identity.application.AuthApplicationService;
 import com.github.DaiYuANg.modules.identity.application.dto.response.MeResponse;
 import com.github.DaiYuANg.modules.identity.application.dto.response.MeRoleItem;
 import com.github.DaiYuANg.modules.identity.application.dto.response.SystemAuthenticationToken;
+import com.github.DaiYuANg.testsupport.QuarkusPostgresValkeyTestProfile;
 import com.github.DaiYuANg.testsupport.ValkeyTestResource;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.QuarkusTestProfile;
 import io.quarkus.test.junit.TestProfile;
 import io.quarkus.test.security.TestSecurity;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 
@@ -28,7 +27,7 @@ import org.junit.jupiter.api.Test;
  */
 @QuarkusTest
 @QuarkusTestResource(ValkeyTestResource.class)
-@TestProfile(MobileIdentityRestJsonContractTest.Profile.class)
+@TestProfile(QuarkusPostgresValkeyTestProfile.class)
 class MobileIdentityRestJsonContractTest {
 
   @InjectMock AuthApplicationService authApplicationService;
@@ -81,22 +80,5 @@ class MobileIdentityRestJsonContractTest {
         .body("data.roles[0].id", equalTo("1"))
         .body("data.roles[0].name", equalTo("member"))
         .body("data.permissions.size()", equalTo(0));
-  }
-
-  public static class Profile implements QuarkusTestProfile {
-    @Override
-    public Map<String, String> getConfigOverrides() {
-      return Map.ofEntries(
-          Map.entry("quarkus.datasource.jdbc.url", "jdbc:tc:postgresql:16-alpine:///rbac_test"),
-          Map.entry(
-              "quarkus.datasource.jdbc.driver", "org.testcontainers.jdbc.ContainerDatabaseDriver"),
-          Map.entry("quarkus.datasource.jdbc.acquisition-timeout", "60S"),
-          Map.entry("quarkus.datasource.username", "postgres"),
-          Map.entry("quarkus.datasource.password", "postgres"),
-          Map.entry("quarkus.hibernate-orm.schema-management.strategy", "drop-and-create"),
-          Map.entry("quarkus.redis.hosts", "${test.redis.hosts}"),
-          Map.entry("quarkus.log.console.json.enabled", "false"),
-          Map.entry("quarkus.otel.enabled", "false"));
-    }
   }
 }

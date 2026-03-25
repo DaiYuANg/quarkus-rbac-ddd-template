@@ -95,6 +95,7 @@ Treat **`gradle/libs.versions.toml`** as the source of truth for versions; do no
 
 - Prefer **`./gradlew :apps:admin-api:test`**; add **`:apps:mobile-api:test`** when mobile behavior is affected.
 - Contract tests rely on Testcontainers (PostgreSQL) and a **Valkey** test resource; on failure, check Docker/network before weakening assertions.
+- **Full-stack HTTP flows** (real login, JWT, Redis, DB — no mocks on `AuthApplicationService`): **`AdminApiFullStackFlowIT`**, **`MobileApiFullStackFlowIT`**; see **`docs/INTEGRATION_TESTING.md`**.
 - After broad edits, **`./gradlew check`** is appropriate (Checkstyle, SpotBugs, etc., per project config).
 
 ---
