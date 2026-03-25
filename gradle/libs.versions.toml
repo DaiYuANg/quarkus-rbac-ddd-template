@@ -14,18 +14,14 @@ plantuml = "2.4.0"
 checkstyle = "10.18.2"
 spotbugs = "6.4.8"
 owasp-dependency-check = "12.2.0"
-foojay = "0.10.0"
-git-hooks = "2.0.23"
-develocity = "3.19.2"
 mapstruct = "1.6.3"
 jetbrains-annotations = "26.1.0"
 blaze-persistence = "1.6.18"
-hibernate-processor-version = "7.1.7.Final"
+hibernate-processor-version = "7.3.0.Final"
 jakarta-persistence-version = "3.2.0"
 jakarta-annotation-version = "3.0.0"
 record-builder = "52"
 query-dsl = "7.1"
-protostream = "5.0.1.Final"
 wildfly-elytron = "2.8.3.Final"
 testcontainers = "1.21.4"
 
@@ -108,7 +104,7 @@ querydsl-collection = { group = "io.github.openfeign.querydsl", name = "querydsl
 guava = { group = "com.google.guava", name = "guava", version = "33.5.0-jre" }
 wildfly-elytron-sasl-digest = { group = "org.wildfly.security", name = "wildfly-elytron-sasl-digest", version.ref = "wildfly-elytron" }
 slf4j-api = { group = "org.slf4j", name = "slf4j-api", version = "2.0.17" }
-commons-codec = { group = "commons-codec", name = "commons-codec", version = "1.17.2" }
+commons-codec = { group = "commons-codec", name = "commons-codec", version = "1.21.0" }
 
 [bundles]
 quarkus-application = [
