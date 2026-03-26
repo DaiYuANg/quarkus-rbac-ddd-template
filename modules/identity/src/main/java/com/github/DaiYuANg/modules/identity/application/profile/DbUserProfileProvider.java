@@ -11,7 +11,14 @@ import jakarta.inject.Inject;
 import java.util.LinkedHashSet;
 import lombok.RequiredArgsConstructor;
 
-/** Profile backed by {@code sys_user} and RBAC graph (roles, permission groups). */
+/**
+ * Profile backed by {@code sys_user} and the RBAC graph.
+ *
+ * <p>Permissions/roles are resolved via repository-level typed queries to avoid initializing the
+ * entity association graph (prevents N+1 lazy loads).
+ *
+ * @author ddddd <dai_yuang@icloud.com>
+ */
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class DbUserProfileProvider implements UserProfileProvider {

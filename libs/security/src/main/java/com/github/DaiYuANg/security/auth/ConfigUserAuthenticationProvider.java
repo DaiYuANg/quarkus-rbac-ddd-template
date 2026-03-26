@@ -17,6 +17,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
+/**
+ * Authentication provider for {@code app.security.config-users}.
+ *
+ * <p>Config users do not have a DB row. We still assign a stable synthetic negative {@code userId}
+ * so they can participate in the same snapshot + Valkey pipeline as DB users.
+ *
+ * @author ddddd <dai_yuang@icloud.com>
+ */
 @ApplicationScoped
 @Priority(100)
 @RequiredArgsConstructor(onConstructor_ = @Inject)

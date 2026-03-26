@@ -19,6 +19,17 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
+/**
+ * Loads a {@link PermissionSnapshot} for a principal.
+ *
+ * <p>DB users: resolve roles/permissions via repository-level typed queries to avoid initializing
+ * the RBAC entity graph (prevents N+1 lazy loads).
+ *
+ * <p>Config users: resolve from {@code app.security.config-users} and assign a stable synthetic
+ * negative {@code userId} so Valkey storage shares the same layout as DB users.
+ *
+ * @author ddddd <dai_yuang@icloud.com>
+ */
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class AdminPermissionSnapshotLoader implements PermissionSnapshotLoader {

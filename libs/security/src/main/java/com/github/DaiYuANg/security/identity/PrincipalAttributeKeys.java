@@ -3,6 +3,8 @@ package com.github.DaiYuANg.security.identity;
 /**
  * Stable string keys shared across JWT custom claims, {@link io.quarkus.security.identity
  * .SecurityIdentity} attributes, Valkey authority snapshots, and serialized principal maps.
+ *
+ * @author ddddd <dai_yuang@icloud.com>
  */
 public final class PrincipalAttributeKeys {
 

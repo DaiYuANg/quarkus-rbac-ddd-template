@@ -27,6 +27,19 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Permission-group management application service.
+ *
+ * <p>Performance notes:
+ *
+ * <ul>
+ *   <li>For list endpoints, permission ids are bulk-resolved to avoid N+1 queries.
+ *   <li>For bulk (un)bind operations, join-table updates are performed without initializing
+ *       {@code @ManyToMany} collections.
+ * </ul>
+ *
+ * @author ddddd <dai_yuang@icloud.com>
+ */
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class PermissionGroupApplicationService {

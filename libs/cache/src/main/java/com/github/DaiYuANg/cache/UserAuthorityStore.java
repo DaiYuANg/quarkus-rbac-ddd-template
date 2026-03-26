@@ -27,6 +27,17 @@ import java.util.Set;
  *   <li>usernameToUserIdKey(username) -> userId (for lookup by username)
  *   <li>roleRefCountKey(roleHash) / permissionRefCountKey(permissionHash) -> refcount
  * </ul>
+ *
+ * <p>Design notes:
+ *
+ * <ul>
+ *   <li>{@code userId} is the primary key for snapshots. DB users use row ids; config users use
+ *       stable synthetic negative ids.
+ *   <li>Role/permission sets are stored by hash and ref-counted to reduce memory footprint.
+ *   <li>{@code authorityVersion} is persisted to support fast reuse / invalidation.
+ * </ul>
+ *
+ * @author ddddd <dai_yuang@icloud.com>
  */
 @ApplicationScoped
 public class UserAuthorityStore {

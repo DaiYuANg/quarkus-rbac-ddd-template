@@ -31,6 +31,22 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 
+/**
+ * Authentication application service.
+ *
+ * <p>Coordinates:
+ *
+ * <ul>
+ *   <li>authentication provider chain (DB users + config users)
+ *   <li>refresh token rotation and revocation
+ *   <li>publishing Valkey permission snapshots on login/refresh
+ * </ul>
+ *
+ * <p>Security note: permission truth is resolved through snapshot augmentation; JWT claims are used
+ * for identity transport and compatibility with endpoint-level checks.
+ *
+ * @author ddddd <dai_yuang@icloud.com>
+ */
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 @Slf4j

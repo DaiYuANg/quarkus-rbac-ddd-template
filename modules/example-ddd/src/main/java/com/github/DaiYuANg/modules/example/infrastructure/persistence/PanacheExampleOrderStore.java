@@ -12,6 +12,14 @@ import jakarta.persistence.EntityManager;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Example order persistence adapter.
+ *
+ * <p>Uses typed QueryDSL/Blaze queries and fetch-joins for list operations to avoid N+1 when
+ * rendering orders with line items.
+ *
+ * @author ddddd <dai_yuang@icloud.com>
+ */
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class PanacheExampleOrderStore implements ExampleOrderStore {

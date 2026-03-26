@@ -14,6 +14,21 @@ import jakarta.inject.Inject;
 import lombok.RequiredArgsConstructor;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
+/**
+ * Request-time permission enrichment.
+ *
+ * <p>This augmentor enforces a single permission pipeline for all principals:
+ *
+ * <ul>
+ *   <li>Try to reuse Valkey snapshot if {@code authorityVersion} matches
+ *   <li>Otherwise load from {@link PermissionSnapshotLoader} and persist snapshot back to Valkey
+ * </ul>
+ *
+ * <p>JWT is treated as identity transport + version hint, not the ultimate source of truth for
+ * permissions.
+ *
+ * @author ddddd <dai_yuang@icloud.com>
+ */
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class AdminPermissionSecurityIdentityAugmentor implements SecurityIdentityAugmentor {

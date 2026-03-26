@@ -29,6 +29,14 @@ import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Repository for {@code SysUser}.
+ *
+ * <p>Contains RBAC graph fetch helpers and typed projections (via BlazeJPAQuery + QueryDSL) to
+ * avoid N+1 lazy loads in hot paths such as snapshot loading, profiles, and list endpoints.
+ *
+ * @author ddddd <dai_yuang@icloud.com>
+ */
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class UserRepository extends BasePanacheCommandRepository<SysUser>

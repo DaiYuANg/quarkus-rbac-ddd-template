@@ -32,6 +32,14 @@ import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Repository for permission groups with RBAC-specific helpers.
+ *
+ * <p>Principle: prefer typed queries (BlazeJPAQuery/QueryDSL) and avoid initializing {@code
+ * @ManyToMany} collections in bulk operations.
+ *
+ * @author ddddd <dai_yuang@icloud.com>
+ */
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class PermissionGroupRepository extends BasePanacheCommandRepository<SysPermissionGroup>
@@ -184,7 +192,9 @@ public class PermissionGroupRepository extends BasePanacheCommandRepository<SysP
 
   /**
    * Replaces a group's permission refs in the join table without initializing the JPA collection.
-   * Uses native SQL for bulk delete + bulk insert.
+   *
+   * <p>Implemented as typed bulk delete + batched inserts to avoid N+1 and avoid loading the
+   * existing {@code g.permissions} collection.
    */
   @Transactional
   public void replacePermissionRefs(Long groupId, List<Long> permissionIds) {

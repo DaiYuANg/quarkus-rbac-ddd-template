@@ -33,6 +33,19 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * User management application service.
+ *
+ * <p>Performance notes:
+ *
+ * <ul>
+ *   <li>When returning nested RBAC views (roles -> permissionGroups -> permissions), reload with
+ *       RBAC fetch graph helpers to avoid N+1 lazy loads.
+ *   <li>Role assignment uses bulk repository loading (no per-id DB calls).
+ * </ul>
+ *
+ * @author ddddd <dai_yuang@icloud.com>
+ */
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class UserApplicationService {

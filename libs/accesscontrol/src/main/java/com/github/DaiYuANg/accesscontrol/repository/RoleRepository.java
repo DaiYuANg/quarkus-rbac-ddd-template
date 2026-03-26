@@ -24,6 +24,14 @@ import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Repository for roles.
+ *
+ * <p>Uses BlazeJPAQuery + QueryDSL for typed filtering/sorting and to support fetch-join use cases
+ * without string JPQL.
+ *
+ * @author ddddd <dai_yuang@icloud.com>
+ */
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class RoleRepository extends BasePanacheCommandRepository<SysRole>

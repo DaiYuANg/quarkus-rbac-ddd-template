@@ -8,6 +8,13 @@ import jakarta.persistence.Table;
 import java.io.Serializable;
 import java.util.Objects;
 
+/**
+ * Join table entity for {@code sys_permission_group_ref_permission}.
+ *
+ * <p>Used for bulk operations without initializing {@code @ManyToMany} collections.
+ *
+ * @author ddddd &lt;dai_yuang@icloud.com&gt;
+ */
 @Entity
 @Table(name = "sys_permission_group_ref_permission")
 public class SysPermissionGroupRefPermission {

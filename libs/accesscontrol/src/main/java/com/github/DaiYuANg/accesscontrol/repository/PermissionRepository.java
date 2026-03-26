@@ -21,6 +21,14 @@ import jakarta.persistence.EntityManager;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Repository for permissions.
+ *
+ * <p>Read queries are expressed using BlazeJPAQuery/QueryDSL (typed) to avoid string-based query
+ * fragments and reduce refactor risk.
+ *
+ * @author ddddd <dai_yuang@icloud.com>
+ */
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class PermissionRepository extends BasePanacheCommandRepository<SysPermission>

@@ -11,6 +11,14 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Authentication lifecycle hooks for admin flows.
+ *
+ * <p>On successful login/refresh we publish a permission snapshot to Valkey so request-time
+ * augmentation can reuse it across requests until authority version invalidation.
+ *
+ * @author ddddd <dai_yuang@icloud.com>
+ */
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class AdminAuthenticationLifecycle implements AuthenticationLifecyclePort {

@@ -11,6 +11,23 @@ import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Issues JWTs for authenticated principals.
+ *
+ * <p>Claims use {@link com.github.DaiYuANg.security.identity.PrincipalAttributeKeys} to guarantee
+ * key consistency across:
+ *
+ * <ul>
+ *   <li>JWT custom claims
+ *   <li>{@code SecurityIdentity} attributes
+ *   <li>Valkey snapshots and attribute serialization
+ * </ul>
+ *
+ * <p>Permissions are still put into {@code groups} for compatibility with Quarkus' endpoint-level
+ * permission checks, while the canonical permission set is enforced by snapshot augmentation.
+ *
+ * @author ddddd <dai_yuang@icloud.com>
+ */
 @ApplicationScoped
 @RequiredArgsConstructor
 public class JwtTokenService {

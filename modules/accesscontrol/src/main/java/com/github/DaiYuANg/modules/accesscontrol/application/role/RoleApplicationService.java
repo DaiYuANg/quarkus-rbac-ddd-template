@@ -26,6 +26,19 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Role management application service.
+ *
+ * <p>Performance notes:
+ *
+ * <ul>
+ *   <li>List endpoints prefetch permission-group relations and bulk-resolve permission ids to avoid
+ *       N+1 lazy loads.
+ *   <li>Assignment operations use repository bulk loading for referenced ids.
+ * </ul>
+ *
+ * @author ddddd <dai_yuang@icloud.com>
+ */
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class RoleApplicationService {
