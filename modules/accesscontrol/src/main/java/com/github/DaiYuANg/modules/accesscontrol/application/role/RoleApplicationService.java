@@ -7,7 +7,7 @@ import com.github.DaiYuANg.accesscontrol.repository.PermissionGroupRepository;
 import com.github.DaiYuANg.accesscontrol.repository.RoleRepository;
 import com.github.DaiYuANg.common.constant.ResultCode;
 import com.github.DaiYuANg.common.exception.BizException;
-import com.github.DaiYuANg.common.model.PageResult;
+import com.github.DaiYuANg.common.model.ApiPageResult;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.RoleCreationForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.RoleRefPermissionGroupForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UpdateRoleForm;
@@ -65,10 +65,10 @@ public class RoleApplicationService {
     return toRoleVOWithCatalog(role);
   }
 
-  public PageResult<RoleVO> queryRolePage(RoleQuery query) {
+  public ApiPageResult<RoleVO> queryRolePage(RoleQuery query) {
     authorizationService.check(Role.VIEW);
     var slice = roleRepository.page(query);
-    return PageResult.of(
+    return ApiPageResult.of(
         slice.total(),
         query.getPageNum(),
         query.getPageSize(),

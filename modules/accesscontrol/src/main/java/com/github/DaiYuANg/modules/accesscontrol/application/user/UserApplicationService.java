@@ -5,7 +5,7 @@ import com.github.DaiYuANg.cache.PermissionSnapshotStore;
 import com.github.DaiYuANg.cache.RefreshTokenStore;
 import com.github.DaiYuANg.common.constant.ResultCode;
 import com.github.DaiYuANg.common.exception.BizException;
-import com.github.DaiYuANg.common.model.PageResult;
+import com.github.DaiYuANg.common.model.ApiPageResult;
 import com.github.DaiYuANg.identity.constant.UserStatus;
 import com.github.DaiYuANg.identity.entity.SysUser;
 import com.github.DaiYuANg.identity.parameter.UserQuery;
@@ -58,10 +58,10 @@ public class UserApplicationService {
   private final PermissionSnapshotStore permissionSnapshotStore;
   private final RefreshTokenStore refreshTokenStore;
 
-  public PageResult<UserVO> queryUserPage(UserQuery query) {
+  public ApiPageResult<UserVO> queryUserPage(UserQuery query) {
     authorizationService.check(User.VIEW);
     var slice = userRepository.page(query);
-    return PageResult.of(
+    return ApiPageResult.of(
         slice.total(),
         query.getPageNum(),
         query.getPageSize(),

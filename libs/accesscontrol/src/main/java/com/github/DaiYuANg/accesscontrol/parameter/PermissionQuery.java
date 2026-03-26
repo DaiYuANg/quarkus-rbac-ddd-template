@@ -1,13 +1,13 @@
 package com.github.DaiYuANg.accesscontrol.parameter;
 
-import com.github.DaiYuANg.common.model.PageQuery;
+import com.github.DaiYuANg.common.model.ApiPageQuery;
 import jakarta.ws.rs.QueryParam;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class PermissionQuery extends PageQuery {
+public class PermissionQuery extends ApiPageQuery {
   @QueryParam("name")
   private String name;
 

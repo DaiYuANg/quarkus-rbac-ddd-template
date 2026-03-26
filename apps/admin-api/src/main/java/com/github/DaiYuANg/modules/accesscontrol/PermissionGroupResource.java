@@ -1,8 +1,8 @@
 package com.github.DaiYuANg.modules.accesscontrol;
 
 import com.github.DaiYuANg.accesscontrol.parameter.PermissionGroupQuery;
-import com.github.DaiYuANg.common.model.PageResult;
-import com.github.DaiYuANg.common.model.Result;
+import com.github.DaiYuANg.common.model.ApiPageResult;
+import com.github.DaiYuANg.common.model.Results;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.PermissionGroupCreationForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.PermissionGroupRefPermissionForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UpdatePermissionGroupForm;
@@ -16,6 +16,7 @@ import jakarta.ws.rs.*;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.toolkit4j.data.model.envelope.Result;
 
 @Path("/api/v1/permission-group")
 @Produces("application/json")
@@ -26,70 +27,71 @@ public class PermissionGroupResource {
 
   @POST
   @PermissionsAllowed(PermissionGroup.ADD)
-  public Result<PermissionGroupVO> create(@Valid PermissionGroupCreationForm form) {
-    return Result.ok(permissionGroupApplicationService.createPermissionGroup(form));
+  public Result<String, PermissionGroupVO> create(@Valid PermissionGroupCreationForm form) {
+    return Results.ok(permissionGroupApplicationService.createPermissionGroup(form));
   }
 
   @GET
   @Path("/{id}")
   @PermissionsAllowed(PermissionGroup.VIEW)
-  public Result<Optional<PermissionGroupVO>> getById(@PathParam("id") Long id) {
-    return Result.ok(permissionGroupApplicationService.getPermissionGroupById(id));
+  public Result<String, Optional<PermissionGroupVO>> getById(@PathParam("id") Long id) {
+    return Results.ok(permissionGroupApplicationService.getPermissionGroupById(id));
   }
 
   @PUT
   @Path("/{id}")
   @PermissionsAllowed(PermissionGroup.EDIT)
-  public Result<PermissionGroupVO> update(
+  public Result<String, PermissionGroupVO> update(
       @PathParam("id") Long id, @Valid UpdatePermissionGroupForm form) {
-    return Result.ok(permissionGroupApplicationService.updatePermissionGroup(id, form));
+    return Results.ok(permissionGroupApplicationService.updatePermissionGroup(id, form));
   }
 
   @DELETE
   @Path("/{id}")
   @PermissionsAllowed(PermissionGroup.DELETE)
-  public Result<Void> delete(@PathParam("id") Long id) {
+  public Result<String, Void> delete(@PathParam("id") Long id) {
     permissionGroupApplicationService.deletePermissionGroup(id);
-    return Result.ok();
+    return Results.ok();
   }
 
   @GET
   @PermissionsAllowed(PermissionGroup.VIEW)
-  public Result<PageResult<PermissionGroupVO>> query(@BeanParam @Valid PermissionGroupQuery query) {
-    return Result.ok(permissionGroupApplicationService.queryPermissionGroupPage(query));
+  public Result<String, ApiPageResult<PermissionGroupVO>> query(
+      @BeanParam @Valid PermissionGroupQuery query) {
+    return Results.ok(permissionGroupApplicationService.queryPermissionGroupPage(query));
   }
 
   @GET
   @Path("/name/{name}")
   @PermissionsAllowed(PermissionGroup.VIEW)
-  public Result<Optional<PermissionGroupVO>> getByName(@PathParam("name") String name) {
-    return Result.ok(permissionGroupApplicationService.getPermissionGroupByName(name));
+  public Result<String, Optional<PermissionGroupVO>> getByName(@PathParam("name") String name) {
+    return Results.ok(permissionGroupApplicationService.getPermissionGroupByName(name));
   }
 
   @POST
   @Path("/assign/permission")
   @PermissionsAllowed(PermissionGroup.EDIT)
-  public Result<Void> assignPermissions(@Valid PermissionGroupRefPermissionForm form) {
+  public Result<String, Void> assignPermissions(@Valid PermissionGroupRefPermissionForm form) {
     permissionGroupApplicationService.assignPermissions(form);
-    return Result.ok();
+    return Results.ok();
   }
 
   @GET
   @Path("/list")
   @PermissionsAllowed(PermissionGroup.VIEW)
-  public Result<List<PermissionGroupVO>> list() {
-    return Result.ok(permissionGroupApplicationService.getAllPermissionGroups());
+  public Result<String, List<PermissionGroupVO>> list() {
+    return Results.ok(permissionGroupApplicationService.getAllPermissionGroups());
   }
 
   @GET
   @Path("/count/name/{name}")
-  public Result<Long> countName(@PathParam("name") String name) {
-    return Result.ok(permissionGroupApplicationService.countName(name));
+  public Result<String, Long> countName(@PathParam("name") String name) {
+    return Results.ok(permissionGroupApplicationService.countName(name));
   }
 
   @GET
   @Path("/count")
-  public Result<Long> count() {
-    return Result.ok(permissionGroupApplicationService.count());
+  public Result<String, Long> count() {
+    return Results.ok(permissionGroupApplicationService.count());
   }
 }

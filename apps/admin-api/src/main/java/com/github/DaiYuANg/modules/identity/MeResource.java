@@ -1,6 +1,6 @@
 package com.github.DaiYuANg.modules.identity;
 
-import com.github.DaiYuANg.common.model.Result;
+import com.github.DaiYuANg.common.model.Results;
 import com.github.DaiYuANg.modules.identity.application.AuthApplicationService;
 import com.github.DaiYuANg.modules.identity.application.dto.response.MeResponse;
 import io.quarkus.security.Authenticated;
@@ -10,6 +10,7 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import lombok.RequiredArgsConstructor;
+import org.toolkit4j.data.model.envelope.Result;
 
 @Path("/api/v1/me")
 @Produces("application/json")
@@ -20,7 +21,7 @@ public class MeResource {
 
   @GET
   @Authenticated
-  public Result<MeResponse> me() {
-    return Result.ok(authApplicationService.me(securityIdentity.getPrincipal().getName()));
+  public Result<String, MeResponse> me() {
+    return Results.ok(authApplicationService.me(securityIdentity.getPrincipal().getName()));
   }
 }

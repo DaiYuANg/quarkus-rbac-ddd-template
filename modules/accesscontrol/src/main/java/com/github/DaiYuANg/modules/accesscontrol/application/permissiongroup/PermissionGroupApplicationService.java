@@ -8,7 +8,7 @@ import com.github.DaiYuANg.cache.PermissionCatalogEntry;
 import com.github.DaiYuANg.cache.PermissionCatalogStore;
 import com.github.DaiYuANg.common.constant.ResultCode;
 import com.github.DaiYuANg.common.exception.BizException;
-import com.github.DaiYuANg.common.model.PageResult;
+import com.github.DaiYuANg.common.model.ApiPageResult;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.PermissionGroupCreationForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.PermissionGroupRefPermissionForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UpdatePermissionGroupForm;
@@ -102,10 +102,10 @@ public class PermissionGroupApplicationService {
         "permission-group", "delete", String.valueOf(id), true, "delete permission group");
   }
 
-  public PageResult<PermissionGroupVO> queryPermissionGroupPage(PermissionGroupQuery query) {
+  public ApiPageResult<PermissionGroupVO> queryPermissionGroupPage(PermissionGroupQuery query) {
     authorizationService.check(PermissionGroup.VIEW);
     var slice = repository.page(query);
-    return PageResult.of(
+    return ApiPageResult.of(
         slice.total(),
         query.getPageNum(),
         query.getPageSize(),

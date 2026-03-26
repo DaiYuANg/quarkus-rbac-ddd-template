@@ -1,6 +1,6 @@
 [versions]
 jdk = "25"
-quarkus = "3.32.4"
+quarkus = "3.34.1"
 jandex = "2.3.0"
 lombok-plugin = "3.1.6"
 spotless = "8.4.0"
@@ -24,6 +24,7 @@ record-builder = "52"
 query-dsl = "7.1"
 wildfly-elytron = "2.8.3.Final"
 testcontainers = "1.21.4"
+toolkit4j = "0.0.4"
 
 [plugins]
 quarkus = { id = "io.quarkus", version.ref = "quarkus" }
@@ -84,6 +85,8 @@ quarkus-micrometer = { group = "io.quarkus", name = "quarkus-micrometer" }
 quarkus-micrometer-registry-prometheus = { group = "io.quarkus", name = "quarkus-micrometer-registry-prometheus" }
 quarkus-opentelemetry = { group = "io.quarkus", name = "quarkus-opentelemetry" }
 quarkus-junit5 = { group = "io.quarkus", name = "quarkus-junit5" }
+quarkus-quartz = { group = "io.quarkus", name = "quarkus-quartz" }
+quarkus-scheduler = { group = "io.quarkus", name = "quarkus-scheduler" }
 quarkus-junit5-mockito = { group = "io.quarkus", name = "quarkus-junit5-mockito" }
 quarkus-test-security = { group = "io.quarkus", name = "quarkus-test-security" }
 quarkus-container-image-docker = { group = "io.quarkus", name = "quarkus-container-image-docker" }
@@ -100,6 +103,12 @@ querydsl-core = { group = "io.github.openfeign.querydsl", name = "querydsl-core"
 querydsl-spatial = { group = "io.github.openfeign.querydsl", name = "querydsl-spatial", version.ref = "query-dsl" }
 querydsl-guava = { group = "io.github.openfeign.querydsl", name = "querydsl-guava", version.ref = "query-dsl" }
 querydsl-collection = { group = "io.github.openfeign.querydsl", name = "querydsl-collections", version.ref = "query-dsl" }
+
+toolkit4j-bom = { group = "io.github.daiyuang", name = "toolkit4j-bom", version.ref = "toolkit4j" }
+hibernate-snowflake-id = { group = "io.github.daiyuang", name = "hibernate-snowflake-id" }
+data-model = { group = "io.github.daiyuang", name = "data-model" }
+collection = { group = "io.github.daiyuang", name = "collection" }
+quartz-task = { group = "io.github.daiyuang", name = "quartz-task" }
 
 guava = { group = "com.google.guava", name = "guava", version = "33.5.0-jre" }
 wildfly-elytron-sasl-digest = { group = "org.wildfly.security", name = "wildfly-elytron-sasl-digest", version.ref = "wildfly-elytron" }
@@ -118,7 +127,10 @@ quarkus-application = [
   "quarkus-smallrye-openapi",
   "quarkus-config-yaml",
   "quarkus-logging-json",
-  "quarkus-container-image-docker"
+  "quarkus-container-image-docker",
+  "quartz-task",
+  "quarkus-quartz",
+  "quarkus-scheduler"
 ]
 quarkus-observability = [
   "quarkus-smallrye-health",

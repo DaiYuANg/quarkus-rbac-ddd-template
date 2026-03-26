@@ -75,6 +75,7 @@ subprojects {
   }
 
   dependencies {
+    implementation(enforcedPlatform(rootLibs.toolkit4j.bom))
     implementation(enforcedPlatform(rootLibs.quarkus.bom))
     implementation(enforcedPlatform(rootLibs.quarkus.blaze.persistence.bom))
     annotationProcessor(enforcedPlatform(rootLibs.quarkus.blaze.persistence.bom))

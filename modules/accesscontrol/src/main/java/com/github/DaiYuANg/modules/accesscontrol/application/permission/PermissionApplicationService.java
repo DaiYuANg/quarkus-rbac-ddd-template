@@ -2,7 +2,7 @@ package com.github.DaiYuANg.modules.accesscontrol.application.permission;
 
 import com.github.DaiYuANg.accesscontrol.parameter.PermissionQuery;
 import com.github.DaiYuANg.cache.PermissionCatalogStore;
-import com.github.DaiYuANg.common.model.PageResult;
+import com.github.DaiYuANg.common.model.ApiPageResult;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.PermissionVO;
 import com.github.DaiYuANg.security.authorization.AuthorizationService;
 import com.github.DaiYuANg.security.authorization.RbacPermissionCodes.Permission;
@@ -37,7 +37,7 @@ public class PermissionApplicationService {
     return catalogStore.getAll().stream().map(this::toVO).toList();
   }
 
-  public PageResult<PermissionVO> queryPermissionPage(PermissionQuery query) {
+  public ApiPageResult<PermissionVO> queryPermissionPage(PermissionQuery query) {
     authorizationService.check(Permission.VIEW);
     ensureCatalogLoaded();
     var page =
@@ -52,7 +52,7 @@ public class PermissionApplicationService {
             query.getSortDirection(),
             query.offset(),
             query.getPageSize());
-    return PageResult.of(
+    return ApiPageResult.of(
         page.total(),
         query.getPageNum(),
         query.getPageSize(),

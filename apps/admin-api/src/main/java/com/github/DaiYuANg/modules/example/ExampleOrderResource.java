@@ -1,6 +1,6 @@
 package com.github.DaiYuANg.modules.example;
 
-import com.github.DaiYuANg.common.model.Result;
+import com.github.DaiYuANg.common.model.Results;
 import com.github.DaiYuANg.modules.example.application.dto.ExampleOrderView;
 import com.github.DaiYuANg.modules.example.application.dto.PlaceExampleOrderCommand;
 import com.github.DaiYuANg.modules.example.application.port.in.ExampleOrderPlacementApi;
@@ -12,6 +12,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.toolkit4j.data.model.envelope.Result;
 
 /** DDD sample: place order as the current user; buyer must exist in {@code sys_user}. */
 @Path("/api/v1/example/orders")
@@ -25,13 +26,13 @@ public class ExampleOrderResource {
   private final ExampleOrderPlacementApi orderPlacement;
 
   @POST
-  public Result<ExampleOrderView> place(@Valid PlaceExampleOrderCommand body) {
-    return Result.ok(orderPlacement.placeOrder(body));
+  public Result<String, ExampleOrderView> place(@Valid PlaceExampleOrderCommand body) {
+    return Results.ok(orderPlacement.placeOrder(body));
   }
 
   @GET
   @Path("/mine")
-  public Result<List<ExampleOrderView>> mine() {
-    return Result.ok(orderPlacement.myOrders());
+  public Result<String, List<ExampleOrderView>> mine() {
+    return Results.ok(orderPlacement.myOrders());
   }
 }

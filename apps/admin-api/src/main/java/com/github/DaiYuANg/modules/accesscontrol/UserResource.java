@@ -1,7 +1,7 @@
 package com.github.DaiYuANg.modules.accesscontrol;
 
-import com.github.DaiYuANg.common.model.PageResult;
-import com.github.DaiYuANg.common.model.Result;
+import com.github.DaiYuANg.common.model.ApiPageResult;
+import com.github.DaiYuANg.common.model.Results;
 import com.github.DaiYuANg.identity.parameter.UserQuery;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UpdateUserForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UserCreationForm;
@@ -18,6 +18,7 @@ import jakarta.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.toolkit4j.data.model.envelope.Result;
 
 @Path("/api/v1/user")
 @Produces(MediaType.APPLICATION_JSON)
@@ -28,110 +29,111 @@ public class UserResource {
 
   @GET
   @PermissionsAllowed(User.VIEW)
-  public Result<PageResult<UserVO>> queryUserPage(@BeanParam @Valid UserQuery query) {
-    return Result.ok(userApplicationService.queryUserPage(query));
+  public Result<String, ApiPageResult<UserVO>> queryUserPage(@BeanParam @Valid UserQuery query) {
+    return Results.ok(userApplicationService.queryUserPage(query));
   }
 
   @POST
   @PermissionsAllowed(User.ADD)
-  public Result<UserVO> createUser(@Valid UserCreationForm form) {
-    return Result.ok(userApplicationService.createUser(form));
+  public Result<String, UserVO> createUser(@Valid UserCreationForm form) {
+    return Results.ok(userApplicationService.createUser(form));
   }
 
   @PUT
   @Path("/{id}/password")
   @PermissionsAllowed(User.EDIT)
-  public Result<Void> updateUserPassword(@PathParam("id") Long id, @Valid ChangePasswordForm form) {
+  public Result<String, Void> updateUserPassword(
+      @PathParam("id") Long id, @Valid ChangePasswordForm form) {
     userApplicationService.updateUserPassword(id, form.newPassword());
-    return Result.ok();
+    return Results.ok();
   }
 
   @GET
   @Path("/{id}")
   @PermissionsAllowed(User.VIEW)
-  public Result<Optional<UserVO>> getUserById(@PathParam("id") Long id) {
-    return Result.ok(userApplicationService.getUserById(id));
+  public Result<String, Optional<UserVO>> getUserById(@PathParam("id") Long id) {
+    return Results.ok(userApplicationService.getUserById(id));
   }
 
   @GET
   @Path("/list")
   @PermissionsAllowed(User.VIEW)
-  public Result<List<UserVO>> getAllUsers() {
-    return Result.ok(userApplicationService.getAllUsers());
+  public Result<String, List<UserVO>> getAllUsers() {
+    return Results.ok(userApplicationService.getAllUsers());
   }
 
   @PUT
   @Path("/{id}")
   @PermissionsAllowed(User.EDIT)
-  public Result<UserVO> updateUser(@PathParam("id") Long id, @Valid UpdateUserForm form) {
-    return Result.ok(userApplicationService.updateUser(id, form));
+  public Result<String, UserVO> updateUser(@PathParam("id") Long id, @Valid UpdateUserForm form) {
+    return Results.ok(userApplicationService.updateUser(id, form));
   }
 
   @DELETE
   @Path("/{id}")
   @PermissionsAllowed(User.DELETE)
-  public Result<Void> deleteUser(@PathParam("id") Long id) {
+  public Result<String, Void> deleteUser(@PathParam("id") Long id) {
     userApplicationService.deleteUser(id);
-    return Result.ok();
+    return Results.ok();
   }
 
   @GET
   @Path("/username/{username}")
   @PermissionsAllowed(User.VIEW)
-  public Result<Optional<UserVO>> getUserByUsername(@PathParam("username") String username) {
-    return Result.ok(userApplicationService.getUserByUsername(username));
+  public Result<String, Optional<UserVO>> getUserByUsername(@PathParam("username") String username) {
+    return Results.ok(userApplicationService.getUserByUsername(username));
   }
 
   @POST
   @Path("/assign/role")
   @PermissionsAllowed(User.EDIT)
-  public Result<Void> assignRole(@Valid UserRefRoleForm form) {
+  public Result<String, Void> assignRole(@Valid UserRefRoleForm form) {
     userApplicationService.assignRole(form);
-    return Result.ok();
+    return Results.ok();
   }
 
   @GET
   @Path("/count/email/{email}")
-  public Result<Long> countEmail(@PathParam("email") String email) {
-    return Result.ok(userApplicationService.countEmail(email));
+  public Result<String, Long> countEmail(@PathParam("email") String email) {
+    return Results.ok(userApplicationService.countEmail(email));
   }
 
   @GET
   @Path("/count/username/{username}")
-  public Result<Long> countUsername(@PathParam("username") String username) {
-    return Result.ok(userApplicationService.countUsername(username));
+  public Result<String, Long> countUsername(@PathParam("username") String username) {
+    return Results.ok(userApplicationService.countUsername(username));
   }
 
   @GET
   @Path("/count/mobilePhone/{mobilePhone}")
-  public Result<Long> countMobilePhone(@PathParam("mobilePhone") String mobilePhone) {
-    return Result.ok(userApplicationService.countMobilePhone(mobilePhone));
+  public Result<String, Long> countMobilePhone(@PathParam("mobilePhone") String mobilePhone) {
+    return Results.ok(userApplicationService.countMobilePhone(mobilePhone));
   }
 
   @GET
   @Path("/count/identifier/{identifier}")
-  public Result<Long> countIdentifier(@PathParam("identifier") String identifier) {
-    return Result.ok(userApplicationService.countIdentifier(identifier));
+  public Result<String, Long> countIdentifier(@PathParam("identifier") String identifier) {
+    return Results.ok(userApplicationService.countIdentifier(identifier));
   }
 
   @PUT
   @Path("/{id}/status")
   @PermissionsAllowed(User.EDIT)
-  public Result<Void> updateUserStatus(
+  public Result<String, Void> updateUserStatus(
       @PathParam("id") Long id, @QueryParam("status") Integer status) {
     userApplicationService.updateUserStatus(id, status);
-    return Result.ok();
+    return Results.ok();
   }
 
   @GET
   @Path("/count/userTotal")
-  public Result<Long> countUserTotal() {
-    return Result.ok(userApplicationService.countUserTotal());
+  public Result<String, Long> countUserTotal() {
+    return Results.ok(userApplicationService.countUserTotal());
   }
 
   @GET
   @Path("/count/userLoginTotal")
-  public Result<Long> countUserLoginTotal() {
-    return Result.ok(userApplicationService.countUserLoginTotal());
+  public Result<String, Long> countUserLoginTotal() {
+    return Results.ok(userApplicationService.countUserLoginTotal());
   }
 }

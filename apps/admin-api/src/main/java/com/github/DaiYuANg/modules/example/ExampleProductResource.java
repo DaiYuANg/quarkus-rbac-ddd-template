@@ -1,6 +1,6 @@
 package com.github.DaiYuANg.modules.example;
 
-import com.github.DaiYuANg.common.model.Result;
+import com.github.DaiYuANg.common.model.Results;
 import com.github.DaiYuANg.modules.example.application.dto.CreateExampleProductCommand;
 import com.github.DaiYuANg.modules.example.application.dto.ExampleProductView;
 import com.github.DaiYuANg.modules.example.application.port.in.ExampleProductCatalogApi;
@@ -12,6 +12,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.toolkit4j.data.model.envelope.Result;
 
 /** DDD sample: driving adapter for the example catalog. Wire your own permissions in production. */
 @Path("/api/v1/example/products")
@@ -25,12 +26,12 @@ public class ExampleProductResource {
   private final ExampleProductCatalogApi productCatalog;
 
   @POST
-  public Result<ExampleProductView> create(@Valid CreateExampleProductCommand body) {
-    return Result.ok(productCatalog.create(body));
+  public Result<String, ExampleProductView> create(@Valid CreateExampleProductCommand body) {
+    return Results.ok(productCatalog.create(body));
   }
 
   @GET
-  public Result<List<ExampleProductView>> list() {
-    return Result.ok(productCatalog.listActive());
+  public Result<String, List<ExampleProductView>> list() {
+    return Results.ok(productCatalog.listActive());
   }
 }

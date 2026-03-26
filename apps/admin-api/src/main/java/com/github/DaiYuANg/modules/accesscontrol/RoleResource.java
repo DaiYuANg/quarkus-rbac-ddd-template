@@ -1,8 +1,8 @@
 package com.github.DaiYuANg.modules.accesscontrol;
 
 import com.github.DaiYuANg.accesscontrol.parameter.RoleQuery;
-import com.github.DaiYuANg.common.model.PageResult;
-import com.github.DaiYuANg.common.model.Result;
+import com.github.DaiYuANg.common.model.ApiPageResult;
+import com.github.DaiYuANg.common.model.Results;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.RoleCreationForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.RoleRefPermissionGroupForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UpdateRoleForm;
@@ -16,6 +16,7 @@ import jakarta.ws.rs.*;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.toolkit4j.data.model.envelope.Result;
 
 @Path("/api/v1/role")
 @Produces("application/json")
@@ -26,69 +27,69 @@ public class RoleResource {
 
   @POST
   @PermissionsAllowed(Role.ADD)
-  public Result<RoleVO> createRole(@Valid RoleCreationForm form) {
-    return Result.ok(roleApplicationService.createRole(form));
+  public Result<String, RoleVO> createRole(@Valid RoleCreationForm form) {
+    return Results.ok(roleApplicationService.createRole(form));
   }
 
   @GET
   @PermissionsAllowed(Role.VIEW)
-  public Result<PageResult<RoleVO>> queryRolePage(@BeanParam @Valid RoleQuery query) {
-    return Result.ok(roleApplicationService.queryRolePage(query));
+  public Result<String, ApiPageResult<RoleVO>> queryRolePage(@BeanParam @Valid RoleQuery query) {
+    return Results.ok(roleApplicationService.queryRolePage(query));
   }
 
   @GET
   @Path("/{id}")
   @PermissionsAllowed(Role.VIEW)
-  public Result<Optional<RoleVO>> getRoleById(@PathParam("id") Long id) {
-    return Result.ok(roleApplicationService.getRoleById(id));
+  public Result<String, Optional<RoleVO>> getRoleById(@PathParam("id") Long id) {
+    return Results.ok(roleApplicationService.getRoleById(id));
   }
 
   @PUT
   @Path("/{id}")
   @PermissionsAllowed(Role.EDIT)
-  public Result<RoleVO> updateRole(@PathParam("id") Long id, @Valid UpdateRoleForm form) {
-    return Result.ok(roleApplicationService.updateRole(id, form));
+  public Result<String, RoleVO> updateRole(@PathParam("id") Long id, @Valid UpdateRoleForm form) {
+    return Results.ok(roleApplicationService.updateRole(id, form));
   }
 
   @DELETE
   @Path("/{id}")
   @PermissionsAllowed(Role.DELETE)
-  public Result<Void> deleteRole(@PathParam("id") Long id) {
+  public Result<String, Void> deleteRole(@PathParam("id") Long id) {
     roleApplicationService.deleteRole(id);
-    return Result.ok();
+    return Results.ok();
   }
 
   @GET
   @Path("/name/{name}")
   @PermissionsAllowed(Role.VIEW)
-  public Result<Optional<RoleVO>> getRoleByName(@PathParam("name") String name) {
-    return Result.ok(roleApplicationService.getRoleByName(name));
+  public Result<String, Optional<RoleVO>> getRoleByName(@PathParam("name") String name) {
+    return Results.ok(roleApplicationService.getRoleByName(name));
   }
 
   @POST
   @Path("/assign/permission-group")
   @PermissionsAllowed(Role.EDIT)
-  public Result<Void> assignPermissionGroups(@Valid RoleRefPermissionGroupForm form) {
+  public Result<String, Void> assignPermissionGroups(@Valid RoleRefPermissionGroupForm form) {
     roleApplicationService.assignPermissionGroups(form);
-    return Result.ok();
+    return Results.ok();
   }
 
   @GET
   @Path("/list")
   @PermissionsAllowed(Role.VIEW)
-  public Result<List<RoleVO>> getAllRoles() {
-    return Result.ok(roleApplicationService.getAllRoles());
+  public Result<String, List<RoleVO>> getAllRoles() {
+    return Results.ok(roleApplicationService.getAllRoles());
   }
 
   @GET
   @Path("/count/code/{code}")
-  public Result<Long> countCode(@PathParam("code") String code) {
-    return Result.ok(roleApplicationService.countCode(code));
+  public Result<String, Long> countCode(@PathParam("code") String code) {
+    return Results.ok(roleApplicationService.countCode(code));
   }
 
   @GET
   @Path("/count/roleTotal")
-  public Result<Long> countRoleTotal() {
-    return Result.ok(roleApplicationService.countRole());
+  public Result<String, Long> countRoleTotal() {
+    return Results.ok(roleApplicationService.countRole());
   }
 }

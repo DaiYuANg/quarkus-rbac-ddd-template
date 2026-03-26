@@ -2,7 +2,7 @@ package com.github.DaiYuANg.modules.security.runtime.replay;
 
 import com.github.DaiYuANg.cache.ReplayNonceStore;
 import com.github.DaiYuANg.common.constant.ResultCode;
-import com.github.DaiYuANg.common.model.Result;
+import com.github.DaiYuANg.common.model.Results;
 import jakarta.annotation.Priority;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Priorities;
@@ -99,7 +99,7 @@ public class ReplayProtectionFilter implements ContainerRequestFilter {
     ctx.abortWith(
         Response.status(ResultCode.BAD_REQUEST.status())
             .type(MediaType.APPLICATION_JSON)
-            .entity(Result.fail(ResultCode.BAD_REQUEST, message))
+            .entity(Results.fail(ResultCode.BAD_REQUEST, message))
             .build());
   }
 }

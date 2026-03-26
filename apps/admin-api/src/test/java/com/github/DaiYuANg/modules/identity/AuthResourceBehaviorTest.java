@@ -135,9 +135,9 @@ class AuthResourceBehaviorTest {
         new AuthResource(authApplicationService, jwt, refreshTokenStore, authSecurityConfig);
 
     var response = resource.me();
-    assertEquals("1", response.data().id());
-    assertEquals("Root", response.data().name());
-    assertEquals(1, response.data().roles().size());
+    assertEquals("1", response.getData().id());
+    assertEquals("Root", response.getData().name());
+    assertEquals(1, response.getData().roles().size());
   }
 
   private UriInfo uriInfo(String rawUri) {

@@ -3,7 +3,7 @@ package com.github.DaiYuANg.mobile.identity;
 import com.github.DaiYuANg.cache.RefreshTokenStore;
 import com.github.DaiYuANg.common.constant.ResultCode;
 import com.github.DaiYuANg.common.exception.BizException;
-import com.github.DaiYuANg.common.model.Result;
+import com.github.DaiYuANg.common.model.Results;
 import com.github.DaiYuANg.modules.identity.application.AuthApplicationService;
 import com.github.DaiYuANg.modules.identity.application.dto.request.LoginRequest;
 import com.github.DaiYuANg.modules.identity.application.dto.response.MeResponse;
@@ -20,6 +20,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 import lombok.RequiredArgsConstructor;
 import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.toolkit4j.data.model.envelope.Result;
 
 /** 移动端认证入口：复用 {@link AuthApplicationService}，路径与 Cookie 作用域与 admin-api 隔离，避免进程间串 Cookie。 */
 @Path("/api/mobile/v1/auth")
@@ -42,7 +43,7 @@ public class MobileAuthResource {
   @PermitAll
   public Response login(@Valid LoginRequest req, @Context UriInfo uriInfo) {
     var token = authApplicationService.login(req);
-    return Response.ok(Result.ok(token))
+    return Response.ok(Results.ok(token))
         .cookie(
             RefreshTokenCookies.issue(
                 REFRESH_COOKIE_PATH,
@@ -56,15 +57,15 @@ public class MobileAuthResource {
   @GET
   @Path("/profile")
   @Authenticated
-  public Result<UserDetailVo> profile() {
-    return Result.ok(authApplicationService.profile(jwt.getName()));
+  public Result<String, UserDetailVo> profile() {
+    return Results.ok(authApplicationService.profile(jwt.getName()));
   }
 
   @GET
   @Path("/me")
   @Authenticated
-  public Result<MeResponse> me() {
-    return Result.ok(authApplicationService.me(jwt.getName()));
+  public Result<String, MeResponse> me() {
+    return Results.ok(authApplicationService.me(jwt.getName()));
   }
 
   @POST
@@ -86,7 +87,7 @@ public class MobileAuthResource {
       throw new BizException(ResultCode.FORBIDDEN);
     }
     authApplicationService.logout(refreshToken);
-    return Response.ok(Result.ok())
+    return Response.ok(Results.ok())
         .cookie(
             RefreshTokenCookies.cleared(
                 REFRESH_COOKIE_PATH, REFRESH_TOKEN_COOKIE, isSecureRequest(uriInfo)))
@@ -105,7 +106,7 @@ public class MobileAuthResource {
       throw new BizException(ResultCode.REFRESH_TOKEN_INVALID);
     }
     var token = authApplicationService.refreshToken(refreshToken);
-    return Response.ok(Result.ok(token))
+    return Response.ok(Results.ok(token))
         .cookie(
             RefreshTokenCookies.issue(
                 REFRESH_COOKIE_PATH,
@@ -129,8 +130,8 @@ public class MobileAuthResource {
   @GET
   @Path("/check/authority")
   @Authenticated
-  public Result<String> authorityVersion() {
-    return Result.ok(authApplicationService.checkAuthorityVersion(jwt.getName()));
+  public Result<String, String> authorityVersion() {
+    return Results.ok(authApplicationService.checkAuthorityVersion(jwt.getName()));
   }
 
   private String resolveRefreshToken(String headerToken, String cookieToken) {

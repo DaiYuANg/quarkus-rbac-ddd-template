@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.ws.rs.QueryParam;
 import lombok.Setter;
+import org.toolkit4j.data.model.page.PageRequest;
 
 /**
  * Pagination/query contract shared by admin list endpoints.
@@ -12,7 +13,11 @@ import lombok.Setter;
  * zero-based {@code page/size} alias so the migrated Quarkus endpoints can keep serving the
  * existing frontend while still offering Panache-friendly accessors.
  */
-public class PageQuery {
+public class ApiPageQuery extends PageRequest {
+  private static final int DEFAULT_PAGE = 1;
+  private static final int DEFAULT_SIZE = 10;
+  private static final int MAX_SIZE = 200;
+
   @QueryParam("pageNum")
   @Min(1)
   private Integer pageNum;
@@ -43,52 +48,64 @@ public class PageQuery {
   @QueryParam("sortDirection")
   private String sortDirection;
 
-  public int getPageNum() {
+  public Integer getPageNum() {
     if (pageNum != null) {
       return Math.max(pageNum, 1);
     }
     if (page != null) {
       return page + 1;
     }
-    return 1;
+    var inherited = super.getPage();
+    if (inherited != null) {
+      return Math.max(inherited, DEFAULT_PAGE);
+    }
+    return DEFAULT_PAGE;
   }
 
-  public void setPageNum(int pageNum) {
-    this.pageNum = Math.max(pageNum, 1);
+  public void setPageNum(Integer pageNum) {
+    this.pageNum = pageNum == null ? null : Math.max(pageNum, DEFAULT_PAGE);
+    super.setPage(this.pageNum);
   }
 
-  public int getPageSize() {
+  public Integer getPageSize() {
     if (pageSize != null) {
       return clampSize(pageSize);
     }
     if (size != null) {
       return clampSize(size);
     }
-    return 10;
+    var inherited = super.getSize();
+    return clampSize(inherited == null ? DEFAULT_SIZE : inherited);
   }
 
-  public void setPageSize(int pageSize) {
-    this.pageSize = clampSize(pageSize);
+  public void setPageSize(Integer pageSize) {
+    this.pageSize = pageSize == null ? null : clampSize(pageSize);
+    super.setSize(this.pageSize);
   }
 
-  /** Zero-based page index for Panache / JPA paging APIs. */
-  public int getPage() {
+  @Override
+  public Integer getPage() {
     if (page != null) {
-      return Math.max(page, 0);
+      return Math.max(page, 0) + 1;
     }
-    return Math.max(getPageNum() - 1, 0);
+    return getPageNum();
   }
 
-  public void setPage(int page) {
-    this.page = Math.max(page, 0);
+  @Override
+  public void setPage(Integer page) {
+    this.page = page == null ? null : Math.max(page, 0);
+    super.setPage(this.page == null ? null : this.page + 1);
   }
 
-  public int getSize() {
+  @Override
+  public Integer getSize() {
     return getPageSize();
   }
 
-  public void setSize(int size) {
-    this.size = clampSize(size);
+  @Override
+  public void setSize(Integer size) {
+    this.size = size == null ? null : clampSize(size);
+    super.setSize(this.size);
   }
 
   public String getKeyword() {
@@ -115,11 +132,21 @@ public class PageQuery {
     return trimmed.isEmpty() ? null : trimmed;
   }
 
+  @Override
+  public Integer getOffset() {
+    return (getPageNum() - 1) * getPageSize();
+  }
+
   public int offset() {
-    return getPage() * getPageSize();
+    return getOffset();
+  }
+
+  /** Zero-based page index for repositories that still expect it explicitly. */
+  public int pageIndex() {
+    return Math.max(getPageNum() - 1, 0);
   }
 
   private int clampSize(int candidate) {
-    return Math.clamp(candidate, 1, 200);
+    return Math.clamp(candidate, 1, MAX_SIZE);
   }
 }
