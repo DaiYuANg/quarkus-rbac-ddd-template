@@ -21,7 +21,8 @@ public class JwtAdminTokenIssuer implements AdminTokenIssuer {
     var authorityVersion = authorityVersionStore.versionFor(user.username());
     var accessToken = jwtTokenService.generate(user, authorityVersion);
     var refreshToken = jwtTokenService.generateRefreshToken();
-    refreshTokenStore.save(refreshToken, user.username(), jwtTokenService.refreshTokenTtl());
+    refreshTokenStore.save(
+        refreshToken, user.userId(), user.username(), jwtTokenService.refreshTokenTtl());
     return new SystemAuthenticationToken(
         accessToken,
         refreshToken,

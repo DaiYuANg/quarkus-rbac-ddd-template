@@ -3,11 +3,13 @@ package com.github.DaiYuANg.modules.security.runtime.identity;
 import com.github.DaiYuANg.cache.PermissionSnapshotStore;
 import com.github.DaiYuANg.security.identity.PrincipalAttributeKeys;
 import com.github.DaiYuANg.security.identity.QuarkusSecurityIdentityFactory;
+import com.github.DaiYuANg.security.snapshot.PermissionSnapshot;
 import com.github.DaiYuANg.security.snapshot.PermissionSnapshotLoader;
 import com.github.DaiYuANg.security.snapshot.PermissionSnapshotRefreshPolicy;
 import io.quarkus.security.identity.AuthenticationRequestContext;
 import io.quarkus.security.identity.SecurityIdentity;
 import io.quarkus.security.identity.SecurityIdentityAugmentor;
+import io.quarkus.security.runtime.QuarkusSecurityIdentity;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -49,13 +51,20 @@ public class AdminPermissionSecurityIdentityAugmentor implements SecurityIdentit
   private SecurityIdentity enrichBlocking(SecurityIdentity identity) {
     var principalName = identity.getPrincipal().getName();
     var expectedVersion = extractAuthorityVersion(identity);
-    var cached = permissionSnapshotStore.get(principalName).orElse(null);
-    if (permissionSnapshotRefreshPolicy.shouldReuse(expectedVersion, cached)) {
+    var userId = extractUserId(identity);
+    var cached = cachedSnapshot(userId, principalName);
+    if (isReusableSnapshot(cached, expectedVersion, principalName, userId)) {
       return securityIdentityFactory.create(cached.toAuthenticatedUser());
     }
-    var loaded = permissionSnapshotLoader.load(principalName).orElse(null);
+    if (shouldRejectStaleIdentity(expectedVersion, userId) && userId == null) {
+      return anonymousIdentity();
+    }
+    var loaded = permissionSnapshotLoader.load(userId, principalName).orElse(null);
+    if (!isBoundToCurrentToken(loaded, principalName, userId)) {
+      return shouldRejectStaleIdentity(expectedVersion, userId) ? anonymousIdentity() : identity;
+    }
     if (loaded == null) {
-      return identity;
+      return shouldRejectStaleIdentity(expectedVersion, userId) ? anonymousIdentity() : identity;
     }
     permissionSnapshotStore.save(loaded);
     return securityIdentityFactory.create(loaded.toAuthenticatedUser());
@@ -71,5 +80,64 @@ public class AdminPermissionSecurityIdentityAugmentor implements SecurityIdentit
       return claim == null ? null : String.valueOf(claim);
     }
     return null;
+  }
+
+  private PermissionSnapshot cachedSnapshot(Long userId, String principalName) {
+    if (userId != null) {
+      return permissionSnapshotStore.get(userId).orElse(null);
+    }
+    return permissionSnapshotStore.get(principalName).orElse(null);
+  }
+
+  private boolean isReusableSnapshot(
+      PermissionSnapshot cached, String expectedVersion, String principalName, Long userId) {
+    return permissionSnapshotRefreshPolicy.shouldReuse(expectedVersion, cached)
+        && isBoundToCurrentToken(cached, principalName, userId);
+  }
+
+  private boolean isBoundToCurrentToken(
+      PermissionSnapshot snapshot, String principalName, Long userId) {
+    if (snapshot == null) {
+      return false;
+    }
+    if (userId != null && !userId.equals(snapshot.userId())) {
+      return false;
+    }
+    return principalName == null
+        || principalName.isBlank()
+        || principalName.equals(snapshot.username());
+  }
+
+  private boolean shouldRejectStaleIdentity(String expectedVersion, Long userId) {
+    return userId != null || (expectedVersion != null && !expectedVersion.isBlank());
+  }
+
+  private Long extractUserId(SecurityIdentity identity) {
+    Object direct = identity.getAttribute(PrincipalAttributeKeys.USER_ID);
+    if (direct != null) {
+      return parseUserId(direct);
+    }
+    if (identity.getPrincipal() instanceof JsonWebToken jwt) {
+      return parseUserId(jwt.getClaim(PrincipalAttributeKeys.USER_ID));
+    }
+    return null;
+  }
+
+  private Long parseUserId(Object rawValue) {
+    if (rawValue == null) {
+      return null;
+    }
+    if (rawValue instanceof Number number) {
+      return number.longValue();
+    }
+    try {
+      return Long.parseLong(String.valueOf(rawValue).trim());
+    } catch (NumberFormatException ignored) {
+      return null;
+    }
+  }
+
+  private SecurityIdentity anonymousIdentity() {
+    return QuarkusSecurityIdentity.builder().setPrincipal(() -> "").setAnonymous(true).build();
   }
 }

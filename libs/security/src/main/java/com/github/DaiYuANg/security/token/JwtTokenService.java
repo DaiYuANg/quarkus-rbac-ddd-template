@@ -34,13 +34,18 @@ public class JwtTokenService {
   private final AuthSecurityConfig authSecurityConfig;
 
   public String generate(AuthenticatedUser user, String authorityVersion) {
-    return Jwt.subject(user.username())
-        .groups(user.permissions())
-        .claim(PrincipalAttributeKeys.DISPLAY_NAME, user.displayName())
-        .claim(PrincipalAttributeKeys.USER_TYPE, user.userType())
-        .claim(PrincipalAttributeKeys.ROLES, user.roles())
-        .claim(PrincipalAttributeKeys.PERMISSIONS, user.permissions())
-        .claim(PrincipalAttributeKeys.AUTHORITY_VERSION, authorityVersion)
+    var builder =
+        Jwt.subject(user.username())
+            .groups(user.permissions())
+            .claim(PrincipalAttributeKeys.DISPLAY_NAME, user.displayName())
+            .claim(PrincipalAttributeKeys.USER_TYPE, user.userType())
+            .claim(PrincipalAttributeKeys.ROLES, user.roles())
+            .claim(PrincipalAttributeKeys.PERMISSIONS, user.permissions())
+            .claim(PrincipalAttributeKeys.AUTHORITY_VERSION, authorityVersion);
+    if (user.userId() != null) {
+      builder.claim(PrincipalAttributeKeys.USER_ID, user.userId());
+    }
+    return builder
         .issuedAt(Instant.now())
         .expiresAt(Instant.now().plusSeconds(authSecurityConfig.accessTokenTtlSeconds()))
         .sign();

@@ -85,12 +85,14 @@ public class PermissionGroupResource {
 
   @GET
   @Path("/count/name/{name}")
+  @PermissionsAllowed(PermissionGroup.VIEW)
   public Result<String, Long> countName(@PathParam("name") String name) {
     return Results.ok(permissionGroupApplicationService.countName(name));
   }
 
   @GET
   @Path("/count")
+  @PermissionsAllowed(PermissionGroup.VIEW)
   public Result<String, Long> count() {
     return Results.ok(permissionGroupApplicationService.count());
   }

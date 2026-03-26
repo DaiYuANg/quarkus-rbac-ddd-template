@@ -1,6 +1,8 @@
 package com.github.DaiYuANg.modules.security.runtime.identity;
 
 import com.github.DaiYuANg.cache.AuthorityVersionStore;
+import com.github.DaiYuANg.identity.constant.UserStatus;
+import com.github.DaiYuANg.identity.entity.SysUser;
 import com.github.DaiYuANg.identity.repository.UserRepository;
 import com.github.DaiYuANg.security.config.ConfigUserAccountConfig;
 import com.github.DaiYuANg.security.config.ConfigUserAccounts;
@@ -48,28 +50,49 @@ public class AdminPermissionSnapshotLoader implements PermissionSnapshotLoader {
   public Optional<PermissionSnapshot> load(String username) {
     var user = userRepository.findByUsername(username).orElse(null);
     if (user != null) {
-      var roles = new LinkedHashSet<>(userRepository.findRoleCodesByUsername(username));
-      var permissions = new LinkedHashSet<>(userRepository.findPermissionCodesByUsername(username));
-      var attributes = new LinkedHashMap<String, Object>();
-      attributes.put(PrincipalAttributeKeys.SOURCE, "db");
-      attributes.put(PrincipalAttributeKeys.DISPLAY_NAME, user.nickname);
-      attributes.put(PrincipalAttributeKeys.ROLES, roles);
-      attributes.put(PrincipalAttributeKeys.PERMISSIONS, permissions);
-      attributes.put(
-          PrincipalAttributeKeys.AUTHORITY_VERSION, authorityVersionStore.versionFor(username));
-      return Optional.of(
-          new PermissionSnapshot(
-              user.username,
-              user.nickname == null || user.nickname.isBlank() ? user.username : user.nickname,
-              dbUserType,
-              roles,
-              permissions,
-              authorityVersionStore.versionFor(username),
-              attributes,
-              user.id));
+      return snapshotFromDbUser(user);
     }
     return ConfigUserAccounts.find(configUserAccountConfig, username)
         .map(entry -> snapshotFromConfig(entry, username));
+  }
+
+  @Override
+  @Transactional
+  public Optional<PermissionSnapshot> load(Long userId, String usernameHint) {
+    if (userId != null && userId > 0) {
+      return userRepository.findByIdOptional(userId).flatMap(this::snapshotFromDbUser);
+    }
+    if (usernameHint == null || usernameHint.isBlank()) {
+      return Optional.empty();
+    }
+    return load(usernameHint)
+        .filter(snapshot -> userId == null || Objects.equals(userId, snapshot.userId()));
+  }
+
+  private Optional<PermissionSnapshot> snapshotFromDbUser(SysUser user) {
+    if (user == null || user.userStatus != UserStatus.ENABLED) {
+      return Optional.empty();
+    }
+    var roles = new LinkedHashSet<>(userRepository.findRoleCodesByUsername(user.username));
+    var permissions = new LinkedHashSet<>(userRepository.findPermissionCodesByUsername(user.username));
+    var attributes = new LinkedHashMap<String, Object>();
+    attributes.put(PrincipalAttributeKeys.SOURCE, "db");
+    attributes.put(PrincipalAttributeKeys.DISPLAY_NAME, user.nickname);
+    attributes.put(PrincipalAttributeKeys.ROLES, roles);
+    attributes.put(PrincipalAttributeKeys.PERMISSIONS, permissions);
+    attributes.put(PrincipalAttributeKeys.USER_ID, user.id);
+    attributes.put(
+        PrincipalAttributeKeys.AUTHORITY_VERSION, authorityVersionStore.versionFor(user.username));
+    return Optional.of(
+        new PermissionSnapshot(
+            user.username,
+            user.nickname == null || user.nickname.isBlank() ? user.username : user.nickname,
+            dbUserType,
+            roles,
+            permissions,
+            authorityVersionStore.versionFor(user.username),
+            attributes,
+            user.id));
   }
 
   private PermissionSnapshot snapshotFromConfig(
@@ -96,6 +119,7 @@ public class AdminPermissionSnapshotLoader implements PermissionSnapshotLoader {
     attributes.put(PrincipalAttributeKeys.DISPLAY_NAME, displayName);
     attributes.put(PrincipalAttributeKeys.ROLES, roles);
     attributes.put(PrincipalAttributeKeys.PERMISSIONS, permissions);
+    attributes.put(PrincipalAttributeKeys.USER_ID, ConfigUserAuthorityId.forUsername(entry.username()));
     attributes.put(PrincipalAttributeKeys.AUTHORITY_VERSION, version);
     return new PermissionSnapshot(
         entry.username(),

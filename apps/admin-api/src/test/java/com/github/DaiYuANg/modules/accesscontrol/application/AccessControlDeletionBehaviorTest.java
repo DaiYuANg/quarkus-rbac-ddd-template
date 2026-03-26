@@ -1,0 +1,66 @@
+package com.github.DaiYuANg.modules.accesscontrol.application;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import com.github.DaiYuANg.accesscontrol.repository.PermissionGroupRepository;
+import com.github.DaiYuANg.accesscontrol.repository.RoleRepository;
+import com.github.DaiYuANg.cache.PermissionCatalogStore;
+import com.github.DaiYuANg.common.constant.ResultCode;
+import com.github.DaiYuANg.common.exception.BizException;
+import com.github.DaiYuANg.modules.accesscontrol.application.permissiongroup.PermissionGroupApplicationService;
+import com.github.DaiYuANg.modules.accesscontrol.application.support.AccessControlAuditSupport;
+import com.github.DaiYuANg.modules.accesscontrol.application.role.RoleApplicationService;
+import com.github.DaiYuANg.security.authorization.AuthorizationService;
+import jakarta.persistence.EntityManager;
+import java.util.Optional;
+import org.junit.jupiter.api.Test;
+
+class AccessControlDeletionBehaviorTest {
+
+  @Test
+  void deleteRoleThrowsNotFoundWhenRoleMissing() {
+    var roleRepository = mock(RoleRepository.class);
+    var permissionGroupRepository = mock(PermissionGroupRepository.class);
+    var permissionGroupApplicationService = mock(PermissionGroupApplicationService.class);
+    var auditSupport = mock(AccessControlAuditSupport.class);
+    var authorizationService = mock(AuthorizationService.class);
+    var service =
+        new RoleApplicationService(
+            roleRepository,
+            permissionGroupRepository,
+            permissionGroupApplicationService,
+            auditSupport,
+            authorizationService);
+    when(roleRepository.findByIdOptional(7L)).thenReturn(Optional.empty());
+
+    var ex = assertThrows(BizException.class, () -> service.deleteRole(7L));
+
+    assertEquals(ResultCode.DATA_NOT_FOUND, ex.getResultCode());
+    verify(roleRepository, never()).delete(org.mockito.ArgumentMatchers.any());
+    verify(auditSupport, never()).bumpGlobalVersion();
+  }
+
+  @Test
+  void deletePermissionGroupThrowsNotFoundWhenGroupMissing() {
+    var repository = mock(PermissionGroupRepository.class);
+    var catalogStore = mock(PermissionCatalogStore.class);
+    var entityManager = mock(EntityManager.class);
+    var auditSupport = mock(AccessControlAuditSupport.class);
+    var authorizationService = mock(AuthorizationService.class);
+    var service =
+        new PermissionGroupApplicationService(
+            repository, catalogStore, entityManager, auditSupport, authorizationService);
+    when(repository.findByIdOptional(9L)).thenReturn(Optional.empty());
+
+    var ex = assertThrows(BizException.class, () -> service.deletePermissionGroup(9L));
+
+    assertEquals(ResultCode.DATA_NOT_FOUND, ex.getResultCode());
+    verify(repository, never()).delete(org.mockito.ArgumentMatchers.any());
+    verify(auditSupport, never()).bumpGlobalVersion();
+  }
+}

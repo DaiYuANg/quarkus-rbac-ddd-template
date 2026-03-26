@@ -96,7 +96,11 @@ public class PermissionGroupApplicationService {
   @Transactional
   public void deletePermissionGroup(Long id) {
     authorizationService.check(PermissionGroup.DELETE);
-    repository.deleteById(id);
+    var group =
+        repository
+            .findByIdOptional(id)
+            .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
+    repository.delete(group);
     auditSupport.bumpGlobalVersion();
     auditSupport.record(
         "permission-group", "delete", String.valueOf(id), true, "delete permission group");
@@ -210,10 +214,12 @@ public class PermissionGroupApplicationService {
   }
 
   public long countName(String name) {
+    authorizationService.check(PermissionGroup.VIEW);
     return repository.countByName(name);
   }
 
   public long count() {
+    authorizationService.check(PermissionGroup.VIEW);
     return repository.count();
   }
 

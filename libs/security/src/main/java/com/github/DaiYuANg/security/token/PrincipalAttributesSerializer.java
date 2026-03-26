@@ -16,6 +16,9 @@ public class PrincipalAttributesSerializer {
     if (user.attributes() != null) {
       attributes.putAll(user.attributes());
     }
+    if (user.userId() != null) {
+      attributes.put(PrincipalAttributeKeys.USER_ID, user.userId());
+    }
     attributes.put(PrincipalAttributeKeys.SUBJECT, user.username());
     attributes.put(PrincipalAttributeKeys.DISPLAY_NAME, user.displayName());
     attributes.put(PrincipalAttributeKeys.USER_TYPE, user.userType());

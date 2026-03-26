@@ -110,7 +110,11 @@ public class RoleApplicationService {
   @Transactional
   public void deleteRole(Long id) {
     authorizationService.check(Role.DELETE);
-    roleRepository.deleteById(id);
+    var role =
+        roleRepository
+            .findByIdOptional(id)
+            .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
+    roleRepository.delete(role);
     auditSupport.bumpGlobalVersion();
     auditSupport.record("role", "delete", String.valueOf(id), true, "delete role");
   }
@@ -168,10 +172,12 @@ public class RoleApplicationService {
   }
 
   public long countCode(String code) {
+    authorizationService.check(Role.VIEW);
     return roleRepository.countByCode(code);
   }
 
   public long countRole() {
+    authorizationService.check(Role.VIEW);
     return roleRepository.count();
   }
 

@@ -83,12 +83,14 @@ public class RoleResource {
 
   @GET
   @Path("/count/code/{code}")
+  @PermissionsAllowed(Role.VIEW)
   public Result<String, Long> countCode(@PathParam("code") String code) {
     return Results.ok(roleApplicationService.countCode(code));
   }
 
   @GET
   @Path("/count/roleTotal")
+  @PermissionsAllowed(Role.VIEW)
   public Result<String, Long> countRoleTotal() {
     return Results.ok(roleApplicationService.countRole());
   }

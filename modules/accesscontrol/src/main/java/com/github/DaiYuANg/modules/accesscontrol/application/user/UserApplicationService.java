@@ -109,6 +109,8 @@ public class UserApplicationService {
       authorizationService.checkAny(User.RESET_PASSWORD, User.EDIT);
     }
     user.password = passwordHasher.hash(newPassword);
+    permissionSnapshotStore.delete(user.id);
+    refreshTokenStore.deleteByUserId(user.id);
     refreshTokenStore.deleteByUsername(user.username);
     auditSupport.bumpGlobalVersion();
     auditSupport.record("user", "change-password", String.valueOf(id), true, "change password");
@@ -131,6 +133,7 @@ public class UserApplicationService {
         userRepository
             .findByIdOptional(id)
             .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
+    var originalUsername = user.username;
     if (form.username() != null
         && !form.username().equals(user.username)
         && userRepository.countByUsername(form.username()) > 0)
@@ -143,6 +146,7 @@ public class UserApplicationService {
         && !form.mobilePhone().equals(user.mobilePhone)
         && userRepository.countByMobilePhone(form.mobilePhone()) > 0)
       throw new BizException(ResultCode.DATA_ALREADY_EXISTS, "mobilePhone already exists");
+    var usernameChanged = form.username() != null && !form.username().equals(user.username);
     if (form.username() != null) user.username = form.username();
     if (form.mobilePhone() != null) user.mobilePhone = form.mobilePhone();
     if (form.nickname() != null) user.nickname = form.nickname();
@@ -152,7 +156,13 @@ public class UserApplicationService {
       user.roles.clear();
       roleRepository.findAllByIds(form.roleIds()).forEach(user.roles::add);
     }
+    permissionSnapshotStore.delete(user.id);
+    if (usernameChanged) {
+      refreshTokenStore.deleteByUserId(user.id);
+      refreshTokenStore.deleteByUsername(originalUsername);
+    }
     if (user.userStatus == UserStatus.DISABLED) {
+      refreshTokenStore.deleteByUserId(user.id);
       refreshTokenStore.deleteByUsername(user.username);
     }
     auditSupport.bumpGlobalVersion();
@@ -167,9 +177,12 @@ public class UserApplicationService {
   @Transactional
   public void deleteUser(Long id) {
     authorizationService.check(User.DELETE);
-    userRepository
-        .findByIdOptional(id)
-        .ifPresent(user -> refreshTokenStore.deleteByUsername(user.username));
+    var user =
+        userRepository
+            .findByIdOptional(id)
+            .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
+    refreshTokenStore.deleteByUserId(user.id);
+    refreshTokenStore.deleteByUsername(user.username);
     permissionSnapshotStore.delete(id);
     userRepository.deleteById(id);
     auditSupport.bumpGlobalVersion();
@@ -192,6 +205,7 @@ public class UserApplicationService {
     if (form.roleIds() != null) {
       roleRepository.findAllByIds(form.roleIds()).forEach(user.roles::add);
     }
+    permissionSnapshotStore.delete(user.id);
     auditSupport.bumpGlobalVersion();
     auditSupport.record(
         "user", "assign-role", String.valueOf(form.userId()), true, "assign user roles");
@@ -205,7 +219,9 @@ public class UserApplicationService {
             .findByIdOptional(id)
             .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
     user.userStatus = (status != null && status == 1) ? UserStatus.ENABLED : UserStatus.DISABLED;
+    permissionSnapshotStore.delete(user.id);
     if (user.userStatus == UserStatus.DISABLED) {
+      refreshTokenStore.deleteByUserId(user.id);
       refreshTokenStore.deleteByUsername(user.username);
     }
     auditSupport.bumpGlobalVersion();
@@ -213,26 +229,32 @@ public class UserApplicationService {
   }
 
   public long countEmail(String email) {
+    authorizationService.check(User.VIEW);
     return userRepository.countByEmail(email);
   }
 
   public long countUsername(String username) {
+    authorizationService.check(User.VIEW);
     return userRepository.countByUsername(username);
   }
 
   public long countMobilePhone(String mobilePhone) {
+    authorizationService.check(User.VIEW);
     return userRepository.countByMobilePhone(mobilePhone);
   }
 
   public long countIdentifier(String identifier) {
+    authorizationService.check(User.VIEW);
     return userRepository.countByIdentifier(identifier);
   }
 
   public long countUserTotal() {
+    authorizationService.check(User.VIEW);
     return userRepository.count();
   }
 
   public long countUserLoginTotal() {
+    authorizationService.check(User.VIEW);
     return userRepository.countUserLoginTotal();
   }
 

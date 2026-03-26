@@ -94,24 +94,28 @@ public class UserResource {
 
   @GET
   @Path("/count/email/{email}")
+  @PermissionsAllowed(User.VIEW)
   public Result<String, Long> countEmail(@PathParam("email") String email) {
     return Results.ok(userApplicationService.countEmail(email));
   }
 
   @GET
   @Path("/count/username/{username}")
+  @PermissionsAllowed(User.VIEW)
   public Result<String, Long> countUsername(@PathParam("username") String username) {
     return Results.ok(userApplicationService.countUsername(username));
   }
 
   @GET
   @Path("/count/mobilePhone/{mobilePhone}")
+  @PermissionsAllowed(User.VIEW)
   public Result<String, Long> countMobilePhone(@PathParam("mobilePhone") String mobilePhone) {
     return Results.ok(userApplicationService.countMobilePhone(mobilePhone));
   }
 
   @GET
   @Path("/count/identifier/{identifier}")
+  @PermissionsAllowed(User.VIEW)
   public Result<String, Long> countIdentifier(@PathParam("identifier") String identifier) {
     return Results.ok(userApplicationService.countIdentifier(identifier));
   }
@@ -127,12 +131,14 @@ public class UserResource {
 
   @GET
   @Path("/count/userTotal")
+  @PermissionsAllowed(User.VIEW)
   public Result<String, Long> countUserTotal() {
     return Results.ok(userApplicationService.countUserTotal());
   }
 
   @GET
   @Path("/count/userLoginTotal")
+  @PermissionsAllowed(User.VIEW)
   public Result<String, Long> countUserLoginTotal() {
     return Results.ok(userApplicationService.countUserLoginTotal());
   }

@@ -39,6 +39,14 @@ public class PermissionSnapshotStore {
     return userAuthorityStore.resolveUserId(username).flatMap(userAuthorityStore::get);
   }
 
+  /** Get snapshot directly by userId. */
+  public Optional<PermissionSnapshot> get(Long userId) {
+    if (userId == null) {
+      return Optional.empty();
+    }
+    return userAuthorityStore.get(userId);
+  }
+
   /** Delete snapshot by userId. */
   public void delete(Long userId) {
     userAuthorityStore.delete(userId);

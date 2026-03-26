@@ -1,5 +1,7 @@
 package com.github.DaiYuANg.modules.accesscontrol.application.user.tests;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -9,9 +11,12 @@ import static org.mockito.Mockito.when;
 import com.github.DaiYuANg.accesscontrol.repository.RoleRepository;
 import com.github.DaiYuANg.cache.PermissionSnapshotStore;
 import com.github.DaiYuANg.cache.RefreshTokenStore;
+import com.github.DaiYuANg.common.constant.ResultCode;
+import com.github.DaiYuANg.common.exception.BizException;
 import com.github.DaiYuANg.identity.constant.UserStatus;
 import com.github.DaiYuANg.identity.entity.SysUser;
 import com.github.DaiYuANg.identity.repository.UserRepository;
+import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UpdateUserForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.support.AccessControlAuditSupport;
 import com.github.DaiYuANg.modules.accesscontrol.application.user.UserApplicationService;
 import com.github.DaiYuANg.security.access.CurrentUserAccess;
@@ -36,6 +41,8 @@ class UserApplicationServiceSessionInvalidationTest {
 
     fixtures.service.updateUserPassword(10L, "new-pass");
 
+    verify(fixtures.permissionSnapshotStore).delete(10L);
+    verify(fixtures.refreshTokenStore).deleteByUserId(10L);
     verify(fixtures.refreshTokenStore).deleteByUsername("alice");
   }
 
@@ -50,7 +57,9 @@ class UserApplicationServiceSessionInvalidationTest {
 
     fixtures.service.deleteUser(11L);
 
+    verify(fixtures.refreshTokenStore).deleteByUserId(11L);
     verify(fixtures.refreshTokenStore).deleteByUsername("bob");
+    verify(fixtures.permissionSnapshotStore).delete(11L);
     verify(fixtures.userRepository).deleteById(11L);
   }
 
@@ -66,6 +75,8 @@ class UserApplicationServiceSessionInvalidationTest {
 
     fixtures.service.updateUserStatus(12L, 0);
 
+    verify(fixtures.permissionSnapshotStore).delete(12L);
+    verify(fixtures.refreshTokenStore).deleteByUserId(12L);
     verify(fixtures.refreshTokenStore).deleteByUsername("charlie");
   }
 
@@ -81,7 +92,40 @@ class UserApplicationServiceSessionInvalidationTest {
 
     fixtures.service.updateUserStatus(13L, 1);
 
+    verify(fixtures.permissionSnapshotStore).delete(13L);
     verify(fixtures.refreshTokenStore, never()).deleteByUsername("diana");
+    verify(fixtures.refreshTokenStore, never()).deleteByUserId(13L);
+  }
+
+  @Test
+  void renamingUserRevokesLegacyAndUserIdBoundSessions() {
+    var fixtures = fixtures();
+    var user = new SysUser();
+    user.id = 14L;
+    user.username = "erin";
+    user.userStatus = UserStatus.ENABLED;
+
+    when(fixtures.userRepository.findByIdOptional(14L)).thenReturn(Optional.of(user));
+    when(fixtures.userRepository.findByIdWithRbacGraph(14L)).thenReturn(Optional.of(user));
+
+    fixtures.service.updateUser(
+        14L, new UpdateUserForm("erin-new", null, null, null, UserStatus.ENABLED, null));
+
+    verify(fixtures.permissionSnapshotStore).delete(14L);
+    verify(fixtures.refreshTokenStore).deleteByUserId(14L);
+    verify(fixtures.refreshTokenStore).deleteByUsername("erin");
+  }
+
+  @Test
+  void deletingMissingUserThrowsNotFound() {
+    var fixtures = fixtures();
+
+    var ex = assertThrows(BizException.class, () -> fixtures.service.deleteUser(99L));
+
+    assertEquals(ResultCode.DATA_NOT_FOUND, ex.getResultCode());
+    verify(fixtures.refreshTokenStore, never()).deleteByUsername("99");
+    verify(fixtures.refreshTokenStore, never()).deleteByUserId(99L);
+    verify(fixtures.userRepository, never()).deleteById(99L);
   }
 
   private Fixtures fixtures() {
@@ -90,9 +134,9 @@ class UserApplicationServiceSessionInvalidationTest {
     var passwordHasher = mock(PasswordHasher.class);
     var auditSupport = mock(AccessControlAuditSupport.class);
     var authorizationService = mock(AuthorizationService.class);
-    var currentUserAccess = mock(CurrentUserAccess.class);
-    var permissionSnapshotStore = mock(PermissionSnapshotStore.class);
-    var refreshTokenStore = mock(RefreshTokenStore.class);
+     var currentUserAccess = mock(CurrentUserAccess.class);
+     var permissionSnapshotStore = mock(PermissionSnapshotStore.class);
+     var refreshTokenStore = mock(RefreshTokenStore.class);
 
     when(userRepository.findByIdOptional(anyLong())).thenReturn(Optional.empty());
 
@@ -107,7 +151,12 @@ class UserApplicationServiceSessionInvalidationTest {
             permissionSnapshotStore,
             refreshTokenStore);
     return new Fixtures(
-        service, userRepository, passwordHasher, currentUserAccess, refreshTokenStore);
+        service,
+        userRepository,
+        passwordHasher,
+        currentUserAccess,
+        permissionSnapshotStore,
+        refreshTokenStore);
   }
 
   private record Fixtures(
@@ -115,5 +164,6 @@ class UserApplicationServiceSessionInvalidationTest {
       UserRepository userRepository,
       PasswordHasher passwordHasher,
       CurrentUserAccess currentUserAccess,
+      PermissionSnapshotStore permissionSnapshotStore,
       RefreshTokenStore refreshTokenStore) {}
 }

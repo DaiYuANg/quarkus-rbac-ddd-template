@@ -14,6 +14,7 @@ public final class PrincipalAttributeKeys {
   public static final String SUBJECT = "subject";
 
   public static final String USERNAME = "username";
+  public static final String USER_ID = "userId";
 
   /** Login / identity provider id (e.g. config-user, db-user). */
   public static final String PROVIDER_ID = "providerId";
