@@ -2,9 +2,11 @@
 
 [中文](PROJECT_DESIGN.zh-CN.md)
 
-This document explains **why** the repository is structured the way it is, how it maps to **DDD-style layering**, what you gain from it, how it helps **future evolution**, and the **concrete technology stack** (with versions aligned to `gradle/libs.versions.toml`).
+This document explains **why** the repository is structured the way it is, how it maps to a **production-oriented modular monolith**, what you gain from it, how it supports a **CQRS-lite** read/write split, and the **concrete technology stack** (with versions aligned to `gradle/libs.versions.toml`).
 
 For package trees and Gradle project names, see also [ARCHITECTURE_DDD.md](ARCHITECTURE_DDD.md).
+
+This repository is optimized for **production delivery first**: pragmatic layering, strong security defaults, and room to evolve the read side independently of the write side. It should not be read as a textbook-pure DDD sample.
 
 ---
 
@@ -31,6 +33,14 @@ The layout is **not** a formal textbook hexagon for every class; it is a **pragm
 | **Driving adapters & deployment** | `apps:*` | JAX-RS resources, OpenAPI exposure, `application.yaml`, and **which** modules are on the classpath. Same domain, different **deployment unit** and **API surface** (`admin-api` vs `mobile-api`). |
 
 **Dependency rule (intended):** `apps` → `modules` → `libs`. `modules` should not depend on each other in a deep graph except where explicitly needed (e.g. `security-runtime` builds on `modules:identity`). This keeps compile-time boundaries visible in Gradle.
+
+Current guardrails are intentionally stricter than the original sketch:
+
+- `apps` depend on `modules`, with only a small allowlist of direct app-to-lib dependencies.
+- `modules` depend on `libs`, with an explicit allowlist for the current `security-runtime -> identity` dependency.
+- Shared read-model libraries are kept free of `@QueryParam`, so HTTP binding stays in adapters.
+
+This is the repository's baseline for a **CQRS-lite** evolution path: write-side services keep command/domain concepts, while the read side can change implementation without changing REST contracts.
 
 ### 2.1 Architecture diagrams (Mermaid)
 
@@ -131,6 +141,8 @@ flowchart LR
 
 Identity (users, login, profile) collaborates with access control (roles, permissions, groups). Audit records operational and login events from those flows.
 
+In practice, `identity` and `accesscontrol` are currently two **RBAC core slices**, not two fully independent bounded contexts. They are packaged separately for ownership and app composition, but still share a direct relational model.
+
 ```mermaid
 flowchart LR
   subgraph BC_I["Identity"]
@@ -187,6 +199,13 @@ Classic DDD speaks of **domain**, **application**, **infrastructure**, and **int
 - **Driving adapters (REST)**  
   In **`apps/*`** as thin resources that translate HTTP ↔ application services/DTOs. Shared exception mapping and cookie helpers live in **`libs:rest-support`** so every process behaves consistently.
 
+### 3.1 CQRS-lite read side
+
+- `apps:*` own `@BeanParam` / `@QueryParam` binding and map those inputs into pure read-query models.
+- `libs:identity:query` and `libs:accesscontrol:query` expose HTTP-free read-query objects.
+- Blaze-Persistence and QueryDSL are the current read-side implementations.
+- Doma can be introduced later on the read side without changing resource signatures or application-service query contracts.
+
 **Bounded contexts** in the RBAC template:
 
 | Context | Libraries | Module |
@@ -197,7 +216,7 @@ Classic DDD speaks of **domain**, **application**, **infrastructure**, and **int
 | Audit | `libs:audit` | Used from identity/accesscontrol flows |
 | Example business slice | `libs:persistence`-style entities in module | `modules:example-ddd` |
 
-`modules:example-ddd` is a **reference** for adding a new context: ports in the module, Panache (or other) adapters alongside, REST only in an app that chooses to depend on it.
+`modules:example-ddd` is a **packaging reference** for adding a new context: ports in the module, Panache (or other) adapters alongside, REST only in an app that chooses to depend on it. It demonstrates module structure and read/write separation, not a claim that every class is already a rich-domain exemplar.
 
 ---
 
@@ -222,11 +241,13 @@ Classic DDD speaks of **domain**, **application**, **infrastructure**, and **int
 
 ## 5. Evolution path (what becomes easy later)
 
+Because adapter-side query params now map into pure read-query models, the repository is positioned for a **CQRS-lite** read stack where Hibernate keeps normal write flows and Blaze/QueryDSL/Doma can evolve independently on the read side.
+
 | Direction | How the structure helps |
 |-----------|-------------------------|
 | **New bounded context** | Add `libs:your-context` (model + persistence) and `modules:your-context` (use cases + adapters). Optionally depend from `admin-api` only. |
 | **New API process** | New `apps:your-api` with its own `application.yaml`, `app.identity.*`, and a minimal set of `modules`/`libs` dependencies. |
-| **Replace or split infrastructure** | Ports in `modules` + interfaces in `libs` allow swapping Redis client usage, adding event bus, or extracting read models without rewriting REST classes first. |
+| **Replace or split read infrastructure** | Adapter-side query params map into pure read-query models, so Blaze/QueryDSL repositories can later be replaced or complemented by Doma without rewriting REST classes first. |
 | **Stricter hexagon** | Move Panache entities to “infrastructure” packages inside a module while keeping interfaces in `domain`/`application` packages—the Gradle split already gives you a place to do that incrementally. |
 | **Shared contracts** | OpenAPI per app; internal DTOs stay next to resources; cross-app contracts can later move to a small `libs:api-contract` if needed. |
 

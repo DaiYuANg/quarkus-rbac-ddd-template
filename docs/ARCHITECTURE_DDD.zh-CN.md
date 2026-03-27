@@ -2,6 +2,8 @@
 
 [English](ARCHITECTURE_DDD.md)
 
+请把这份布局理解为**生产型 Quarkus modular monolith + CQRS-lite**：REST 资源和查询参数绑定在 `apps`，纯 read-query 模型在 `libs`/`modules`，而 `identity` 与 `accesscontrol` 目前仍然属于同一个 RBAC core 的两个切片。
+
 **Mermaid 架构图**（系统上下文、Gradle 分层、请求链路）、收益与演进说明、完整技术选型表见 [PROJECT_DESIGN.zh-CN.md](PROJECT_DESIGN.zh-CN.md)。
 
 代码将 **共享内核**（`libs`）、**应用 / 用例模块**（`modules`）与 **可部署适配器**（`apps`）分开。REST 入口在各 `apps` 中；领域逻辑与端口在 `modules` 与 `libs`。

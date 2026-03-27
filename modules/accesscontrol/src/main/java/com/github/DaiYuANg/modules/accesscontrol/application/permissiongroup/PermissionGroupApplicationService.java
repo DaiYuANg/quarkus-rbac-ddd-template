@@ -2,7 +2,7 @@ package com.github.DaiYuANg.modules.accesscontrol.application.permissiongroup;
 
 import com.github.DaiYuANg.accesscontrol.entity.SysPermission;
 import com.github.DaiYuANg.accesscontrol.entity.SysPermissionGroup;
-import com.github.DaiYuANg.accesscontrol.parameter.PermissionGroupQuery;
+import com.github.DaiYuANg.accesscontrol.query.PermissionGroupPageQuery;
 import com.github.DaiYuANg.accesscontrol.repository.PermissionGroupRepository;
 import com.github.DaiYuANg.cache.PermissionCatalogEntry;
 import com.github.DaiYuANg.cache.PermissionCatalogStore;
@@ -106,7 +106,8 @@ public class PermissionGroupApplicationService {
         "permission-group", "delete", String.valueOf(id), true, "delete permission group");
   }
 
-  public ApiPageResult<PermissionGroupVO> queryPermissionGroupPage(PermissionGroupQuery query) {
+  public ApiPageResult<PermissionGroupVO> queryPermissionGroupPage(
+      PermissionGroupPageQuery query) {
     authorizationService.check(PermissionGroup.VIEW);
     var slice = repository.page(query);
     return ApiPageResult.of(

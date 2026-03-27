@@ -2,6 +2,8 @@
 
 [English](PROJECT_DESIGN.md)
 
+本文档对应的是一个以**生产可落地**为目标的 Quarkus modular monolith，并明确采用 **CQRS-lite** 思路：HTTP 查询参数留在 adapter/read side，纯查询模型留在共享 read model 中，后续可在不改 REST 契约的前提下演进 Blaze / QueryDSL / Doma。
+
 本文说明**为何**采用当前仓库结构、如何对应 **DDD 风格分层**、这样做的**收益**、**后续演进**时的便利，以及**技术选型细节**（版本与 `gradle/libs.versions.toml` 对齐）。
 
 目录与 Gradle 工程名另见 [ARCHITECTURE_DDD.zh-CN.md](ARCHITECTURE_DDD.zh-CN.md)。

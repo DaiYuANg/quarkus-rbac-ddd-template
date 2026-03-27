@@ -10,9 +10,9 @@ import com.github.DaiYuANg.identity.entity.SysUser_;
 import com.github.DaiYuANg.accesscontrol.entity.QSysRole;
 import com.github.DaiYuANg.accesscontrol.entity.QSysPermissionGroup;
 import com.github.DaiYuANg.accesscontrol.entity.QSysPermission;
-import com.github.DaiYuANg.identity.parameter.UserQuery;
 import com.github.DaiYuANg.identity.projection.UserListProjection;
 import com.github.DaiYuANg.identity.query.MetamodelUserQueryBuilder;
+import com.github.DaiYuANg.identity.query.UserPageQuery;
 import com.github.DaiYuANg.identity.query.UserQueryRepository;
 import com.github.DaiYuANg.identity.query.sort.UserSortFieldMapper;
 import com.github.DaiYuANg.identity.view.UserListView;
@@ -223,7 +223,7 @@ public class UserRepository extends BasePanacheCommandRepository<SysUser>
   }
 
   @Override
-  public PageSlice<UserListProjection> page(UserQuery query) {
+  public PageSlice<UserListProjection> page(UserPageQuery query) {
     var spec = queryBuilder.build(query);
     var filter = spec.filter();
 

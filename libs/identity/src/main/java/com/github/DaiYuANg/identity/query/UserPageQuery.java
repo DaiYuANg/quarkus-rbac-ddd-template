@@ -1,17 +1,14 @@
-package com.github.DaiYuANg.identity.parameter;
+package com.github.DaiYuANg.identity.query;
 
 import com.github.DaiYuANg.common.model.ApiPageQuery;
 import com.github.DaiYuANg.identity.constant.UserStatus;
-import jakarta.ws.rs.QueryParam;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class UserQuery extends ApiPageQuery {
-  @QueryParam("username")
+public class UserPageQuery extends ApiPageQuery {
   private String username;
 
-  @QueryParam("userStatus")
   private UserStatus userStatus;
 }

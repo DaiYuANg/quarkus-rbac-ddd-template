@@ -1,6 +1,5 @@
 package com.github.DaiYuANg.modules.accesscontrol;
 
-import com.github.DaiYuANg.accesscontrol.parameter.PermissionGroupQuery;
 import com.github.DaiYuANg.common.model.ApiPageResult;
 import com.github.DaiYuANg.common.model.Results;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.PermissionGroupCreationForm;
@@ -8,6 +7,7 @@ import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.Permiss
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UpdatePermissionGroupForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.PermissionGroupVO;
 import com.github.DaiYuANg.modules.accesscontrol.application.permissiongroup.PermissionGroupApplicationService;
+import com.github.DaiYuANg.modules.accesscontrol.query.PermissionGroupPageQueryParams;
 import com.github.DaiYuANg.security.authorization.RbacPermissionCodes.PermissionGroup;
 import io.quarkus.security.PermissionsAllowed;
 import jakarta.inject.Inject;
@@ -57,8 +57,8 @@ public class PermissionGroupResource {
   @GET
   @PermissionsAllowed(PermissionGroup.VIEW)
   public Result<String, ApiPageResult<PermissionGroupVO>> query(
-      @BeanParam @Valid PermissionGroupQuery query) {
-    return Results.ok(permissionGroupApplicationService.queryPermissionGroupPage(query));
+      @BeanParam @Valid PermissionGroupPageQueryParams query) {
+    return Results.ok(permissionGroupApplicationService.queryPermissionGroupPage(query.toQuery()));
   }
 
   @GET

@@ -1,4 +1,4 @@
-package com.github.DaiYuANg.modules.security.runtime.identity;
+package com.github.DaiYuANg.modules.security.runtime.identity.tests;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.github.DaiYuANg.cache.PermissionSnapshotStore;
+import com.github.DaiYuANg.modules.security.runtime.identity.AdminPermissionSecurityIdentityAugmentor;
 import com.github.DaiYuANg.security.identity.PrincipalAttributeKeys;
 import com.github.DaiYuANg.security.identity.QuarkusSecurityIdentityFactory;
 import com.github.DaiYuANg.security.snapshot.PermissionSnapshot;
@@ -101,4 +102,5 @@ class AdminPermissionSecurityIdentityAugmentorTest {
     };
   }
 }
+
 

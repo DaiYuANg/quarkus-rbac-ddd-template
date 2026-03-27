@@ -1,7 +1,6 @@
 package com.github.DaiYuANg.identity.query;
 
 import com.github.DaiYuANg.identity.entity.SysUser_;
-import com.github.DaiYuANg.identity.parameter.UserQuery;
 import com.github.DaiYuANg.persistence.entity.BaseEntity_;
 import com.github.DaiYuANg.persistence.query.MetamodelSortMapping;
 import com.github.DaiYuANg.persistence.query.MetamodelSorts;
@@ -28,13 +27,13 @@ public class MetamodelUserQueryBuilder {
           "updateTime",
               new MetamodelSortMapping("updateTime", BaseEntity_.updateAt, SortDirection.DESC));
 
-  public UserQuerySpec build(UserQuery query) {
+  public UserQuerySpec build(UserPageQuery query) {
     return new UserQuerySpec(
         new UserListFilter(normalize(query.getUsername()), query.getUserStatus()),
         resolveSorts(query));
   }
 
-  private List<QuerySort> resolveSorts(UserQuery query) {
+  private List<QuerySort> resolveSorts(UserPageQuery query) {
     return MetamodelSorts.resolve(
         query.getSortBy(), query.getSortDirection(), SORT_MAPPING, QuerySort.desc("id"));
   }

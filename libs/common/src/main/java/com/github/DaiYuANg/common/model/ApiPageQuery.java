@@ -2,7 +2,6 @@ package com.github.DaiYuANg.common.model;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import jakarta.ws.rs.QueryParam;
 import lombok.Setter;
 import org.toolkit4j.data.model.page.PageRequest;
 
@@ -18,34 +17,27 @@ public class ApiPageQuery extends PageRequest {
   private static final int DEFAULT_SIZE = 10;
   private static final int MAX_SIZE = 200;
 
-  @QueryParam("pageNum")
   @Min(1)
   private Integer pageNum;
 
-  @QueryParam("pageSize")
   @Min(1)
   @Max(200)
   private Integer pageSize;
 
-  @QueryParam("page")
   @Min(0)
   private Integer page;
 
-  @QueryParam("size")
   @Min(1)
   @Max(200)
   private Integer size;
 
   @Setter
-  @QueryParam("keyword")
   private String keyword;
 
   @Setter
-  @QueryParam("sortBy")
   private String sortBy;
 
   @Setter
-  @QueryParam("sortDirection")
   private String sortDirection;
 
   public Integer getPageNum() {

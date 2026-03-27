@@ -8,7 +8,7 @@ import com.github.DaiYuANg.common.exception.BizException;
 import com.github.DaiYuANg.common.model.ApiPageResult;
 import com.github.DaiYuANg.identity.constant.UserStatus;
 import com.github.DaiYuANg.identity.entity.SysUser;
-import com.github.DaiYuANg.identity.parameter.UserQuery;
+import com.github.DaiYuANg.identity.query.UserPageQuery;
 import com.github.DaiYuANg.identity.repository.UserRepository;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UpdateUserForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UserCreationForm;
@@ -58,7 +58,7 @@ public class UserApplicationService {
   private final PermissionSnapshotStore permissionSnapshotStore;
   private final RefreshTokenStore refreshTokenStore;
 
-  public ApiPageResult<UserVO> queryUserPage(UserQuery query) {
+  public ApiPageResult<UserVO> queryUserPage(UserPageQuery query) {
     authorizationService.check(User.VIEW);
     var slice = userRepository.page(query);
     return ApiPageResult.of(

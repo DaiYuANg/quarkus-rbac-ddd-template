@@ -1,7 +1,6 @@
 package com.github.DaiYuANg.accesscontrol.query;
 
 import com.github.DaiYuANg.accesscontrol.entity.SysRole_;
-import com.github.DaiYuANg.accesscontrol.parameter.RoleQuery;
 import com.github.DaiYuANg.persistence.entity.BaseEntity_;
 import com.github.DaiYuANg.persistence.query.MetamodelSortMapping;
 import com.github.DaiYuANg.persistence.query.MetamodelSorts;
@@ -25,12 +24,13 @@ public class MetamodelRoleQueryBuilder {
           "updateTime",
               new MetamodelSortMapping("updateTime", BaseEntity_.updateAt, SortDirection.DESC));
 
-  public RoleQuerySpec build(RoleQuery query) {
+  public RoleQuerySpec build(RolePageQuery query) {
     return new RoleQuerySpec(
         new RoleListFilter(normalize(query.getName()), null), resolveSorts(query));
   }
 
-  private List<com.github.DaiYuANg.persistence.query.QuerySort> resolveSorts(RoleQuery query) {
+  private List<com.github.DaiYuANg.persistence.query.QuerySort> resolveSorts(
+      RolePageQuery query) {
     return MetamodelSorts.resolve(
         query.getSortBy(),
         query.getSortDirection(),

@@ -5,9 +5,9 @@ import com.blazebit.persistence.querydsl.BlazeJPAQuery;
 import com.github.DaiYuANg.accesscontrol.entity.QSysRole;
 import com.github.DaiYuANg.accesscontrol.entity.QSysPermissionGroup;
 import com.github.DaiYuANg.accesscontrol.entity.SysRole;
-import com.github.DaiYuANg.accesscontrol.parameter.RoleQuery;
 import com.github.DaiYuANg.accesscontrol.projection.RoleListProjection;
 import com.github.DaiYuANg.accesscontrol.query.MetamodelRoleQueryBuilder;
+import com.github.DaiYuANg.accesscontrol.query.RolePageQuery;
 import com.github.DaiYuANg.accesscontrol.query.RoleQueryRepository;
 import com.github.DaiYuANg.accesscontrol.query.sort.RoleSortFieldMapper;
 import com.github.DaiYuANg.accesscontrol.view.RoleListView;
@@ -111,7 +111,7 @@ public class RoleRepository extends BasePanacheCommandRepository<SysRole>
   }
 
   @Override
-  public PageSlice<RoleListProjection> page(RoleQuery query) {
+  public PageSlice<RoleListProjection> page(RolePageQuery query) {
     var spec = queryBuilder.build(query);
     var filter = spec.filter();
 

@@ -2,9 +2,9 @@ package com.github.DaiYuANg.modules.accesscontrol.application.role;
 
 import com.github.DaiYuANg.accesscontrol.constant.RoleStatus;
 import com.github.DaiYuANg.accesscontrol.entity.SysRole;
-import com.github.DaiYuANg.accesscontrol.parameter.RoleQuery;
 import com.github.DaiYuANg.accesscontrol.repository.PermissionGroupRepository;
 import com.github.DaiYuANg.accesscontrol.repository.RoleRepository;
+import com.github.DaiYuANg.accesscontrol.query.RolePageQuery;
 import com.github.DaiYuANg.common.constant.ResultCode;
 import com.github.DaiYuANg.common.exception.BizException;
 import com.github.DaiYuANg.common.model.ApiPageResult;
@@ -65,7 +65,7 @@ public class RoleApplicationService {
     return toRoleVOWithCatalog(role);
   }
 
-  public ApiPageResult<RoleVO> queryRolePage(RoleQuery query) {
+  public ApiPageResult<RoleVO> queryRolePage(RolePageQuery query) {
     authorizationService.check(Role.VIEW);
     var slice = roleRepository.page(query);
     return ApiPageResult.of(

@@ -4,9 +4,9 @@ import com.blazebit.persistence.CriteriaBuilderFactory;
 import com.blazebit.persistence.querydsl.BlazeJPAQuery;
 import com.github.DaiYuANg.accesscontrol.entity.QSysPermission;
 import com.github.DaiYuANg.accesscontrol.entity.SysPermission;
-import com.github.DaiYuANg.accesscontrol.parameter.PermissionQuery;
 import com.github.DaiYuANg.accesscontrol.projection.PermissionListProjection;
 import com.github.DaiYuANg.accesscontrol.query.MetamodelPermissionQueryBuilder;
+import com.github.DaiYuANg.accesscontrol.query.PermissionPageQuery;
 import com.github.DaiYuANg.accesscontrol.query.PermissionQueryRepository;
 import com.github.DaiYuANg.accesscontrol.query.sort.PermissionSortFieldMapper;
 import com.github.DaiYuANg.accesscontrol.view.PermissionListView;
@@ -83,7 +83,7 @@ public class PermissionRepository extends BasePanacheCommandRepository<SysPermis
   }
 
   @Override
-  public PageSlice<PermissionListProjection> page(PermissionQuery query) {
+  public PageSlice<PermissionListProjection> page(PermissionPageQuery query) {
     var spec = queryBuilder.build(query);
     var filter = spec.filter();
 

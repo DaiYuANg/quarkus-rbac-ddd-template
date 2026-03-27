@@ -7,9 +7,9 @@ import com.github.DaiYuANg.accesscontrol.entity.QSysPermissionGroup;
 import com.github.DaiYuANg.accesscontrol.entity.QSysPermissionGroupRefPermission;
 import com.github.DaiYuANg.accesscontrol.entity.SysPermissionGroupRefPermission;
 import com.github.DaiYuANg.accesscontrol.entity.SysPermissionGroup;
-import com.github.DaiYuANg.accesscontrol.parameter.PermissionGroupQuery;
 import com.github.DaiYuANg.accesscontrol.projection.PermissionGroupListProjection;
 import com.github.DaiYuANg.accesscontrol.query.MetamodelPermissionGroupQueryBuilder;
+import com.github.DaiYuANg.accesscontrol.query.PermissionGroupPageQuery;
 import com.github.DaiYuANg.accesscontrol.query.PermissionGroupQueryRepository;
 import com.github.DaiYuANg.accesscontrol.query.sort.PermissionGroupSortFieldMapper;
 import com.github.DaiYuANg.accesscontrol.view.PermissionGroupListView;
@@ -220,7 +220,7 @@ public class PermissionGroupRepository extends BasePanacheCommandRepository<SysP
   }
 
   @Override
-  public PageSlice<PermissionGroupListProjection> page(PermissionGroupQuery query) {
+  public PageSlice<PermissionGroupListProjection> page(PermissionGroupPageQuery query) {
     var spec = queryBuilder.build(query);
     var filter = spec.filter();
 

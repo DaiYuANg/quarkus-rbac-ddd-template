@@ -2,13 +2,13 @@ package com.github.DaiYuANg.modules.accesscontrol;
 
 import com.github.DaiYuANg.common.model.ApiPageResult;
 import com.github.DaiYuANg.common.model.Results;
-import com.github.DaiYuANg.identity.parameter.UserQuery;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UpdateUserForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UserCreationForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UserRefRoleForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.UserVO;
 import com.github.DaiYuANg.modules.accesscontrol.application.user.UserApplicationService;
 import com.github.DaiYuANg.modules.accesscontrol.dto.ChangePasswordForm;
+import com.github.DaiYuANg.modules.accesscontrol.query.UserPageQueryParams;
 import com.github.DaiYuANg.security.authorization.RbacPermissionCodes.User;
 import io.quarkus.security.PermissionsAllowed;
 import jakarta.inject.Inject;
@@ -29,8 +29,9 @@ public class UserResource {
 
   @GET
   @PermissionsAllowed(User.VIEW)
-  public Result<String, ApiPageResult<UserVO>> queryUserPage(@BeanParam @Valid UserQuery query) {
-    return Results.ok(userApplicationService.queryUserPage(query));
+  public Result<String, ApiPageResult<UserVO>> queryUserPage(
+      @BeanParam @Valid UserPageQueryParams query) {
+    return Results.ok(userApplicationService.queryUserPage(query.toQuery()));
   }
 
   @POST

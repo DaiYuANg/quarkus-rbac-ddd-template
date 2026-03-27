@@ -1,6 +1,5 @@
 package com.github.DaiYuANg.modules.accesscontrol;
 
-import com.github.DaiYuANg.accesscontrol.parameter.RoleQuery;
 import com.github.DaiYuANg.common.model.ApiPageResult;
 import com.github.DaiYuANg.common.model.Results;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.RoleCreationForm;
@@ -8,6 +7,7 @@ import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.RoleRef
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UpdateRoleForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.RoleVO;
 import com.github.DaiYuANg.modules.accesscontrol.application.role.RoleApplicationService;
+import com.github.DaiYuANg.modules.accesscontrol.query.RolePageQueryParams;
 import com.github.DaiYuANg.security.authorization.RbacPermissionCodes.Role;
 import io.quarkus.security.PermissionsAllowed;
 import jakarta.inject.Inject;
@@ -33,8 +33,9 @@ public class RoleResource {
 
   @GET
   @PermissionsAllowed(Role.VIEW)
-  public Result<String, ApiPageResult<RoleVO>> queryRolePage(@BeanParam @Valid RoleQuery query) {
-    return Results.ok(roleApplicationService.queryRolePage(query));
+  public Result<String, ApiPageResult<RoleVO>> queryRolePage(
+      @BeanParam @Valid RolePageQueryParams query) {
+    return Results.ok(roleApplicationService.queryRolePage(query.toQuery()));
   }
 
   @GET

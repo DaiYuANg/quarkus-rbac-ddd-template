@@ -1,10 +1,12 @@
-# DDD Bounded Context Architecture
+# Production Architecture Layout
 
 [中文](ARCHITECTURE_DDD.zh-CN.md)
 
 For **Mermaid architecture diagrams** (system context, Gradle layers, request flow), benefits, evolution notes, and the full technology matrix, see [PROJECT_DESIGN.md](PROJECT_DESIGN.md).
 
-The codebase separates **shared kernel** (`libs`), **application / use-case modules** (`modules`), and **deployable adapters** (`apps`). REST resources live in each app; domain logic and ports sit in `modules` and `libs`.
+The codebase separates **shared kernel** (`libs`), **application / use-case modules** (`modules`), and **deployable adapters** (`apps`). REST resources and HTTP query binding live in each app; domain logic, use cases, and pure read-query models sit in `modules` and `libs`.
+
+Read this layout as a **production-oriented Quarkus modular monolith** with a **CQRS-lite** split. Identity and accesscontrol are packaged separately, but today they still form one RBAC core rather than two fully independent bounded contexts.
 
 ## Layering: libs → modules → apps
 
@@ -93,7 +95,16 @@ modules:example-ddd
 
 (`libs:identity` depends on `libs:accesscontrol` and `libs:persistence`; diagram omits every transitive edge for brevity.)
 
+## CQRS-lite read side
+
+- `apps:*` own `@BeanParam` / `@QueryParam` binding.
+- `libs:identity:query` and `libs:accesscontrol:query` expose pure read-query objects with no JAX-RS dependency.
+- Blaze-Persistence and QueryDSL are the current read-side implementations.
+- Doma can be added later for reads without changing resource contracts.
+
 ## Bounded contexts (RBAC + audit)
+
+Treat `identity` and `accesscontrol` as two packaged slices of one RBAC core. They are separated for ownership and deployment composition, but still share a direct user-role model.
 
 | Bounded Context | Main persistence | Responsibility |
 |-----------------|------------------|----------------|
@@ -104,6 +115,8 @@ modules:example-ddd
 ## Example DDD module
 
 `modules:example-ddd` demonstrates ports/adapters for a small catalog and order flow. Flyway adds tables such as **`ex_product`**, **`ex_order`**, **`ex_order_line`** (see migrator scripts).
+
+Use this module mainly as a **packaging sample**. It is useful for module structure and adapter placement, but it is not positioned as the repository's final statement on rich-domain modeling.
 
 - **`application.port.in`** — inbound ports driving adapters depend on (`ExampleProductCatalogApi`, `ExampleOrderPlacementApi`); application services implement them.
 - **`application.port.driven`** — driven-side ports implemented by infrastructure (`ExampleCatalogStore`, `ExampleOrderStore`, `ExampleUserLookupPort`, `ExampleBuyerContext`). (Named **`driven`** rather than `out` to avoid clashing with common `out/` entries in `.gitignore`.)

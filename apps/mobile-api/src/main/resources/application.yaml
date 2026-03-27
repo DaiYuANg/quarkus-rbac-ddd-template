@@ -115,6 +115,10 @@ app:
 
 "%test":
   quarkus:
+    micrometer:
+      binder:
+        redis:
+          enabled: false
     datasource:
       jdbc:
         url: jdbc:tc:postgresql:16-alpine:///rbac_test

@@ -1,7 +1,7 @@
 # Copy this file to gradle.properties and customize for your machine.
 # gradle.properties is gitignored so you can have local JVM/proxy settings.
 
-org.gradle.jvmargs=-Xmx4g -Dfile.encoding=UTF-8
+org.gradle.jvmargs=--enable-native-access=ALL-UNNAMED -Xmx4g -Dfile.encoding=UTF-8
 org.gradle.daemon=true
 org.gradle.parallel=true
 org.gradle.caching=true

@@ -1,12 +1,12 @@
 package com.github.DaiYuANg.modules.accesscontrol;
 
-import com.github.DaiYuANg.accesscontrol.parameter.PermissionQuery;
 import com.github.DaiYuANg.common.model.ApiPageResult;
 import com.github.DaiYuANg.common.model.Results;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.PermissionVO;
 import com.github.DaiYuANg.modules.accesscontrol.application.permission.PermissionApplicationService;
 import com.github.DaiYuANg.modules.accesscontrol.application.permissiongroup.PermissionGroupApplicationService;
 import com.github.DaiYuANg.modules.accesscontrol.dto.PermissionGroupBindingForm;
+import com.github.DaiYuANg.modules.accesscontrol.query.PermissionPageQueryParams;
 import com.github.DaiYuANg.security.authorization.RbacPermissionCodes.Permission;
 import io.quarkus.security.PermissionsAllowed;
 import jakarta.inject.Inject;
@@ -41,8 +41,9 @@ public class PermissionResource {
 
   @GET
   @PermissionsAllowed(Permission.VIEW)
-  public Result<String, ApiPageResult<PermissionVO>> query(@BeanParam @Valid PermissionQuery query) {
-    return Results.ok(permissionApplicationService.queryPermissionPage(query));
+  public Result<String, ApiPageResult<PermissionVO>> query(
+      @BeanParam @Valid PermissionPageQueryParams query) {
+    return Results.ok(permissionApplicationService.queryPermissionPage(query.toQuery()));
   }
 
   @GET

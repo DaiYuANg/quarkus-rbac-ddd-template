@@ -1,7 +1,6 @@
 package com.github.DaiYuANg.accesscontrol.query;
 
 import com.github.DaiYuANg.accesscontrol.entity.SysPermissionGroup_;
-import com.github.DaiYuANg.accesscontrol.parameter.PermissionGroupQuery;
 import com.github.DaiYuANg.persistence.entity.BaseEntity_;
 import com.github.DaiYuANg.persistence.query.MetamodelSortMapping;
 import com.github.DaiYuANg.persistence.query.MetamodelSorts;
@@ -23,7 +22,7 @@ public class MetamodelPermissionGroupQueryBuilder {
           "updateTime",
               new MetamodelSortMapping("updateTime", BaseEntity_.updateAt, SortDirection.DESC));
 
-  public PermissionGroupQuerySpec build(PermissionGroupQuery query) {
+  public PermissionGroupQuerySpec build(PermissionGroupPageQuery query) {
     return new PermissionGroupQuerySpec(
         new PermissionGroupListFilter(normalize(query.getName()), null),
         MetamodelSorts.resolve(
