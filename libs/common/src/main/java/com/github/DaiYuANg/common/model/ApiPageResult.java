@@ -2,10 +2,9 @@ package com.github.DaiYuANg.common.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.toolkit4j.data.model.page.PageResult;
-
 import java.util.Collection;
 import java.util.List;
+import org.toolkit4j.data.model.page.PageResult;
 
 public class ApiPageResult<T> extends PageResult<T> {
   public ApiPageResult() {

@@ -106,8 +106,7 @@ public class PermissionGroupApplicationService {
         "permission-group", "delete", String.valueOf(id), true, "delete permission group");
   }
 
-  public ApiPageResult<PermissionGroupVO> queryPermissionGroupPage(
-      PermissionGroupPageQuery query) {
+  public ApiPageResult<PermissionGroupVO> queryPermissionGroupPage(PermissionGroupPageQuery query) {
     authorizationService.check(PermissionGroup.VIEW);
     var slice = repository.page(query);
     return ApiPageResult.of(
@@ -201,7 +200,8 @@ public class PermissionGroupApplicationService {
     }
 
     // Avoid N+1 lazy loads on group.permissions by deleting join rows in bulk.
-    repository.deletePermissionRefsByPermissionIds(normalizedIds.stream().toList(), target == null ? null : target.id);
+    repository.deletePermissionRefsByPermissionIds(
+        normalizedIds.stream().toList(), target == null ? null : target.id);
     if (target != null) {
       target.permissions.addAll(refs);
     }
@@ -247,10 +247,10 @@ public class PermissionGroupApplicationService {
     var permissions =
         (permissionIds == null ? List.<Long>of() : permissionIds)
             .stream()
-            .map(catalogStore::getById)
-            .flatMap(Optional::stream)
-            .map(this::toPermissionVO)
-            .collect(Collectors.toCollection(LinkedHashSet::new));
+                .map(catalogStore::getById)
+                .flatMap(Optional::stream)
+                .map(this::toPermissionVO)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     return new PermissionGroupVO(
         group.id,
         group.name,

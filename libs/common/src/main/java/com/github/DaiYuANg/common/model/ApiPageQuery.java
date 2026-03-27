@@ -31,14 +31,11 @@ public class ApiPageQuery extends PageRequest {
   @Max(200)
   private Integer size;
 
-  @Setter
-  private String keyword;
+  @Setter private String keyword;
 
-  @Setter
-  private String sortBy;
+  @Setter private String sortBy;
 
-  @Setter
-  private String sortDirection;
+  @Setter private String sortDirection;
 
   public Integer getPageNum() {
     if (pageNum != null) {

@@ -1,4 +1,4 @@
-package com.github.DaiYuANg.modules.example.application.dto;
+package com.github.DaiYuANg.modules.example.application.command;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;

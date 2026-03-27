@@ -22,6 +22,12 @@
 
 布局**不是**教科书式的处处六边形，而是 **务实的 DDD 切分**：共享模型与技术积木放在 **`libs`**，用例与编排放在 **`modules`**，HTTP 与进程配置放在 **`apps`**。
 
+补充说明：
+
+- `modules:example-ddd` 现在明确演示 `application.command / application.readmodel / domain.model / infrastructure.persistence`
+- 示例下单流程会把领域事件写入 `app_outbox_message`，作为最小 transactional outbox 参考
+- CI/CD 与 Doma 只提供样例，不把模板强绑定到某个平台或读侧实现
+
 ---
 
 ## 2. 总体结构（三层 Gradle 工程）

@@ -8,18 +8,22 @@ import lombok.Getter;
 public class BizException extends RuntimeException {
   private final ResultCode resultCode;
 
-  /**
-   * Uses JDK 25+ flexible constructor bodies (statements before explicit {@code super} invocation).
-   */
   public BizException(ResultCode resultCode) {
-    var code = Objects.requireNonNull(resultCode, "resultCode");
-    super(code.message());
-    this.resultCode = code;
+    this(resultCode, null);
   }
 
   public BizException(ResultCode resultCode, String message) {
-    var code = Objects.requireNonNull(resultCode, "resultCode");
-    super(message != null ? message : code.message());
+    super(resolveMessage(resultCode, message));
+    var code = requireCode(resultCode);
     this.resultCode = code;
+  }
+
+  private static ResultCode requireCode(ResultCode resultCode) {
+    return Objects.requireNonNull(resultCode, "resultCode");
+  }
+
+  private static String resolveMessage(ResultCode resultCode, String message) {
+    var code = requireCode(resultCode);
+    return message != null ? message : code.message();
   }
 }

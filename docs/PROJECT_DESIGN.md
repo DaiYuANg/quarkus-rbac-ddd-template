@@ -16,6 +16,7 @@ The template aims to be a **production-oriented foundation** for JVM backends th
 
 - **RBAC** with cache-friendly permission snapshots
 - **JWT** access tokens and **refresh** flows
+- A minimal **domain event + outbox** pattern for later async integration
 - **Multiple deployable processes** sharing the same domain (e.g. admin vs mobile) without duplicating core logic
 - **Clear boundaries** so new features do not collapse into a single “god” application package
 - **Tooling**: formatting, static analysis, coverage, dependency vulnerability checks
@@ -205,6 +206,14 @@ Classic DDD speaks of **domain**, **application**, **infrastructure**, and **int
 - `libs:identity:query` and `libs:accesscontrol:query` expose HTTP-free read-query objects.
 - Blaze-Persistence and QueryDSL are the current read-side implementations.
 - Doma can be introduced later on the read side without changing resource signatures or application-service query contracts.
+- `modules:example-ddd` demonstrates the reference naming split: `application.command`, `application.readmodel`, `domain.model`, and `infrastructure.persistence`.
+
+### 3.2 Transactional outbox sample
+
+`modules:example-ddd` now writes an order-created domain event into `app_outbox_message` through
+`libs:persistence:outbox` inside the same transaction as the aggregate change. That gives the
+template a minimal production starting point for later broker dispatch, retry workers, or
+cross-context synchronization.
 
 **Bounded contexts** in the RBAC template:
 
@@ -248,6 +257,7 @@ Because adapter-side query params now map into pure read-query models, the repos
 | **New bounded context** | Add `libs:your-context` (model + persistence) and `modules:your-context` (use cases + adapters). Optionally depend from `admin-api` only. |
 | **New API process** | New `apps:your-api` with its own `application.yaml`, `app.identity.*`, and a minimal set of `modules`/`libs` dependencies. |
 | **Replace or split read infrastructure** | Adapter-side query params map into pure read-query models, so Blaze/QueryDSL repositories can later be replaced or complemented by Doma without rewriting REST classes first. |
+| **Async integration** | The outbox sample lets you add message dispatch or event replay later without rewriting the write side. |
 | **Stricter hexagon** | Move Panache entities to “infrastructure” packages inside a module while keeping interfaces in `domain`/`application` packages—the Gradle split already gives you a place to do that incrementally. |
 | **Shared contracts** | OpenAPI per app; internal DTOs stay next to resources; cross-app contracts can later move to a small `libs:api-contract` if needed. |
 
@@ -361,6 +371,8 @@ They assert `Result` envelope fields and token/profile property names; failing t
 |-------|----------|
 | Mobile dependency whitelist | [MOBILE_API.md](MOBILE_API.md) |
 | Directory trees & packages | [ARCHITECTURE_DDD.md](ARCHITECTURE_DDD.md) |
+| CI/CD samples | [CI_CD_EXAMPLES.md](CI_CD_EXAMPLES.md) |
+| Doma read-side sample | [DOMA_READ_SIDE_EXAMPLE.md](DOMA_READ_SIDE_EXAMPLE.md) |
 | Permission checks & snapshots | [AUTHORIZATION_FLOW.md](AUTHORIZATION_FLOW.md) |
 | Hardening checklist | [PRODUCTION_READINESS_CHECKLIST.md](PRODUCTION_READINESS_CHECKLIST.md) |
 | Local issues | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) |

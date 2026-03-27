@@ -36,7 +36,8 @@ public class PrincipalAttributesSerializer {
       Map<String, Object> attributes, String principalName) {
     var values = attributes == null ? Map.<String, Object>of() : attributes;
     return new CurrentAuthenticatedUser(
-        stringValue(values.getOrDefault(PrincipalAttributeKeys.SUBJECT, principalName), principalName),
+        stringValue(
+            values.getOrDefault(PrincipalAttributeKeys.SUBJECT, principalName), principalName),
         stringValue(
             values.getOrDefault(PrincipalAttributeKeys.DISPLAY_NAME, principalName), principalName),
         stringValue(values.getOrDefault(PrincipalAttributeKeys.USER_TYPE, "SYSTEM"), "SYSTEM"),

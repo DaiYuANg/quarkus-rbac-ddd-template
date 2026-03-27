@@ -1,9 +1,9 @@
 package com.github.DaiYuANg.modules.example;
 
 import com.github.DaiYuANg.common.model.Results;
-import com.github.DaiYuANg.modules.example.application.dto.ExampleOrderView;
-import com.github.DaiYuANg.modules.example.application.dto.PlaceExampleOrderCommand;
+import com.github.DaiYuANg.modules.example.application.command.PlaceExampleOrderCommand;
 import com.github.DaiYuANg.modules.example.application.port.in.ExampleOrderPlacementApi;
+import com.github.DaiYuANg.modules.example.application.readmodel.ExampleOrderView;
 import com.github.DaiYuANg.modules.security.runtime.replay.ReplayProtected;
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;

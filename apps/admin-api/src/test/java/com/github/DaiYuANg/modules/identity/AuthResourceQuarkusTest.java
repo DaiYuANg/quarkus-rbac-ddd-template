@@ -103,7 +103,9 @@ class AuthResourceQuarkusTest {
   }
 
   @Test
-  @TestSecurity(user = "root", roles = {User.VIEW})
+  @TestSecurity(
+      user = "root",
+      roles = {User.VIEW})
   void meEndpointReturnsFrontendContractShape() {
     when(authApplicationService.me("root"))
         .thenReturn(

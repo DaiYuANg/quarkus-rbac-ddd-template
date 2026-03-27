@@ -134,9 +134,9 @@ class UserApplicationServiceSessionInvalidationTest {
     var passwordHasher = mock(PasswordHasher.class);
     var auditSupport = mock(AccessControlAuditSupport.class);
     var authorizationService = mock(AuthorizationService.class);
-     var currentUserAccess = mock(CurrentUserAccess.class);
-     var permissionSnapshotStore = mock(PermissionSnapshotStore.class);
-     var refreshTokenStore = mock(RefreshTokenStore.class);
+    var currentUserAccess = mock(CurrentUserAccess.class);
+    var permissionSnapshotStore = mock(PermissionSnapshotStore.class);
+    var refreshTokenStore = mock(RefreshTokenStore.class);
 
     when(userRepository.findByIdOptional(anyLong())).thenReturn(Optional.empty());
 

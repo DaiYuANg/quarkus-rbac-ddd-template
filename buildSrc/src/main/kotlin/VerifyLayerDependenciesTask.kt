@@ -60,6 +60,7 @@ abstract class VerifyLayerDependenciesTask : DefaultTask() {
     }
 
     verifySharedQueryModelsAreHttpFree(subprojects, violations)
+    verifyExampleReferenceLayout(subprojects, violations)
 
     if (violations.isNotEmpty()) {
       throw GradleException(
@@ -93,5 +94,39 @@ abstract class VerifyLayerDependenciesTask : DefaultTask() {
             }
           }
         }
+  }
+
+  private fun verifyExampleReferenceLayout(
+      subprojects: Iterable<org.gradle.api.Project>,
+      violations: MutableList<String>,
+  ) {
+    val exampleProject = subprojects.firstOrNull { it.path == ":modules:example-ddd" } ?: return
+    val javaSources = exampleProject.fileTree(exampleProject.projectDir.resolve("src/main/java")) {
+      include("**/*.java")
+    }
+    javaSources.forEach { source ->
+      val relativePath = source.relativeTo(project.rootProject.projectDir).invariantSeparatorsPath
+      val content = source.readText()
+      when {
+        relativePath.contains("/application/command/") &&
+            (content.contains("import jakarta.persistence.") ||
+                content.contains("import jakarta.ws.rs.")) ->
+            violations +=
+                ":modules:example-ddd -> $relativePath leaks persistence/HTTP annotations into application commands"
+        relativePath.contains("/application/readmodel/") &&
+            (content.contains("import jakarta.persistence.") ||
+                content.contains("import jakarta.ws.rs.") ||
+                content.contains("@QueryParam(")) ->
+            violations +=
+                ":modules:example-ddd -> $relativePath leaks persistence/HTTP annotations into read models"
+        relativePath.contains("/domain/") &&
+            (content.contains("import jakarta.ws.rs.") ||
+                content.contains("import io.quarkus.") ||
+                content.contains("import jakarta.inject.") ||
+                content.contains("import jakarta.enterprise.context.")) ->
+            violations +=
+                ":modules:example-ddd -> $relativePath leaks adapter/runtime annotations into domain code"
+      }
+    }
   }
 }

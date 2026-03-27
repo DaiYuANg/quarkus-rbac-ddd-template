@@ -30,12 +30,16 @@ class AccessControlResourceContractTest {
 
   @Test
   void permissionGroupCountEndpointsRequireViewPermission() throws Exception {
-    assertPermission(PermissionGroupResource.class, "countName", PermissionGroup.VIEW, String.class);
+    assertPermission(
+        PermissionGroupResource.class, "countName", PermissionGroup.VIEW, String.class);
     assertPermission(PermissionGroupResource.class, "count", PermissionGroup.VIEW);
   }
 
   private void assertPermission(
-      Class<?> resourceType, String methodName, String expectedPermission, Class<?>... parameterTypes)
+      Class<?> resourceType,
+      String methodName,
+      String expectedPermission,
+      Class<?>... parameterTypes)
       throws Exception {
     Method method = resourceType.getDeclaredMethod(methodName, parameterTypes);
     PermissionsAllowed permissionsAllowed = method.getAnnotation(PermissionsAllowed.class);

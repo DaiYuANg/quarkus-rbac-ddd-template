@@ -21,7 +21,9 @@ public record AuthorizationDecision(
         current == null
             ? null
             : current.attributeAsString(PrincipalAttributeKeys.AUTHORITY_VERSION).orElse(null),
-        current == null ? null : current.attributeAsString(PrincipalAttributeKeys.SOURCE).orElse(null),
+        current == null
+            ? null
+            : current.attributeAsString(PrincipalAttributeKeys.SOURCE).orElse(null),
         matchedBy);
   }
 
@@ -35,7 +37,9 @@ public record AuthorizationDecision(
         current == null
             ? null
             : current.attributeAsString(PrincipalAttributeKeys.AUTHORITY_VERSION).orElse(null),
-        current == null ? null : current.attributeAsString(PrincipalAttributeKeys.SOURCE).orElse(null),
+        current == null
+            ? null
+            : current.attributeAsString(PrincipalAttributeKeys.SOURCE).orElse(null),
         null);
   }
 

@@ -2,15 +2,20 @@ package com.github.DaiYuANg.modules.example.application;
 
 import com.github.DaiYuANg.common.constant.ResultCode;
 import com.github.DaiYuANg.common.exception.BizException;
-import com.github.DaiYuANg.modules.example.application.dto.ExampleOrderLineView;
-import com.github.DaiYuANg.modules.example.application.dto.ExampleOrderView;
-import com.github.DaiYuANg.modules.example.application.dto.ExampleProductView;
-import com.github.DaiYuANg.modules.example.application.dto.PlaceExampleOrderCommand;
+import com.github.DaiYuANg.modules.example.application.command.PlaceExampleOrderCommand;
 import com.github.DaiYuANg.modules.example.application.port.driven.ExampleBuyerContext;
-import com.github.DaiYuANg.modules.example.application.port.driven.ExampleCatalogStore;
-import com.github.DaiYuANg.modules.example.application.port.driven.ExampleOrderStore;
+import com.github.DaiYuANg.modules.example.application.port.driven.ExampleCatalogCommandRepository;
+import com.github.DaiYuANg.modules.example.application.port.driven.ExampleCatalogReadRepository;
+import com.github.DaiYuANg.modules.example.application.port.driven.ExampleOrderCommandRepository;
+import com.github.DaiYuANg.modules.example.application.port.driven.ExampleOrderReadRepository;
 import com.github.DaiYuANg.modules.example.application.port.driven.ExampleUserLookupPort;
 import com.github.DaiYuANg.modules.example.application.port.in.ExampleOrderPlacementApi;
+import com.github.DaiYuANg.modules.example.application.readmodel.ExampleOrderLineView;
+import com.github.DaiYuANg.modules.example.application.readmodel.ExampleOrderView;
+import com.github.DaiYuANg.modules.example.domain.model.catalog.ExampleProductSnapshot;
+import com.github.DaiYuANg.modules.example.domain.model.order.ExampleOrder;
+import com.github.DaiYuANg.modules.example.domain.model.order.ExampleOrderLine;
+import com.github.DaiYuANg.persistence.outbox.DomainOutboxStore;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -24,38 +29,55 @@ public class ExampleOrderApplicationService implements ExampleOrderPlacementApi 
 
   private final ExampleBuyerContext buyerContext;
   private final ExampleUserLookupPort userLookup;
-  private final ExampleCatalogStore catalogStore;
-  private final ExampleOrderStore orderStore;
+  private final ExampleCatalogReadRepository catalogReadRepository;
+  private final ExampleCatalogCommandRepository catalogCommandRepository;
+  private final ExampleOrderCommandRepository orderCommandRepository;
+  private final ExampleOrderReadRepository orderReadRepository;
+  private final DomainOutboxStore domainOutboxStore;
 
   @Transactional
   public ExampleOrderView placeOrder(PlaceExampleOrderCommand command) {
     var buyer = buyerContext.requireBuyerUsername();
     userLookup.requireExistingUser(buyer);
 
-    long totalMinor = 0;
-    var pricedLines = new ArrayList<ExampleOrderLineView>();
+    var pricedLines = new ArrayList<ExampleOrderLine>();
     for (var line : command.lines()) {
-      var product =
-          catalogStore
-              .findById(line.productId())
-              .filter(ExampleProductView::active)
-              .orElseThrow(
-                  () -> new BizException(ResultCode.DATA_NOT_FOUND, "product not available"));
+      var product = requireAvailableProduct(line.productId());
       if (product.stock() < line.quantity()) {
         throw new BizException(
             ResultCode.BAD_REQUEST, "insufficient stock for product " + product.id());
       }
-      var lineTotal = Math.multiplyExact(product.priceMinor(), line.quantity());
-      totalMinor = Math.addExact(totalMinor, lineTotal);
       pricedLines.add(
-          new ExampleOrderLineView(line.productId(), line.quantity(), product.priceMinor()));
-      catalogStore.updateStock(product.id(), product.stock() - line.quantity());
+          new ExampleOrderLine(line.productId(), line.quantity(), product.priceMinor()));
+      catalogCommandRepository.updateStock(product.id(), product.stock() - line.quantity());
     }
-    return orderStore.create(buyer, pricedLines, totalMinor);
+    var order = ExampleOrder.place(buyer, pricedLines);
+    var persisted = orderCommandRepository.save(order);
+    domainOutboxStore.append("ExampleOrder", persisted.id(), persisted.placedEvent());
+    return toView(persisted);
   }
 
   public List<ExampleOrderView> myOrders() {
     var buyer = buyerContext.requireBuyerUsername();
-    return orderStore.listByBuyer(buyer);
+    return orderReadRepository.listByBuyer(buyer);
+  }
+
+  private ExampleProductSnapshot requireAvailableProduct(Long productId) {
+    return catalogReadRepository
+        .findSnapshotById(productId)
+        .filter(ExampleProductSnapshot::active)
+        .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND, "product not available"));
+  }
+
+  private ExampleOrderView toView(ExampleOrder order) {
+    var lineViews =
+        order.lines().stream()
+            .map(
+                line ->
+                    new ExampleOrderLineView(
+                        line.productId(), line.quantity(), line.unitPriceMinor()))
+            .toList();
+    return new ExampleOrderView(
+        order.id(), order.buyerUsername(), order.status().name(), order.totalMinor(), lineViews);
   }
 }

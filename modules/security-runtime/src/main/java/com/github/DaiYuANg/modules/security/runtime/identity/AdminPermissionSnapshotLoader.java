@@ -74,7 +74,8 @@ public class AdminPermissionSnapshotLoader implements PermissionSnapshotLoader {
       return Optional.empty();
     }
     var roles = new LinkedHashSet<>(userRepository.findRoleCodesByUsername(user.username));
-    var permissions = new LinkedHashSet<>(userRepository.findPermissionCodesByUsername(user.username));
+    var permissions =
+        new LinkedHashSet<>(userRepository.findPermissionCodesByUsername(user.username));
     var attributes = new LinkedHashMap<String, Object>();
     attributes.put(PrincipalAttributeKeys.SOURCE, "db");
     attributes.put(PrincipalAttributeKeys.DISPLAY_NAME, user.nickname);
@@ -119,7 +120,8 @@ public class AdminPermissionSnapshotLoader implements PermissionSnapshotLoader {
     attributes.put(PrincipalAttributeKeys.DISPLAY_NAME, displayName);
     attributes.put(PrincipalAttributeKeys.ROLES, roles);
     attributes.put(PrincipalAttributeKeys.PERMISSIONS, permissions);
-    attributes.put(PrincipalAttributeKeys.USER_ID, ConfigUserAuthorityId.forUsername(entry.username()));
+    attributes.put(
+        PrincipalAttributeKeys.USER_ID, ConfigUserAuthorityId.forUsername(entry.username()));
     attributes.put(PrincipalAttributeKeys.AUTHORITY_VERSION, version);
     return new PermissionSnapshot(
         entry.username(),

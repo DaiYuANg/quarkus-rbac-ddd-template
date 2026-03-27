@@ -81,7 +81,8 @@ public class UserResource {
   @GET
   @Path("/username/{username}")
   @PermissionsAllowed(User.VIEW)
-  public Result<String, Optional<UserVO>> getUserByUsername(@PathParam("username") String username) {
+  public Result<String, Optional<UserVO>> getUserByUsername(
+      @PathParam("username") String username) {
     return Results.ok(userApplicationService.getUserByUsername(username));
   }
 

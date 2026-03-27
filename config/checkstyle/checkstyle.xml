@@ -35,7 +35,6 @@
 
     <module name="TreeWalker">
         <!-- Naming - supports records, pattern variables, var -->
-        <module name="ConstantName"/>
         <module name="LocalFinalVariableName"/>
         <module name="LocalVariableName"/>
         <module name="MemberName"/>
@@ -66,15 +65,9 @@
             <property name="option" value="eol"/>
             <property name="tokens" value="CLASS_DEF,INTERFACE_DEF,ENUM_DEF,LITERAL_IF,LITERAL_ELSE,LITERAL_TRY,LITERAL_CATCH,LITERAL_FINALLY,LITERAL_SWITCH,LITERAL_FOR,LITERAL_WHILE,LITERAL_DO,CTOR_DEF,OBJBLOCK,STATIC_INIT,LITERAL_CASE,LITERAL_DEFAULT"/>
         </module>
-        <module name="NeedBraces"/>
         <module name="RightCurly"/>
 
         <!-- Coding -->
-        <!-- Require final for local variables and params that are never reassigned; prefer Lombok val -->
-        <module name="FinalLocalVariable">
-            <property name="tokens" value="VARIABLE_DEF,PARAMETER_DEF"/>
-            <property name="validateEnhancedForLoopVariable" value="true"/>
-        </module>
         <module name="AvoidDoubleBraceInitialization"/>
         <module name="EmptyStatement"/>
         <module name="EqualsHashCode"/>
@@ -85,7 +78,6 @@
         <module name="NoClone"/>
         <module name="NoFinalizer"/>
         <module name="OneStatementPerLine"/>
-        <module name="OverloadMethodsDeclarationOrder"/>
         <module name="SimplifyBooleanExpression"/>
         <module name="SimplifyBooleanReturn"/>
 
@@ -95,12 +87,8 @@
         <module name="InterfaceIsType"/>
         <module name="MutableException"/>
         <module name="OneTopLevelClass"/>
-        <module name="VisibilityModifier">
-            <property name="protectedAllowed" value="true"/>
-            <property name="packageAllowed" value="true"/>
-        </module>
 
-        <!-- Whitespace -->
+        <!-- Whitespace is primarily handled by Spotless/google-java-format -->
         <module name="GenericWhitespace"/>
         <module name="MethodParamPad"/>
         <module name="NoWhitespaceAfter"/>
@@ -108,7 +96,6 @@
         <module name="ParenPad"/>
         <module name="TypecastParenPad"/>
         <module name="WhitespaceAfter"/>
-        <module name="WhitespaceAround"/>
 
         <!-- Miscellaneous -->
         <module name="ArrayTypeStyle"/>

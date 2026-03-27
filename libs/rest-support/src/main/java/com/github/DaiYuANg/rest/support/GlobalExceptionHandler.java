@@ -25,17 +25,14 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
     }
     return switch (exception) {
       case BizException biz ->
-          json(
-              biz.getResultCode().status(),
-              Results.fail(biz.getResultCode(), biz.getMessage()));
+          json(biz.getResultCode().status(), Results.fail(biz.getResultCode(), biz.getMessage()));
       case ConstraintViolationException violation -> {
         var message =
             violation.getConstraintViolations().stream()
                 .map(ConstraintViolation::getMessage)
                 .findFirst()
                 .orElse("validation failed");
-        yield json(
-            ResultCode.BAD_REQUEST.status(), Results.fail(ResultCode.BAD_REQUEST, message));
+        yield json(ResultCode.BAD_REQUEST.status(), Results.fail(ResultCode.BAD_REQUEST, message));
       }
       case UnauthorizedException ignored ->
           json(ResultCode.UNAUTHORIZED.status(), Results.fail(ResultCode.UNAUTHORIZED));
@@ -43,8 +40,7 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
           json(ResultCode.FORBIDDEN.status(), Results.fail(ResultCode.FORBIDDEN));
       case NotFoundException ignored ->
           json(ResultCode.NOT_FOUND.status(), Results.fail(ResultCode.NOT_FOUND));
-      default ->
-          json(ResultCode.INTERNAL_ERROR.status(), Results.fail(ResultCode.INTERNAL_ERROR));
+      default -> json(ResultCode.INTERNAL_ERROR.status(), Results.fail(ResultCode.INTERNAL_ERROR));
     };
   }
 

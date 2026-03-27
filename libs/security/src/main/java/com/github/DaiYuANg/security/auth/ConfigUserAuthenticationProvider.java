@@ -73,7 +73,8 @@ public class ConfigUserAuthenticationProvider
     attributes.put(
         PrincipalAttributeKeys.PERMISSIONS,
         new LinkedHashSet<>(entry.permissions().orElseGet(List::of)));
-    attributes.put(PrincipalAttributeKeys.ROLES, new LinkedHashSet<>(entry.roles().orElseGet(List::of)));
+    attributes.put(
+        PrincipalAttributeKeys.ROLES, new LinkedHashSet<>(entry.roles().orElseGet(List::of)));
     String principalType = entry.principalUserType().orElse(configUserFallbackType);
     return AuthenticationProviderResult.success(
         new AuthenticationResult(

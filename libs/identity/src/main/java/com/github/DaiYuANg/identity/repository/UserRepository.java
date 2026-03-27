@@ -2,14 +2,13 @@ package com.github.DaiYuANg.identity.repository;
 
 import com.blazebit.persistence.CriteriaBuilderFactory;
 import com.blazebit.persistence.querydsl.BlazeJPAQuery;
+import com.github.DaiYuANg.accesscontrol.entity.QSysPermission;
+import com.github.DaiYuANg.accesscontrol.entity.QSysPermissionGroup;
+import com.github.DaiYuANg.accesscontrol.entity.QSysRole;
 import com.github.DaiYuANg.common.constant.ResultCode;
 import com.github.DaiYuANg.identity.constant.UserStatus;
 import com.github.DaiYuANg.identity.entity.QSysUser;
 import com.github.DaiYuANg.identity.entity.SysUser;
-import com.github.DaiYuANg.identity.entity.SysUser_;
-import com.github.DaiYuANg.accesscontrol.entity.QSysRole;
-import com.github.DaiYuANg.accesscontrol.entity.QSysPermissionGroup;
-import com.github.DaiYuANg.accesscontrol.entity.QSysPermission;
 import com.github.DaiYuANg.identity.projection.UserListProjection;
 import com.github.DaiYuANg.identity.query.MetamodelUserQueryBuilder;
 import com.github.DaiYuANg.identity.query.UserPageQuery;
@@ -23,8 +22,8 @@ import com.querydsl.core.types.dsl.Expressions;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
-import java.util.List;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -74,9 +73,12 @@ public class UserRepository extends BasePanacheCommandRepository<SysUser>
     var rows =
         new BlazeJPAQuery<SysUser>(entityManager, criteriaBuilderFactory)
             .from(u)
-            .leftJoin(u.roles, r).fetchJoin()
-            .leftJoin(r.permissionGroups, g).fetchJoin()
-            .leftJoin(g.permissions, p).fetchJoin()
+            .leftJoin(u.roles, r)
+            .fetchJoin()
+            .leftJoin(r.permissionGroups, g)
+            .fetchJoin()
+            .leftJoin(g.permissions, p)
+            .fetchJoin()
             .select(u)
             .where(u.username.eq(username))
             .distinct()
@@ -92,9 +94,12 @@ public class UserRepository extends BasePanacheCommandRepository<SysUser>
     var rows =
         new BlazeJPAQuery<SysUser>(entityManager, criteriaBuilderFactory)
             .from(u)
-            .leftJoin(u.roles, r).fetchJoin()
-            .leftJoin(r.permissionGroups, g).fetchJoin()
-            .leftJoin(g.permissions, p).fetchJoin()
+            .leftJoin(u.roles, r)
+            .fetchJoin()
+            .leftJoin(r.permissionGroups, g)
+            .fetchJoin()
+            .leftJoin(g.permissions, p)
+            .fetchJoin()
             .select(u)
             .where(u.id.eq(id))
             .distinct()
@@ -102,13 +107,18 @@ public class UserRepository extends BasePanacheCommandRepository<SysUser>
     return rows.stream().findFirst();
   }
 
-  /** Loads all users with full RBAC graph (roles -> permissionGroups -> permissions) in one query. */
+  /**
+   * Loads all users with full RBAC graph (roles -> permissionGroups -> permissions) in one query.
+   */
   public List<SysUser> listAllWithRbacGraph() {
     return new BlazeJPAQuery<SysUser>(entityManager, criteriaBuilderFactory)
         .from(u)
-        .leftJoin(u.roles, r).fetchJoin()
-        .leftJoin(r.permissionGroups, g).fetchJoin()
-        .leftJoin(g.permissions, p).fetchJoin()
+        .leftJoin(u.roles, r)
+        .fetchJoin()
+        .leftJoin(r.permissionGroups, g)
+        .fetchJoin()
+        .leftJoin(g.permissions, p)
+        .fetchJoin()
         .select(u)
         .distinct()
         .fetch();

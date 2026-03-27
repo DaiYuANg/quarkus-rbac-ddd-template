@@ -22,7 +22,8 @@ public class AdminSecurityPrincipalAssembler {
 
   public AuthenticatedUser fromDbUser(SysUser user) {
     var roles = new LinkedHashSet<>(userRepository.findRoleCodesByUsername(user.username));
-    var permissions = new LinkedHashSet<>(userRepository.findPermissionCodesByUsername(user.username));
+    var permissions =
+        new LinkedHashSet<>(userRepository.findPermissionCodesByUsername(user.username));
     var attributes = new LinkedHashMap<String, Object>();
     attributes.put(PrincipalAttributeKeys.SOURCE, "db");
     attributes.put(PrincipalAttributeKeys.NICKNAME, user.nickname);

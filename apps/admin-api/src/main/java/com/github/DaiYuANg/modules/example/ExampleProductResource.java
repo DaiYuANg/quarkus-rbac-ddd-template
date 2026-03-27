@@ -1,9 +1,9 @@
 package com.github.DaiYuANg.modules.example;
 
 import com.github.DaiYuANg.common.model.Results;
-import com.github.DaiYuANg.modules.example.application.dto.CreateExampleProductCommand;
-import com.github.DaiYuANg.modules.example.application.dto.ExampleProductView;
+import com.github.DaiYuANg.modules.example.application.command.CreateExampleProductCommand;
 import com.github.DaiYuANg.modules.example.application.port.in.ExampleProductCatalogApi;
+import com.github.DaiYuANg.modules.example.application.readmodel.ExampleProductView;
 import com.github.DaiYuANg.modules.security.runtime.replay.ReplayProtected;
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;

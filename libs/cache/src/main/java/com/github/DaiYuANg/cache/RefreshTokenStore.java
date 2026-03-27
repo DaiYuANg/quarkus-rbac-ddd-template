@@ -27,8 +27,7 @@ public class RefreshTokenStore {
     this.keyCommands = ds.key();
   }
 
-  public void save(
-      String refreshToken, Long userId, String username, @NonNull Duration ttl) {
+  public void save(String refreshToken, Long userId, String username, @NonNull Duration ttl) {
     valueCommands.setex(key(refreshToken), (int) ttl.toSeconds(), encodeOwner(userId, username));
     if (userId != null) {
       setCommands.sadd(userIdKey(userId), refreshToken);

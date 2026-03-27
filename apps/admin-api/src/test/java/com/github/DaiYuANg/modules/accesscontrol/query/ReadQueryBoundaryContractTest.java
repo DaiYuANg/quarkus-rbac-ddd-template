@@ -72,8 +72,7 @@ class ReadQueryBoundaryContractTest {
       assertNull(field.getAnnotation(QueryParam.class), type.getName() + "#" + field.getName());
     }
     for (var method : type.getDeclaredMethods()) {
-      assertNull(
-          method.getAnnotation(QueryParam.class), type.getName() + "#" + method.getName());
+      assertNull(method.getAnnotation(QueryParam.class), type.getName() + "#" + method.getName());
     }
   }
 }

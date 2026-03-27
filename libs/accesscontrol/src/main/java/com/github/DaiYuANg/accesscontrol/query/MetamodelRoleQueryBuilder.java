@@ -29,8 +29,7 @@ public class MetamodelRoleQueryBuilder {
         new RoleListFilter(normalize(query.getName()), null), resolveSorts(query));
   }
 
-  private List<com.github.DaiYuANg.persistence.query.QuerySort> resolveSorts(
-      RolePageQuery query) {
+  private List<com.github.DaiYuANg.persistence.query.QuerySort> resolveSorts(RolePageQuery query) {
     return MetamodelSorts.resolve(
         query.getSortBy(),
         query.getSortDirection(),

@@ -2,9 +2,9 @@ package com.github.DaiYuANg.modules.accesscontrol.application.role;
 
 import com.github.DaiYuANg.accesscontrol.constant.RoleStatus;
 import com.github.DaiYuANg.accesscontrol.entity.SysRole;
+import com.github.DaiYuANg.accesscontrol.query.RolePageQuery;
 import com.github.DaiYuANg.accesscontrol.repository.PermissionGroupRepository;
 import com.github.DaiYuANg.accesscontrol.repository.RoleRepository;
-import com.github.DaiYuANg.accesscontrol.query.RolePageQuery;
 import com.github.DaiYuANg.common.constant.ResultCode;
 import com.github.DaiYuANg.common.exception.BizException;
 import com.github.DaiYuANg.common.model.ApiPageResult;
@@ -198,13 +198,15 @@ public class RoleApplicationService {
       throw new BizException(ResultCode.DATA_NOT_FOUND);
     }
     var groupIds =
-        (role.permissionGroups == null ? List.<com.github.DaiYuANg.accesscontrol.entity.SysPermissionGroup>of() : role.permissionGroups.stream().toList())
+        (role.permissionGroups == null
+                ? List.<com.github.DaiYuANg.accesscontrol.entity.SysPermissionGroup>of()
+                : role.permissionGroups.stream().toList())
             .stream()
-            .filter(java.util.Objects::nonNull)
-            .map(g -> g.id)
-            .filter(java.util.Objects::nonNull)
-            .distinct()
-            .toList();
+                .filter(java.util.Objects::nonNull)
+                .map(g -> g.id)
+                .filter(java.util.Objects::nonNull)
+                .distinct()
+                .toList();
     var permissionIdsByGroupId = permissionGroupRepository.findPermissionIdsByGroupIds(groupIds);
     return toRoleVOWithCatalog(role, permissionIdsByGroupId);
   }
@@ -212,16 +214,18 @@ public class RoleApplicationService {
   private RoleVO toRoleVOWithCatalog(
       SysRole role, java.util.Map<Long, Set<Long>> permissionIdsByGroupId) {
     var permissionGroups =
-        (role.permissionGroups == null ? List.<com.github.DaiYuANg.accesscontrol.entity.SysPermissionGroup>of() : role.permissionGroups.stream().toList())
+        (role.permissionGroups == null
+                ? List.<com.github.DaiYuANg.accesscontrol.entity.SysPermissionGroup>of()
+                : role.permissionGroups.stream().toList())
             .stream()
-            .filter(java.util.Objects::nonNull)
-            .map(
-                g ->
-                    permissionGroupApplicationService.toPermissionGroupVOWithCatalog(
-                        g,
-                        permissionIdsByGroupId.getOrDefault(g.id, java.util.Set.of()).stream()
-                            .toList()))
-            .collect(Collectors.toCollection(LinkedHashSet::new));
+                .filter(java.util.Objects::nonNull)
+                .map(
+                    g ->
+                        permissionGroupApplicationService.toPermissionGroupVOWithCatalog(
+                            g,
+                            permissionIdsByGroupId.getOrDefault(g.id, java.util.Set.of()).stream()
+                                .toList()))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     return new RoleVO(
         role.id,
         role.name,

@@ -22,9 +22,9 @@ import com.github.DaiYuANg.modules.identity.application.profile.UserProfileResol
 import com.github.DaiYuANg.modules.security.runtime.auth.AdminAuthenticationLifecycle;
 import com.github.DaiYuANg.modules.security.runtime.auth.AdminTokenIssuer;
 import com.github.DaiYuANg.security.access.CurrentUserAccess;
-import com.github.DaiYuANg.security.authorization.RbacPermissionCodes.User;
 import com.github.DaiYuANg.security.auth.AuthenticationResult;
 import com.github.DaiYuANg.security.auth.LoginAuthenticationManager;
+import com.github.DaiYuANg.security.authorization.RbacPermissionCodes.User;
 import com.github.DaiYuANg.security.config.AuthSecurityConfig;
 import com.github.DaiYuANg.security.identity.AuthenticatedUser;
 import com.github.DaiYuANg.security.identity.CurrentAuthenticatedUser;

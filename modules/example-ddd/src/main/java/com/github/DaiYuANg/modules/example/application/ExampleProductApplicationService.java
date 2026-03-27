@@ -1,9 +1,10 @@
 package com.github.DaiYuANg.modules.example.application;
 
-import com.github.DaiYuANg.modules.example.application.dto.CreateExampleProductCommand;
-import com.github.DaiYuANg.modules.example.application.dto.ExampleProductView;
-import com.github.DaiYuANg.modules.example.application.port.driven.ExampleCatalogStore;
+import com.github.DaiYuANg.modules.example.application.command.CreateExampleProductCommand;
+import com.github.DaiYuANg.modules.example.application.port.driven.ExampleCatalogCommandRepository;
+import com.github.DaiYuANg.modules.example.application.port.driven.ExampleCatalogReadRepository;
 import com.github.DaiYuANg.modules.example.application.port.in.ExampleProductCatalogApi;
+import com.github.DaiYuANg.modules.example.application.readmodel.ExampleProductView;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -14,14 +15,15 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class ExampleProductApplicationService implements ExampleProductCatalogApi {
 
-  private final ExampleCatalogStore catalogStore;
+  private final ExampleCatalogCommandRepository catalogCommandRepository;
+  private final ExampleCatalogReadRepository catalogReadRepository;
 
   @Transactional
   public ExampleProductView create(CreateExampleProductCommand command) {
-    return catalogStore.create(command);
+    return catalogCommandRepository.create(command);
   }
 
   public List<ExampleProductView> listActive() {
-    return catalogStore.listActive();
+    return catalogReadRepository.listActive();
   }
 }

@@ -118,10 +118,17 @@ Treat `identity` and `accesscontrol` as two packaged slices of one RBAC core. Th
 
 Use this module mainly as a **packaging sample**. It is useful for module structure and adapter placement, but it is not positioned as the repository's final statement on rich-domain modeling.
 
+- **`application.command`** — write-side request objects (`CreateExampleProductCommand`, `PlaceExampleOrderCommand`)
+- **`application.readmodel`** — projections returned to adapters (`ExampleProductView`, `ExampleOrderView`)
 - **`application.port.in`** — inbound ports driving adapters depend on (`ExampleProductCatalogApi`, `ExampleOrderPlacementApi`); application services implement them.
-- **`application.port.driven`** — driven-side ports implemented by infrastructure (`ExampleCatalogStore`, `ExampleOrderStore`, `ExampleUserLookupPort`, `ExampleBuyerContext`). (Named **`driven`** rather than `out` to avoid clashing with common `out/` entries in `.gitignore`.)
+- **`application.port.driven`** — read/write repository boundaries and context helpers (`ExampleCatalogReadRepository`, `ExampleOrderCommandRepository`, `ExampleUserLookupPort`, `ExampleBuyerContext`). (Named **`driven`** rather than `out` to avoid clashing with common `out/` entries in `.gitignore`.)
+- **`domain.model`** — domain objects and events (`ExampleOrder`, `ExampleOrderLine`, `ExampleOrderCreatedEvent`)
+- **`infrastructure.persistence`** — Panache entities, QueryDSL/Blaze read adapters, and persistence mapping
 
 Admin REST resources inject **port.in** only; Panache/security adapters live under **`infrastructure`** and implement **port.driven**.
+
+The example order flow also writes a record to `app_outbox_message`, giving the repository a
+minimal transactional outbox sample for future message dispatch.
 
 ## Schema (core, illustrative)
 

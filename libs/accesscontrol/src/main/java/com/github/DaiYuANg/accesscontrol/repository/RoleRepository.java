@@ -2,8 +2,8 @@ package com.github.DaiYuANg.accesscontrol.repository;
 
 import com.blazebit.persistence.CriteriaBuilderFactory;
 import com.blazebit.persistence.querydsl.BlazeJPAQuery;
-import com.github.DaiYuANg.accesscontrol.entity.QSysRole;
 import com.github.DaiYuANg.accesscontrol.entity.QSysPermissionGroup;
+import com.github.DaiYuANg.accesscontrol.entity.QSysRole;
 import com.github.DaiYuANg.accesscontrol.entity.SysRole;
 import com.github.DaiYuANg.accesscontrol.projection.RoleListProjection;
 import com.github.DaiYuANg.accesscontrol.query.MetamodelRoleQueryBuilder;
@@ -89,7 +89,8 @@ public class RoleRepository extends BasePanacheCommandRepository<SysRole>
   public List<SysRole> listAllWithPermissionGroups() {
     return new BlazeJPAQuery<SysRole>(entityManager, criteriaBuilderFactory)
         .from(r)
-        .leftJoin(r.permissionGroups, g).fetchJoin()
+        .leftJoin(r.permissionGroups, g)
+        .fetchJoin()
         .select(r)
         .distinct()
         .fetch();

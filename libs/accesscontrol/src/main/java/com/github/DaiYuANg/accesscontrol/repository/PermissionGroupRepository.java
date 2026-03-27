@@ -5,8 +5,8 @@ import com.blazebit.persistence.querydsl.BlazeJPAQuery;
 import com.github.DaiYuANg.accesscontrol.entity.QSysPermission;
 import com.github.DaiYuANg.accesscontrol.entity.QSysPermissionGroup;
 import com.github.DaiYuANg.accesscontrol.entity.QSysPermissionGroupRefPermission;
-import com.github.DaiYuANg.accesscontrol.entity.SysPermissionGroupRefPermission;
 import com.github.DaiYuANg.accesscontrol.entity.SysPermissionGroup;
+import com.github.DaiYuANg.accesscontrol.entity.SysPermissionGroupRefPermission;
 import com.github.DaiYuANg.accesscontrol.projection.PermissionGroupListProjection;
 import com.github.DaiYuANg.accesscontrol.query.MetamodelPermissionGroupQueryBuilder;
 import com.github.DaiYuANg.accesscontrol.query.PermissionGroupPageQuery;
@@ -35,8 +35,8 @@ import lombok.RequiredArgsConstructor;
 /**
  * Repository for permission groups with RBAC-specific helpers.
  *
- * <p>Principle: prefer typed queries (BlazeJPAQuery/QueryDSL) and avoid initializing {@code
- * @ManyToMany} collections in bulk operations.
+ * <p>Principle: prefer typed queries (BlazeJPAQuery/QueryDSL) and avoid initializing
+ * {@code @ManyToMany} collections in bulk operations.
  *
  * @author ddddd <dai_yuang@icloud.com>
  */
@@ -180,10 +180,7 @@ public class PermissionGroupRepository extends BasePanacheCommandRepository<SysP
     if (normalized.isEmpty()) {
       return 0;
     }
-    var clause =
-        jpaQueryFactory
-            .delete(gp)
-            .where(gp.id.permissionId.in(normalized));
+    var clause = jpaQueryFactory.delete(gp).where(gp.id.permissionId.in(normalized));
     if (excludeGroupId != null) {
       clause.where(gp.id.permissionGroupId.ne(excludeGroupId));
     }
@@ -201,10 +198,7 @@ public class PermissionGroupRepository extends BasePanacheCommandRepository<SysP
     if (groupId == null) {
       return;
     }
-    jpaQueryFactory
-        .delete(gp)
-        .where(gp.id.permissionGroupId.eq(groupId))
-        .execute();
+    jpaQueryFactory.delete(gp).where(gp.id.permissionGroupId.eq(groupId)).execute();
 
     if (permissionIds == null || permissionIds.isEmpty()) {
       return;

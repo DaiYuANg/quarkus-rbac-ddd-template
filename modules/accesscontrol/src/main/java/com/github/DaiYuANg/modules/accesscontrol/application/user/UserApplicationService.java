@@ -103,8 +103,7 @@ public class UserApplicationService {
     var currentUsername =
         currentUserAccess.currentUser().map(CurrentAuthenticatedUser::username).orElse(null);
     if (currentUsername != null && currentUsername.equals(user.username)) {
-      authorizationService.checkAny(
-          Auth.CHANGE_PASSWORD, User.RESET_PASSWORD, User.EDIT);
+      authorizationService.checkAny(Auth.CHANGE_PASSWORD, User.RESET_PASSWORD, User.EDIT);
     } else {
       authorizationService.checkAny(User.RESET_PASSWORD, User.EDIT);
     }

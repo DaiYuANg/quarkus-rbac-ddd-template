@@ -1,7 +1,7 @@
 package com.github.DaiYuANg.modules.accesscontrol.application.permission;
 
-import com.github.DaiYuANg.cache.PermissionCatalogStore;
 import com.github.DaiYuANg.accesscontrol.query.PermissionPageQuery;
+import com.github.DaiYuANg.cache.PermissionCatalogStore;
 import com.github.DaiYuANg.common.model.ApiPageResult;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.PermissionVO;
 import com.github.DaiYuANg.security.authorization.AuthorizationService;
