@@ -5,17 +5,18 @@ import jakarta.inject.Inject;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import java.time.Instant;
-import org.jspecify.annotations.NonNull;
+import lombok.NonNull;
+import lombok.val;
 
 public class AuditEntityListener {
   @Inject ActorAuditor actorAuditor;
 
   @PrePersist
   public void prePersist(@NonNull BaseEntity entity) {
-    var now = Instant.now();
+    val now = Instant.now();
     entity.createAt = now;
     entity.updateAt = now;
-    var actor = actorAuditor.currentActorKey();
+    val actor = actorAuditor.currentActorKey();
     entity.createBy = actor;
     entity.updateBy = actor;
   }

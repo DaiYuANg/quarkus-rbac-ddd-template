@@ -8,9 +8,10 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.jspecify.annotations.NonNull;
 
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
@@ -22,10 +23,10 @@ public class AdminSecurityPrincipalAssembler {
   private final UserRepository userRepository;
 
   public AuthenticatedUser fromDbUser(@NonNull SysUser user) {
-    var roles = new LinkedHashSet<>(userRepository.findRoleCodesByUsername(user.username));
-    var permissions =
+    val roles = new LinkedHashSet<>(userRepository.findRoleCodesByUsername(user.username));
+    val permissions =
         new LinkedHashSet<>(userRepository.findPermissionCodesByUsername(user.username));
-    var attributes = new LinkedHashMap<String, Object>();
+    val attributes = new LinkedHashMap<String, Object>();
     attributes.put(PrincipalAttributeKeys.SOURCE, "db");
     attributes.put(PrincipalAttributeKeys.NICKNAME, user.nickname);
     attributes.put(PrincipalAttributeKeys.PERMISSIONS, permissions);

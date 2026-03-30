@@ -19,9 +19,9 @@ import com.github.DaiYuANg.persistence.outbox.DomainOutboxStore;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
@@ -37,28 +37,32 @@ public class ExampleOrderApplicationService implements ExampleOrderPlacementApi 
 
   @Transactional
   public ExampleOrderView placeOrder(PlaceExampleOrderCommand command) {
-    var buyer = buyerContext.requireBuyerUsername();
+    val buyer = buyerContext.requireBuyerUsername();
     userLookup.requireExistingUser(buyer);
 
-    var pricedLines = new ArrayList<ExampleOrderLine>();
-    for (var line : command.lines()) {
-      var product = requireAvailableProduct(line.productId());
-      if (product.stock() < line.quantity()) {
-        throw new BizException(
-            ResultCode.BAD_REQUEST, "insufficient stock for product " + product.id());
-      }
-      pricedLines.add(
-          new ExampleOrderLine(line.productId(), line.quantity(), product.priceMinor()));
-      catalogCommandRepository.updateStock(product.id(), product.stock() - line.quantity());
-    }
-    var order = ExampleOrder.place(buyer, pricedLines);
-    var persisted = orderCommandRepository.save(order);
+    val pricedLines =
+        command.lines().stream()
+            .map(
+                line -> {
+                  val product = requireAvailableProduct(line.productId());
+                  if (product.stock() < line.quantity()) {
+                    throw new BizException(
+                        ResultCode.BAD_REQUEST, "insufficient stock for product " + product.id());
+                  }
+                  catalogCommandRepository.updateStock(
+                      product.id(), product.stock() - line.quantity());
+                  return new ExampleOrderLine(
+                      line.productId(), line.quantity(), product.priceMinor());
+                })
+            .toList();
+    val order = ExampleOrder.place(buyer, pricedLines);
+    val persisted = orderCommandRepository.save(order);
     domainOutboxStore.append("ExampleOrder", persisted.id(), persisted.placedEvent());
     return toView(persisted);
   }
 
   public List<ExampleOrderView> myOrders() {
-    var buyer = buyerContext.requireBuyerUsername();
+    val buyer = buyerContext.requireBuyerUsername();
     return orderReadRepository.listByBuyer(buyer);
   }
 
@@ -70,7 +74,7 @@ public class ExampleOrderApplicationService implements ExampleOrderPlacementApi 
   }
 
   private ExampleOrderView toView(ExampleOrder order) {
-    var lineViews =
+    val lineViews =
         order.lines().stream()
             .map(
                 line ->

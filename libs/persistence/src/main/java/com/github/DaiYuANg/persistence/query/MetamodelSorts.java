@@ -1,8 +1,10 @@
 package com.github.DaiYuANg.persistence.query;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import lombok.val;
 
 public final class MetamodelSorts {
   private MetamodelSorts() {}
@@ -12,18 +14,16 @@ public final class MetamodelSorts {
       String sortDirection,
       Map<String, MetamodelSortMapping> mappings,
       QuerySort... fallback) {
-    var resolved = new ArrayList<QuerySort>();
+    val resolved = new ArrayList<QuerySort>();
     if (sortBy != null) {
-      var mapping = mappings.get(sortBy);
+      val mapping = mappings.get(sortBy);
       if (mapping != null) {
         resolved.add(mapping.toSort(sortDirection));
       }
     }
-    for (var item : fallback) {
-      if (resolved.stream().noneMatch(existing -> existing.property().equals(item.property()))) {
-        resolved.add(item);
-      }
-    }
+    Arrays.stream(fallback)
+        .filter(item -> resolved.stream().noneMatch(existing -> existing.property().equals(item.property())))
+        .forEach(resolved::add);
     return List.copyOf(resolved);
   }
 }

@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 /**
@@ -53,7 +54,7 @@ public class ConfigUserAuthenticationProvider
       log.atDebug().log("config-user: no users configured, abstain");
       return AuthenticationProviderResult.abstain();
     }
-    var entry = ConfigUserAccounts.find(config, request.username()).orElse(null);
+    val entry = ConfigUserAccounts.find(config, request.username()).orElse(null);
     if (entry == null) {
       log.atDebug()
           .addKeyValue("username", request.username())
@@ -67,7 +68,7 @@ public class ConfigUserAuthenticationProvider
       return AuthenticationProviderResult.failure(ResultCode.USERNAME_OR_PASSWORD_INVALID);
     }
     log.atDebug().addKeyValue("username", request.username()).log("config-user: authenticated");
-    Map<String, Object> attributes = new LinkedHashMap<>();
+    val attributes = new LinkedHashMap<String, Object>();
     attributes.put(PrincipalAttributeKeys.SOURCE, "config");
     attributes.put(PrincipalAttributeKeys.PROVIDER_ID, providerId());
     attributes.put(
@@ -75,7 +76,7 @@ public class ConfigUserAuthenticationProvider
         new LinkedHashSet<>(entry.permissions().orElseGet(List::of)));
     attributes.put(
         PrincipalAttributeKeys.ROLES, new LinkedHashSet<>(entry.roles().orElseGet(List::of)));
-    String principalType = entry.principalUserType().orElse(configUserFallbackType);
+    val principalType = entry.principalUserType().orElse(configUserFallbackType);
     return AuthenticationProviderResult.success(
         new AuthenticationResult(
             new AuthenticatedUser(

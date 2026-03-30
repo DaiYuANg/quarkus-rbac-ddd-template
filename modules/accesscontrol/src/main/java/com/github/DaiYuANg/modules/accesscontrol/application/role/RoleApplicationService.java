@@ -21,10 +21,14 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 import java.util.stream.Collectors;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 /**
  * Role management application service.
@@ -49,11 +53,11 @@ public class RoleApplicationService {
   private final AuthorizationService authorizationService;
 
   @Transactional
-  public RoleVO createRole(RoleCreationForm form) {
+  public RoleVO createRole(@NonNull RoleCreationForm form) {
     authorizationService.check(Role.ADD);
     if (roleRepository.countByCode(form.code()) > 0)
       throw new BizException(ResultCode.DATA_ALREADY_EXISTS, "role code already exists");
-    var role = new SysRole();
+    val role = new SysRole();
     role.code = form.code();
     role.name = form.name();
     role.status = form.status() == null ? RoleStatus.ENABLED : form.status();
@@ -65,9 +69,9 @@ public class RoleApplicationService {
     return toRoleVOWithCatalog(role);
   }
 
-  public ApiPageResult<RoleVO> queryRolePage(RolePageQuery query) {
+  public ApiPageResult<RoleVO> queryRolePage(@NonNull RolePageQuery query) {
     authorizationService.check(Role.VIEW);
-    var slice = roleRepository.page(query);
+    val slice = roleRepository.page(query);
     return ApiPageResult.of(
         slice.total(),
         query.getPageNum(),
@@ -75,15 +79,15 @@ public class RoleApplicationService {
         slice.content().stream().map(this::toRoleVO).toList());
   }
 
-  public Optional<RoleVO> getRoleById(Long id) {
+  public Optional<RoleVO> getRoleById(@NonNull Long id) {
     authorizationService.check(Role.VIEW);
     return roleRepository.findByIdOptional(id).map(this::toRoleVOWithCatalog);
   }
 
   @Transactional
-  public RoleVO updateRole(Long id, UpdateRoleForm form) {
+  public RoleVO updateRole(@NonNull Long id, @NonNull UpdateRoleForm form) {
     authorizationService.check(Role.EDIT);
-    var role =
+    val role =
         roleRepository
             .findByIdOptional(id)
             .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
@@ -108,9 +112,9 @@ public class RoleApplicationService {
   }
 
   @Transactional
-  public void deleteRole(Long id) {
+  public void deleteRole(@NonNull Long id) {
     authorizationService.check(Role.DELETE);
-    var role =
+    val role =
         roleRepository
             .findByIdOptional(id)
             .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
@@ -119,15 +123,15 @@ public class RoleApplicationService {
     auditSupport.record("role", "delete", String.valueOf(id), true, "delete role");
   }
 
-  public Optional<RoleVO> getRoleByName(String name) {
+  public Optional<RoleVO> getRoleByName(@NonNull String name) {
     authorizationService.check(Role.VIEW);
     return roleRepository.findByName(name).map(this::toRoleVOWithCatalog);
   }
 
   @Transactional
-  public void assignPermissionGroups(RoleRefPermissionGroupForm form) {
+  public void assignPermissionGroups(@NonNull RoleRefPermissionGroupForm form) {
     authorizationService.checkAny(Role.EDIT, Role.ASSIGN_PERMISSION_GROUP);
-    var role =
+    val role =
         roleRepository
             .findByIdOptional(form.roleId())
             .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
@@ -148,26 +152,27 @@ public class RoleApplicationService {
 
   public List<RoleVO> getAllRoles() {
     authorizationService.check(Role.VIEW);
-    var roles = roleRepository.listAllWithPermissionGroups();
+    val roles = roleRepository.listAllWithPermissionGroups();
     if (roles == null || roles.isEmpty()) {
       return List.of();
     }
     // Preload permission ids for all groups referenced by all roles (avoid N+1).
-    var groupIds =
+    val groupIds =
         roles.stream()
             .flatMap(
-                r ->
-                    (r == null || r.permissionGroups == null)
-                        ? java.util.stream.Stream.empty()
-                        : r.permissionGroups.stream())
-            .map(g -> g == null ? null : g.id)
-            .filter(java.util.Objects::nonNull)
+                role ->
+                    role == null || role.permissionGroups == null
+                        ? Stream.empty()
+                        : role.permissionGroups.stream())
+            .filter(Objects::nonNull)
+            .map(group -> group.id)
+            .filter(Objects::nonNull)
             .distinct()
             .toList();
-    var permissionIdsByGroupId = permissionGroupRepository.findPermissionIdsByGroupIds(groupIds);
+    val permissionIdsByGroupId = permissionGroupRepository.findPermissionIdsByGroupIds(groupIds);
     return roles.stream()
-        .filter(java.util.Objects::nonNull)
-        .map(r -> toRoleVOWithCatalog(r, permissionIdsByGroupId))
+        .filter(Objects::nonNull)
+        .map(role -> toRoleVOWithCatalog(role, permissionIdsByGroupId))
         .toList();
   }
 
@@ -181,7 +186,8 @@ public class RoleApplicationService {
     return roleRepository.count();
   }
 
-  private RoleVO toRoleVO(com.github.DaiYuANg.accesscontrol.projection.RoleListProjection role) {
+  private RoleVO toRoleVO(
+      @NonNull com.github.DaiYuANg.accesscontrol.projection.RoleListProjection role) {
     return new RoleVO(
         role.id(),
         role.name(),
@@ -193,39 +199,26 @@ public class RoleApplicationService {
         new LinkedHashSet<>());
   }
 
-  private RoleVO toRoleVOWithCatalog(SysRole role) {
-    if (role == null) {
-      throw new BizException(ResultCode.DATA_NOT_FOUND);
-    }
-    var groupIds =
-        (role.permissionGroups == null
-                ? List.<com.github.DaiYuANg.accesscontrol.entity.SysPermissionGroup>of()
-                : role.permissionGroups.stream().toList())
-            .stream()
-                .filter(java.util.Objects::nonNull)
-                .map(g -> g.id)
-                .filter(java.util.Objects::nonNull)
-                .distinct()
-                .toList();
-    var permissionIdsByGroupId = permissionGroupRepository.findPermissionIdsByGroupIds(groupIds);
+  private RoleVO toRoleVOWithCatalog(@NonNull SysRole role) {
+    val groupIds =
+        streamPermissionGroups(role)
+            .map(group -> group.id)
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
+    val permissionIdsByGroupId = permissionGroupRepository.findPermissionIdsByGroupIds(groupIds);
     return toRoleVOWithCatalog(role, permissionIdsByGroupId);
   }
 
   private RoleVO toRoleVOWithCatalog(
-      SysRole role, java.util.Map<Long, Set<Long>> permissionIdsByGroupId) {
-    var permissionGroups =
-        (role.permissionGroups == null
-                ? List.<com.github.DaiYuANg.accesscontrol.entity.SysPermissionGroup>of()
-                : role.permissionGroups.stream().toList())
-            .stream()
-                .filter(java.util.Objects::nonNull)
-                .map(
-                    g ->
-                        permissionGroupApplicationService.toPermissionGroupVOWithCatalog(
-                            g,
-                            permissionIdsByGroupId.getOrDefault(g.id, java.util.Set.of()).stream()
-                                .toList()))
-                .collect(Collectors.toCollection(LinkedHashSet::new));
+      @NonNull SysRole role, @NonNull java.util.Map<Long, Set<Long>> permissionIdsByGroupId) {
+    val permissionGroups =
+        streamPermissionGroups(role)
+            .map(
+                group ->
+                    permissionGroupApplicationService.toPermissionGroupVOWithCatalog(
+                        group, permissionIdsByGroupId.getOrDefault(group.id, java.util.Set.of()).stream().toList()))
+            .collect(Collectors.toCollection(LinkedHashSet::new));
     return new RoleVO(
         role.id,
         role.name,
@@ -242,5 +235,12 @@ public class RoleApplicationService {
       return RoleStatus.ENABLED;
     }
     return RoleStatus.valueOf(value);
+  }
+
+  private Stream<com.github.DaiYuANg.accesscontrol.entity.SysPermissionGroup> streamPermissionGroups(
+      @NonNull SysRole role) {
+    return role.permissionGroups == null
+        ? Stream.empty()
+        : role.permissionGroups.stream().filter(Objects::nonNull);
   }
 }

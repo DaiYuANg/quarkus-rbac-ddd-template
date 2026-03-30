@@ -27,9 +27,10 @@ import jakarta.transaction.Transactional;
 import java.time.Duration;
 import java.util.LinkedHashSet;
 import java.util.Objects;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jspecify.annotations.NonNull;
+import lombok.val;
 
 /**
  * Authentication application service.
@@ -65,9 +66,9 @@ public class AuthApplicationService {
 
   @Transactional
   public SystemAuthenticationToken login(@NonNull LoginRequest req) {
-    var username = req.username() == null ? "" : req.username().trim();
+    val username = req.username() == null ? "" : req.username().trim();
     log.atDebug().addKeyValue("username", username).log("login attempt");
-    var snapshot = auditSnapshotProvider.snapshot();
+    val snapshot = auditSnapshotProvider.snapshot();
     if (loginAttemptStore.isLocked(username)) {
       log.atDebug()
           .addKeyValue("username", username)
@@ -82,7 +83,7 @@ public class AuthApplicationService {
       throw new BizException(ResultCode.ACCOUNT_TEMPORARILY_LOCKED);
     }
     try {
-      var result =
+      val result =
           authenticationManager.authenticate(
               new UsernamePasswordAuthenticationRequest(username, req.password()));
       log.atDebug()
@@ -107,8 +108,8 @@ public class AuthApplicationService {
     }
   }
 
-  public UserDetailVo profile(String username) {
-    var current =
+  public UserDetailVo profile(@NonNull String username) {
+    val current =
         currentUserAccess
             .currentUser()
             .orElseThrow(() -> new BizException(ResultCode.UNAUTHORIZED));
@@ -119,8 +120,8 @@ public class AuthApplicationService {
   }
 
   @Transactional
-  public MeResponse me(String username) {
-    var current =
+  public MeResponse me(@NonNull String username) {
+    val current =
         currentUserAccess
             .currentUser()
             .orElseThrow(() -> new BizException(ResultCode.UNAUTHORIZED));
@@ -128,9 +129,9 @@ public class AuthApplicationService {
       throw new BizException(ResultCode.FORBIDDEN);
     }
 
-    var user = userRepository.findByUsernameWithRbacGraph(username).orElse(null);
+    val user = userRepository.findByUsernameWithRbacGraph(username).orElse(null);
     if (user != null) {
-      var roles =
+      val roles =
           user.roles.stream()
               .map(role -> new MeRoleItem(String.valueOf(role.id), role.name))
               .toList();
@@ -138,19 +139,19 @@ public class AuthApplicationService {
           String.valueOf(user.id), current.displayName(), user.email, roles, current.permissions());
     }
 
-    var configRoles = current.roles().stream().map(role -> new MeRoleItem(role, role)).toList();
+    val configRoles = current.roles().stream().map(role -> new MeRoleItem(role, role)).toList();
     return new MeResponse(
         current.username(), current.displayName(), null, configRoles, current.permissions());
   }
 
-  public void logout(String refreshToken) {
+  public void logout(@NonNull String refreshToken) {
     log.atDebug().log("logout (revoke refresh token)");
     authenticationLifecycle.revokeRefreshToken(refreshToken);
   }
 
-  public SystemAuthenticationToken refreshToken(String refreshToken) {
+  public SystemAuthenticationToken refreshToken(@NonNull String refreshToken) {
     log.atDebug().log("refresh token attempt");
-    var result =
+    val result =
         authenticationManager.authenticate(new RefreshTokenAuthenticationRequest(refreshToken));
     log.atDebug().addKeyValue("username", result.user().username()).log("refresh token success");
     authenticationLifecycle.revokeRefreshToken(refreshToken);
@@ -158,18 +159,19 @@ public class AuthApplicationService {
     return tokenIssuer.issue(result.user());
   }
 
-  public String checkAuthorityVersion(String username) {
-    var user = userRepository.findByUsername(username).orElse(null);
+  public String checkAuthorityVersion(@NonNull String username) {
+    val user = userRepository.findByUsername(username).orElse(null);
     if (user == null) {
       return authorityVersionStore.currentVersion() + ":config";
     }
-    var permissions = new LinkedHashSet<>(userRepository.findPermissionCodesByUsername(username));
-    var roles = new LinkedHashSet<>(userRepository.findRoleCodesByUsername(username));
+    val permissions = new LinkedHashSet<>(userRepository.findPermissionCodesByUsername(username));
+    val roles = new LinkedHashSet<>(userRepository.findRoleCodesByUsername(username));
     return composeAuthorityVersion(permissions, roles);
   }
 
-  private void onLoginFailure(String username, String reason, AuditSnapshot snapshot) {
-    var attempts =
+  private void onLoginFailure(
+      @NonNull String username, @NonNull String reason, @NonNull AuditSnapshot snapshot) {
+    val attempts =
         loginAttemptStore.incrementFailure(
             username, Duration.ofSeconds(authSecurityConfig.loginFailureLockSeconds()));
     if (attempts >= authSecurityConfig.loginFailureMaxAttempts()) {

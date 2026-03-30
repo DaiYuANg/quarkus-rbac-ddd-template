@@ -3,6 +3,7 @@ package com.github.DaiYuANg.common.exception;
 import com.github.DaiYuANg.common.constant.ResultCode;
 import java.util.Objects;
 import lombok.Getter;
+import lombok.val;
 
 @Getter
 public class BizException extends RuntimeException {
@@ -14,7 +15,7 @@ public class BizException extends RuntimeException {
 
   public BizException(ResultCode resultCode, String message) {
     super(resolveMessage(resultCode, message));
-    var code = requireCode(resultCode);
+    val code = requireCode(resultCode);
     this.resultCode = code;
   }
 
@@ -23,7 +24,7 @@ public class BizException extends RuntimeException {
   }
 
   private static String resolveMessage(ResultCode resultCode, String message) {
-    var code = requireCode(resultCode);
+    val code = requireCode(resultCode);
     return message != null ? message : code.message();
   }
 }

@@ -9,7 +9,8 @@ import java.time.Duration;
 import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
-import org.jspecify.annotations.NonNull;
+import lombok.NonNull;
+import lombok.val;
 
 @ApplicationScoped
 public class RefreshTokenStore {
@@ -21,7 +22,7 @@ public class RefreshTokenStore {
   private final SetCommands<String, String> setCommands;
   private final KeyCommands<String> keyCommands;
 
-  public RefreshTokenStore(RedisDataSource ds) {
+  public RefreshTokenStore(@NonNull RedisDataSource ds) {
     this.valueCommands = ds.value(String.class);
     this.setCommands = ds.set(String.class);
     this.keyCommands = ds.key();
@@ -48,7 +49,7 @@ public class RefreshTokenStore {
   }
 
   public void delete(String refreshToken) {
-    var owner = getOwner(refreshToken).orElse(null);
+    val owner = getOwner(refreshToken).orElse(null);
     keyCommands.del(key(refreshToken));
     cleanupMembership(owner, refreshToken);
   }
@@ -57,11 +58,9 @@ public class RefreshTokenStore {
     if (username == null || username.isBlank()) {
       return;
     }
-    for (String token : copyTokens(setCommands.smembers(userKey(username)))) {
-      if (token != null && !token.isBlank()) {
-        delete(token);
-      }
-    }
+    copyTokens(setCommands.smembers(userKey(username))).stream()
+        .filter(token -> token != null && !token.isBlank())
+        .forEach(this::delete);
     keyCommands.del(userKey(username));
   }
 
@@ -69,11 +68,9 @@ public class RefreshTokenStore {
     if (userId == null) {
       return;
     }
-    for (String token : copyTokens(setCommands.smembers(userIdKey(userId)))) {
-      if (token != null && !token.isBlank()) {
-        delete(token);
-      }
-    }
+    copyTokens(setCommands.smembers(userIdKey(userId))).stream()
+        .filter(token -> token != null && !token.isBlank())
+        .forEach(this::delete);
     keyCommands.del(userIdKey(userId));
   }
 
@@ -103,7 +100,7 @@ public class RefreshTokenStore {
 
   private void removeTokenFromSet(String membershipKey, String refreshToken) {
     setCommands.srem(membershipKey, refreshToken);
-    var remainingTokens = setCommands.smembers(membershipKey);
+    val remainingTokens = setCommands.smembers(membershipKey);
     if (remainingTokens == null || remainingTokens.isEmpty()) {
       keyCommands.del(membershipKey);
     }
@@ -126,9 +123,9 @@ public class RefreshTokenStore {
     if (!rawValue.contains(OWNER_SEPARATOR)) {
       return Optional.of(new RefreshTokenOwner(null, rawValue));
     }
-    var parts = rawValue.split(OWNER_SEPARATOR, 2);
-    var userId = parseUserId(parts[0]);
-    var username = parts.length < 2 || parts[1].isBlank() ? null : parts[1];
+    val parts = rawValue.split(OWNER_SEPARATOR, 2);
+    val userId = parseUserId(parts[0]);
+    val username = parts.length < 2 || parts[1].isBlank() ? null : parts[1];
     if (userId == null && username == null) {
       return Optional.empty();
     }

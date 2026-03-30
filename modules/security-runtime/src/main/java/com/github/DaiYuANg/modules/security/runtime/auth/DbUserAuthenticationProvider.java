@@ -12,9 +12,9 @@ import com.github.DaiYuANg.security.auth.UsernamePasswordAuthenticationRequest;
 import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jspecify.annotations.NonNull;
 
 @ApplicationScoped
 @Priority(200)
@@ -37,7 +37,8 @@ public class DbUserAuthenticationProvider
   }
 
   @Override
-  public AuthenticationProviderResult authenticate(@NonNull UsernamePasswordAuthenticationRequest request) {
+  public AuthenticationProviderResult authenticate(
+      @NonNull UsernamePasswordAuthenticationRequest request) {
     return userRepository
         .findByUsername(request.username())
         .map(

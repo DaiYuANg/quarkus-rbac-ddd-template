@@ -4,13 +4,14 @@ import com.github.DaiYuANg.modules.example.application.port.driven.ExampleOrderC
 import com.github.DaiYuANg.modules.example.domain.model.order.ExampleOrder;
 import com.github.DaiYuANg.modules.example.domain.model.order.ExampleOrderLine;
 import jakarta.enterprise.context.ApplicationScoped;
+import lombok.val;
 
 @ApplicationScoped
 public class PanacheExampleOrderCommandRepository implements ExampleOrderCommandRepository {
 
   @Override
   public ExampleOrder save(ExampleOrder order) {
-    var entity = new ExampleOrderEntity();
+    val entity = new ExampleOrderEntity();
     entity.buyerUsername = order.buyerUsername();
     entity.status = order.status();
     entity.totalMinor = order.totalMinor();
@@ -20,7 +21,7 @@ public class PanacheExampleOrderCommandRepository implements ExampleOrderCommand
   }
 
   private ExampleOrderLineEntity toEntity(ExampleOrderEntity order, ExampleOrderLine line) {
-    var row = new ExampleOrderLineEntity();
+    val row = new ExampleOrderLineEntity();
     row.productId = line.productId();
     row.quantity = line.quantity();
     row.unitPriceMinor = line.unitPriceMinor();

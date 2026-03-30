@@ -3,6 +3,7 @@ package com.github.DaiYuANg.common.model;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.Setter;
+import lombok.val;
 import org.toolkit4j.data.model.page.PageRequest;
 
 /**
@@ -44,7 +45,7 @@ public class ApiPageQuery extends PageRequest {
     if (page != null) {
       return page + 1;
     }
-    var inherited = super.getPage();
+    val inherited = super.getPage();
     if (inherited != null) {
       return Math.max(inherited, DEFAULT_PAGE);
     }
@@ -63,7 +64,7 @@ public class ApiPageQuery extends PageRequest {
     if (size != null) {
       return clampSize(size);
     }
-    var inherited = super.getSize();
+    val inherited = super.getSize();
     return clampSize(inherited == null ? DEFAULT_SIZE : inherited);
   }
 
@@ -101,7 +102,7 @@ public class ApiPageQuery extends PageRequest {
     if (keyword == null) {
       return null;
     }
-    var trimmed = keyword.trim();
+    val trimmed = keyword.trim();
     return trimmed.isEmpty() ? null : trimmed;
   }
 
@@ -109,7 +110,7 @@ public class ApiPageQuery extends PageRequest {
     if (sortBy == null) {
       return null;
     }
-    var trimmed = sortBy.trim();
+    val trimmed = sortBy.trim();
     return trimmed.isEmpty() ? null : trimmed;
   }
 
@@ -117,7 +118,7 @@ public class ApiPageQuery extends PageRequest {
     if (sortDirection == null) {
       return null;
     }
-    var trimmed = sortDirection.trim();
+    val trimmed = sortDirection.trim();
     return trimmed.isEmpty() ? null : trimmed;
   }
 

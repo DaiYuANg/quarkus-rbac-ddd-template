@@ -4,13 +4,14 @@ import com.github.DaiYuANg.modules.example.application.command.CreateExampleProd
 import com.github.DaiYuANg.modules.example.application.port.driven.ExampleCatalogCommandRepository;
 import com.github.DaiYuANg.modules.example.application.readmodel.ExampleProductView;
 import jakarta.enterprise.context.ApplicationScoped;
+import lombok.val;
 
 @ApplicationScoped
 public class PanacheExampleCatalogCommandRepository implements ExampleCatalogCommandRepository {
 
   @Override
   public ExampleProductView create(CreateExampleProductCommand command) {
-    var entity = new ExampleProductEntity();
+    val entity = new ExampleProductEntity();
     entity.name = command.name();
     entity.priceMinor = command.priceMinor();
     entity.stock = command.stock();
@@ -22,7 +23,7 @@ public class PanacheExampleCatalogCommandRepository implements ExampleCatalogCom
 
   @Override
   public void updateStock(Long productId, int newStock) {
-    var entity =
+    val entity =
         ExampleProductEntity.<ExampleProductEntity>findByIdOptional(productId)
             .orElseThrow(() -> new IllegalStateException("product missing after validation"));
     entity.stock = newStock;

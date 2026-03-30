@@ -4,8 +4,6 @@ import com.github.DaiYuANg.common.model.ApiPageResult;
 import com.github.DaiYuANg.common.model.Results;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.PermissionVO;
 import com.github.DaiYuANg.modules.accesscontrol.application.permission.PermissionApplicationService;
-import com.github.DaiYuANg.modules.accesscontrol.application.permissiongroup.PermissionGroupApplicationService;
-import com.github.DaiYuANg.modules.accesscontrol.PermissionGroupBindingForm;
 import com.github.DaiYuANg.modules.accesscontrol.query.PermissionPageQueryParams;
 import com.github.DaiYuANg.security.authorization.RbacPermissionCodes.Permission;
 import io.quarkus.security.PermissionsAllowed;
@@ -23,7 +21,6 @@ import org.toolkit4j.data.model.envelope.Result;
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class PermissionResource {
   private final PermissionApplicationService permissionApplicationService;
-  private final PermissionGroupApplicationService permissionGroupApplicationService;
 
   @GET
   @Path("/{id}")
@@ -51,36 +48,5 @@ public class PermissionResource {
   @PermissionsAllowed(Permission.VIEW)
   public Result<String, List<PermissionVO>> list() {
     return Results.ok(permissionApplicationService.getAllPermissions());
-  }
-
-  @PATCH
-  @Path("/{id}")
-  @PermissionsAllowed(Permission.EDIT)
-  public Result<String, Void> bindGroup(@PathParam("id") Long id, PermissionGroupBindingForm form) {
-    permissionGroupApplicationService.bindPermissionsToGroup(
-        form == null ? null : form.groupId(), List.of(id));
-    return Results.ok();
-  }
-
-  @PATCH
-  @Path("/bulk")
-  @PermissionsAllowed(Permission.EDIT)
-  public Result<String, Void> bindGroupBulk(
-      @QueryParam("id") String ids, PermissionGroupBindingForm form) {
-    var permissionIds = parseIds(ids);
-    permissionGroupApplicationService.bindPermissionsToGroup(
-        form == null ? null : form.groupId(), permissionIds);
-    return Results.ok();
-  }
-
-  private List<Long> parseIds(String rawIds) {
-    if (rawIds == null || rawIds.isBlank()) {
-      return List.of();
-    }
-    return java.util.Arrays.stream(rawIds.split(","))
-        .map(String::trim)
-        .filter(s -> !s.isBlank())
-        .map(Long::parseLong)
-        .toList();
   }
 }

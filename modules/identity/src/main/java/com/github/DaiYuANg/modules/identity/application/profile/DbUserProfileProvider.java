@@ -9,7 +9,9 @@ import com.github.DaiYuANg.security.identity.CurrentAuthenticatedUser;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.LinkedHashSet;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 /**
  * Profile backed by {@code sys_user} and the RBAC graph.
@@ -34,22 +36,22 @@ public class DbUserProfileProvider implements UserProfileProvider {
   }
 
   @Override
-  public boolean supports(CurrentAuthenticatedUser user) {
+  public boolean supports(@NonNull CurrentAuthenticatedUser user) {
     return !CONFIG_USER_TYPE.equalsIgnoreCase(
         user.userType() == null ? "" : user.userType().trim());
   }
 
   @Override
-  public UserDetailVo buildProfile(CurrentAuthenticatedUser user) {
-    var dbUser =
+  public UserDetailVo buildProfile(@NonNull CurrentAuthenticatedUser user) {
+    val dbUser =
         userRepository
             .findByUsername(user.username())
             .orElseThrow(
                 () ->
                     new BizException(
                         ResultCode.DATA_NOT_FOUND, "user not found: " + user.username()));
-    var detail = toUserDetail(dbUser);
-    var authorityKey =
+    val detail = toUserDetail(dbUser);
+    val authorityKey =
         authorityVersionStore.currentVersion()
             + ":"
             + UserDetailVo.encodeAuthorityKey(detail.permissions(), detail.roleCodes());
@@ -62,10 +64,10 @@ public class DbUserProfileProvider implements UserProfileProvider {
         authorityKey);
   }
 
-  private UserDetailVo toUserDetail(com.github.DaiYuANg.identity.entity.SysUser user) {
-    var permissions =
+  private UserDetailVo toUserDetail(@NonNull com.github.DaiYuANg.identity.entity.SysUser user) {
+    val permissions =
         new LinkedHashSet<>(userRepository.findPermissionCodesByUsername(user.username));
-    var roleCodes = new LinkedHashSet<>(userRepository.findRoleCodesByUsername(user.username));
+    val roleCodes = new LinkedHashSet<>(userRepository.findRoleCodesByUsername(user.username));
     return new UserDetailVo(
         user.id,
         user.username,

@@ -4,9 +4,9 @@ import io.quarkus.redis.datasource.RedisDataSource;
 import io.quarkus.redis.datasource.keys.KeyCommands;
 import io.quarkus.redis.datasource.value.ValueCommands;
 import jakarta.enterprise.context.ApplicationScoped;
-import org.jspecify.annotations.NonNull;
-
 import java.time.Instant;
+import lombok.NonNull;
+import lombok.val;
 
 @ApplicationScoped
 public class AuthorityVersionStore {
@@ -22,7 +22,8 @@ public class AuthorityVersionStore {
   }
 
   public String currentVersion() {
-    var version = valueCommands.get(KEY);
+    val current = valueCommands.get(KEY);
+    var version = current;
     if (version == null || version.isBlank()) {
       version = Instant.now().toString();
       valueCommands.set(KEY, version);
@@ -31,7 +32,7 @@ public class AuthorityVersionStore {
   }
 
   public String bumpGlobalVersion() {
-    var version = Instant.now().toString();
+    val version = Instant.now().toString();
     valueCommands.set(KEY, version);
     return version;
   }

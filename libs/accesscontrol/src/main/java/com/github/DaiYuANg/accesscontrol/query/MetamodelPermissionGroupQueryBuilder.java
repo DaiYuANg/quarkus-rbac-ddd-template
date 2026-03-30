@@ -8,6 +8,7 @@ import com.github.DaiYuANg.persistence.query.QuerySort;
 import com.github.DaiYuANg.persistence.query.SortDirection;
 import jakarta.enterprise.context.ApplicationScoped;
 import java.util.Map;
+import lombok.val;
 
 @ApplicationScoped
 public class MetamodelPermissionGroupQueryBuilder {
@@ -35,7 +36,7 @@ public class MetamodelPermissionGroupQueryBuilder {
 
   private String normalize(String value) {
     if (value == null) return null;
-    var trimmed = value.trim();
+    val trimmed = value.trim();
     return trimmed.isEmpty() ? null : trimmed;
   }
 }

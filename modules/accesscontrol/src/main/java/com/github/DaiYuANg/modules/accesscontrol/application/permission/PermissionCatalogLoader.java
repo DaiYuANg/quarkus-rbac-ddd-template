@@ -7,9 +7,10 @@ import com.github.DaiYuANg.cache.PermissionCatalogStore;
 import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.jetbrains.annotations.Contract;
-import org.jspecify.annotations.NonNull;
 
 /**
  * Loads all permissions from DB into Redis at startup. Runtime permission reads then go through
@@ -37,8 +38,7 @@ public class PermissionCatalogLoader {
   /** Reload catalog from DB into Redis. Call when catalog is empty or stale. */
   public void reload() {
     try {
-      var all = permissionRepository.listAll();
-      var entries = all.stream().map(this::toEntry).toList();
+      val entries = permissionRepository.listAll().stream().map(this::toEntry).toList();
       catalogStore.loadAll(entries);
       log.info("Loaded {} permissions into Redis catalog", entries.size());
     } catch (Exception e) {

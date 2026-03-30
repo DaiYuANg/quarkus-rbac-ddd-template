@@ -18,7 +18,9 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.toolkit4j.data.model.envelope.Result;
 
@@ -39,8 +41,8 @@ public class AuthResource {
   @POST
   @Path("/login")
   @PermitAll
-  public Response login(@Valid LoginRequest req, @Context UriInfo uriInfo) {
-    var token = authApplicationService.login(req);
+  public Response login(@Valid @NonNull LoginRequest req, @Context UriInfo uriInfo) {
+    val token = authApplicationService.login(req);
     return Response.ok(Results.ok(token))
         .cookie(
             RefreshTokenCookies.issue(
@@ -73,11 +75,11 @@ public class AuthResource {
       @HeaderParam(REFRESH_TOKEN_HEADER) String refreshTokenHeader,
       @CookieParam(REFRESH_TOKEN_COOKIE) String refreshTokenCookie,
       @Context UriInfo uriInfo) {
-    var refreshToken = resolveRefreshToken(refreshTokenHeader, refreshTokenCookie);
+    val refreshToken = resolveRefreshToken(refreshTokenHeader, refreshTokenCookie);
     if (refreshToken == null) {
       throw new BizException(ResultCode.REFRESH_TOKEN_INVALID);
     }
-    var owner =
+    val owner =
         refreshTokenStore
             .getUsername(refreshToken)
             .orElseThrow(() -> new BizException(ResultCode.REFRESH_TOKEN_INVALID));
@@ -99,11 +101,11 @@ public class AuthResource {
       @HeaderParam(REFRESH_TOKEN_HEADER) String refreshTokenHeader,
       @CookieParam(REFRESH_TOKEN_COOKIE) String refreshTokenCookie,
       @Context UriInfo uriInfo) {
-    var refreshToken = resolveRefreshToken(refreshTokenHeader, refreshTokenCookie);
+    val refreshToken = resolveRefreshToken(refreshTokenHeader, refreshTokenCookie);
     if (refreshToken == null) {
       throw new BizException(ResultCode.REFRESH_TOKEN_INVALID);
     }
-    var token = authApplicationService.refreshToken(refreshToken);
+    val token = authApplicationService.refreshToken(refreshToken);
     return Response.ok(Results.ok(token))
         .cookie(
             RefreshTokenCookies.issue(

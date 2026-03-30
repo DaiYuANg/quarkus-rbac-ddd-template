@@ -8,6 +8,7 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
@@ -27,8 +28,8 @@ public class LoginLogService {
 
   @Transactional
   public void recordSuccess(String username, String remoteIp, String userAgent) {
-    var ipAndUa = resolveRemoteIpAndUserAgent(remoteIp, userAgent);
-    var log = new SysLoginLog();
+    val ipAndUa = resolveRemoteIpAndUserAgent(remoteIp, userAgent);
+    val log = new SysLoginLog();
     log.username = username;
     log.success = true;
     log.reason = null;
@@ -40,8 +41,8 @@ public class LoginLogService {
 
   @Transactional
   public void recordFailure(String username, String remoteIp, String userAgent, String reason) {
-    var ipAndUa = resolveRemoteIpAndUserAgent(remoteIp, userAgent);
-    var log = new SysLoginLog();
+    val ipAndUa = resolveRemoteIpAndUserAgent(remoteIp, userAgent);
+    val log = new SysLoginLog();
     log.username = username;
     log.success = false;
     log.reason = reason;
@@ -61,7 +62,7 @@ public class LoginLogService {
     if (remoteIp != null && userAgent != null) {
       return new IpAndUserAgent(remoteIp, userAgent);
     }
-    var snapshot = auditSnapshotProvider.snapshot();
+    val snapshot = auditSnapshotProvider.snapshot();
     return new IpAndUserAgent(
         remoteIp != null ? remoteIp : snapshot.remoteIp(),
         userAgent != null ? userAgent : snapshot.userAgent());

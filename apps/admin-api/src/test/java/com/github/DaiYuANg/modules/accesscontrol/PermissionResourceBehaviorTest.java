@@ -1,37 +1,43 @@
 package com.github.DaiYuANg.modules.accesscontrol;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.github.DaiYuANg.modules.accesscontrol.application.permission.PermissionApplicationService;
-import com.github.DaiYuANg.modules.accesscontrol.application.permissiongroup.PermissionGroupApplicationService;
-import com.github.DaiYuANg.modules.accesscontrol.dto.PermissionGroupBindingForm;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.PATCH;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import java.lang.reflect.Method;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class PermissionResourceBehaviorTest {
 
   @Test
-  void bindGroupBulkParsesCsvIdsAndDelegates() {
-    var permissionApplicationService = mock(PermissionApplicationService.class);
-    var permissionGroupApplicationService = mock(PermissionGroupApplicationService.class);
-    var resource =
-        new PermissionResource(permissionApplicationService, permissionGroupApplicationService);
+  void permissionResourceExposesReadOnlyEndpoints() {
+    var resourceMethods =
+        List.of(PermissionResource.class.getDeclaredMethods()).stream()
+            .filter(this::isHttpEndpoint)
+            .toList();
 
-    resource.bindGroupBulk("1, 2,3", new PermissionGroupBindingForm(9L));
-
-    verify(permissionGroupApplicationService)
-        .bindPermissionsToGroup(9L, java.util.List.of(1L, 2L, 3L));
+    assertEquals(4, resourceMethods.size());
+    assertTrue(resourceMethods.stream().allMatch(method -> method.isAnnotationPresent(GET.class)));
+    assertTrue(resourceMethods.stream().noneMatch(this::isMutatingEndpoint));
   }
 
-  @Test
-  void bindGroupSingleDelegatesWithSingleIdList() {
-    var permissionApplicationService = mock(PermissionApplicationService.class);
-    var permissionGroupApplicationService = mock(PermissionGroupApplicationService.class);
-    var resource =
-        new PermissionResource(permissionApplicationService, permissionGroupApplicationService);
+  private boolean isHttpEndpoint(Method method) {
+    return method.isAnnotationPresent(GET.class)
+        || method.isAnnotationPresent(POST.class)
+        || method.isAnnotationPresent(PUT.class)
+        || method.isAnnotationPresent(PATCH.class)
+        || method.isAnnotationPresent(DELETE.class);
+  }
 
-    resource.bindGroup(7L, new PermissionGroupBindingForm(null));
-
-    verify(permissionGroupApplicationService).bindPermissionsToGroup(null, java.util.List.of(7L));
+  private boolean isMutatingEndpoint(Method method) {
+    return method.isAnnotationPresent(POST.class)
+        || method.isAnnotationPresent(PUT.class)
+        || method.isAnnotationPresent(PATCH.class)
+        || method.isAnnotationPresent(DELETE.class);
   }
 }

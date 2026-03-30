@@ -5,9 +5,9 @@ import com.github.DaiYuANg.modules.identity.application.LoginAuditEvent;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.ObservesAsync;
 import jakarta.inject.Inject;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jspecify.annotations.NonNull;
 
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)

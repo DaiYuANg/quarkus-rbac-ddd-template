@@ -10,6 +10,7 @@ import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 /**
  * Issues JWTs for authenticated principals.
@@ -34,7 +35,7 @@ public class JwtTokenService {
   private final AuthSecurityConfig authSecurityConfig;
 
   public String generate(AuthenticatedUser user, String authorityVersion) {
-    var builder =
+    val builder =
         Jwt.subject(user.username())
             .groups(user.permissions())
             .claim(PrincipalAttributeKeys.DISPLAY_NAME, user.displayName())

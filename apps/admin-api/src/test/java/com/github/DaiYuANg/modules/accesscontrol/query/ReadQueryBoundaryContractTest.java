@@ -10,6 +10,11 @@ import com.github.DaiYuANg.common.model.ApiPageQuery;
 import com.github.DaiYuANg.identity.constant.UserStatus;
 import com.github.DaiYuANg.identity.query.UserPageQuery;
 import jakarta.ws.rs.QueryParam;
+import java.util.Arrays;
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Member;
+import java.util.stream.Stream;
+import lombok.val;
 import org.junit.jupiter.api.Test;
 
 class ReadQueryBoundaryContractTest {
@@ -25,7 +30,7 @@ class ReadQueryBoundaryContractTest {
 
   @Test
   void userQueryParamsMapToPureReadQuery() {
-    var params = new UserPageQueryParams();
+    val params = new UserPageQueryParams();
     params.setPageNum(2);
     params.setPageSize(30);
     params.setKeyword(" admin ");
@@ -34,7 +39,7 @@ class ReadQueryBoundaryContractTest {
     params.setUsername("alice");
     params.setUserStatus(UserStatus.ENABLED);
 
-    var query = params.toQuery();
+    val query = params.toQuery();
 
     assertEquals(2, query.getPageNum());
     assertEquals(30, query.getPageSize());
@@ -47,7 +52,7 @@ class ReadQueryBoundaryContractTest {
 
   @Test
   void permissionQueryParamsMapToPureReadQuery() {
-    var params = new PermissionPageQueryParams();
+    val params = new PermissionPageQueryParams();
     params.setPage(1);
     params.setSize(15);
     params.setName("view");
@@ -56,7 +61,7 @@ class ReadQueryBoundaryContractTest {
     params.setAction("view");
     params.setGroupCode("user-management");
 
-    var query = params.toQuery();
+    val query = params.toQuery();
 
     assertEquals(2, query.getPageNum());
     assertEquals(15, query.getPageSize());
@@ -68,11 +73,14 @@ class ReadQueryBoundaryContractTest {
   }
 
   private void assertNoQueryParams(Class<?> type) {
-    for (var field : type.getDeclaredFields()) {
-      assertNull(field.getAnnotation(QueryParam.class), type.getName() + "#" + field.getName());
-    }
-    for (var method : type.getDeclaredMethods()) {
-      assertNull(method.getAnnotation(QueryParam.class), type.getName() + "#" + method.getName());
-    }
+    Stream.concat(
+            Arrays.stream(type.getDeclaredFields()).map(field -> (AnnotatedElement & Member) field),
+            Arrays.stream(type.getDeclaredMethods())
+                .map(method -> (AnnotatedElement & Member) method))
+        .forEach(
+            member ->
+                assertNull(
+                    member.getAnnotation(QueryParam.class),
+                    type.getName() + "#" + member.getName()));
   }
 }

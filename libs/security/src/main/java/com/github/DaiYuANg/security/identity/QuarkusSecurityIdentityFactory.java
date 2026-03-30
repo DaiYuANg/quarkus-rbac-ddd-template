@@ -7,6 +7,7 @@ import io.quarkus.security.runtime.QuarkusSecurityIdentity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
@@ -14,7 +15,7 @@ public class QuarkusSecurityIdentityFactory {
   private final PrincipalAttributesSerializer principalAttributesSerializer;
 
   public SecurityIdentity create(AuthenticatedUser user) {
-    var builder =
+    val builder =
         QuarkusSecurityIdentity.builder().setPrincipal(user::username).setAnonymous(false);
     user.roles().forEach(builder::addRole);
     user.permissions()

@@ -5,7 +5,10 @@ import com.github.DaiYuANg.common.exception.BizException;
 import com.github.DaiYuANg.security.access.CurrentUserAccess;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import java.util.Arrays;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
@@ -14,18 +17,18 @@ public class DefaultAuthorizationService implements AuthorizationService {
   private final AuthorizationAuditor authorizationAuditor;
 
   @Override
-  public AuthorizationDecision decide(String code) {
+  public AuthorizationDecision decide(@NonNull String code) {
     return decide(PermissionDescriptor.ofCode(code));
   }
 
   @Override
-  public AuthorizationDecision decide(String resource, String action) {
+  public AuthorizationDecision decide(@NonNull String resource, @NonNull String action) {
     return decide(PermissionDescriptor.of(resource, action));
   }
 
   @Override
-  public AuthorizationDecision decide(PermissionDescriptor descriptor) {
-    var current = currentUserAccess.currentUser().orElse(null);
+  public AuthorizationDecision decide(@NonNull PermissionDescriptor descriptor) {
+    val current = currentUserAccess.currentUser().orElse(null);
     if (current == null) {
       return AuthorizationDecision.deny(descriptor, null, "anonymous");
     }
@@ -35,18 +38,18 @@ public class DefaultAuthorizationService implements AuthorizationService {
   }
 
   @Override
-  public void check(String code) {
+  public void check(@NonNull String code) {
     check(PermissionDescriptor.ofCode(code));
   }
 
   @Override
-  public void check(String resource, String action) {
+  public void check(@NonNull String resource, @NonNull String action) {
     check(PermissionDescriptor.of(resource, action));
   }
 
   @Override
-  public void check(PermissionDescriptor descriptor) {
-    var decision = decide(descriptor);
+  public void check(@NonNull PermissionDescriptor descriptor) {
+    val decision = decide(descriptor);
     if (!decision.allowed()) {
       authorizationAuditor.auditDenied(decision);
       throw new BizException(ResultCode.FORBIDDEN);
@@ -55,16 +58,15 @@ public class DefaultAuthorizationService implements AuthorizationService {
 
   @Override
   public void checkAny(String... codes) {
-    AuthorizationDecision lastDenied = null;
-    if (codes != null) {
-      for (String code : codes) {
-        var decision = decide(code);
-        if (decision.allowed()) {
-          return;
-        }
-        lastDenied = decision;
-      }
+    val decisions = codes == null ? java.util.List.<AuthorizationDecision>of() : Arrays.stream(codes).map(this::decide).toList();
+    if (decisions.stream().anyMatch(AuthorizationDecision::allowed)) {
+      return;
     }
+    var lastDenied =
+        decisions.stream()
+            .filter(decision -> !decision.allowed())
+            .reduce((first, second) -> second)
+            .orElse(null);
     if (lastDenied == null) {
       lastDenied =
           AuthorizationDecision.deny(
@@ -81,18 +83,16 @@ public class DefaultAuthorizationService implements AuthorizationService {
     if (codes == null) {
       return;
     }
-    for (String code : codes) {
-      check(code);
-    }
+    Arrays.stream(codes).forEach(this::check);
   }
 
   @Override
-  public boolean isAllowed(String code) {
+  public boolean isAllowed(@NonNull String code) {
     return decide(code).allowed();
   }
 
   @Override
-  public boolean isAllowed(String resource, String action) {
+  public boolean isAllowed(@NonNull String resource, @NonNull String action) {
     return decide(resource, action).allowed();
   }
 }

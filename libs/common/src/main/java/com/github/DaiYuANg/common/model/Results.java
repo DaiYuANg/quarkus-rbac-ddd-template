@@ -1,8 +1,8 @@
 package com.github.DaiYuANg.common.model;
 
 import com.github.DaiYuANg.common.constant.ResultCode;
+import lombok.NonNull;
 import org.jetbrains.annotations.Contract;
-import org.jspecify.annotations.NonNull;
 import org.toolkit4j.data.model.envelope.Result;
 
 public final class Results {

@@ -5,6 +5,7 @@ import com.github.DaiYuANg.identity.query.UserPageQuery;
 import jakarta.ws.rs.QueryParam;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.val;
 
 @Getter
 @Setter
@@ -16,7 +17,7 @@ public class UserPageQueryParams extends AbstractAdminPageQueryParams<UserPageQu
   private UserStatus userStatus;
 
   public UserPageQuery toQuery() {
-    var query = applyTo(new UserPageQuery());
+    val query = applyTo(new UserPageQuery());
     query.setUsername(username);
     query.setUserStatus(userStatus);
     return query;

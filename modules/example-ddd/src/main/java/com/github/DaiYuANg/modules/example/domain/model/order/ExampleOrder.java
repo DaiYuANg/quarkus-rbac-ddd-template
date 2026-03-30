@@ -2,6 +2,7 @@ package com.github.DaiYuANg.modules.example.domain.model.order;
 
 import java.time.Instant;
 import java.util.List;
+import lombok.val;
 
 public record ExampleOrder(
     Long id,
@@ -15,8 +16,8 @@ public record ExampleOrder(
   }
 
   public static ExampleOrder place(String buyerUsername, List<ExampleOrderLine> lines) {
-    var safeLines = List.copyOf(lines);
-    var totalMinor = safeLines.stream().mapToLong(ExampleOrderLine::lineTotalMinor).sum();
+    val safeLines = List.copyOf(lines);
+    val totalMinor = safeLines.stream().mapToLong(ExampleOrderLine::lineTotalMinor).sum();
     return new ExampleOrder(null, buyerUsername, ExampleOrderStatus.CREATED, totalMinor, safeLines);
   }
 

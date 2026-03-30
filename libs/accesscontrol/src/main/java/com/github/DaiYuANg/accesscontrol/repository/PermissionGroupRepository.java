@@ -28,9 +28,12 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 /**
  * Repository for permission groups with RBAC-specific helpers.
@@ -60,7 +63,7 @@ public class PermissionGroupRepository extends BasePanacheCommandRepository<SysP
     if (code == null || code.isBlank()) {
       return Optional.empty();
     }
-    var rows =
+    val rows =
         new BlazeJPAQuery<SysPermissionGroup>(entityManager, criteriaBuilderFactory)
             .from(g)
             .select(g)
@@ -74,7 +77,7 @@ public class PermissionGroupRepository extends BasePanacheCommandRepository<SysP
     if (name == null || name.isBlank()) {
       return Optional.empty();
     }
-    var rows =
+    val rows =
         new BlazeJPAQuery<SysPermissionGroup>(entityManager, criteriaBuilderFactory)
             .from(g)
             .select(g)
@@ -114,7 +117,7 @@ public class PermissionGroupRepository extends BasePanacheCommandRepository<SysP
     if (ids == null || ids.isEmpty()) {
       return List.of();
     }
-    var normalized = ids.stream().filter(java.util.Objects::nonNull).distinct().toList();
+    val normalized = ids.stream().filter(Objects::nonNull).distinct().toList();
     if (normalized.isEmpty()) {
       return List.of();
     }
@@ -144,11 +147,11 @@ public class PermissionGroupRepository extends BasePanacheCommandRepository<SysP
     if (groupIds == null || groupIds.isEmpty()) {
       return Map.of();
     }
-    var normalized = groupIds.stream().filter(java.util.Objects::nonNull).distinct().toList();
+    val normalized = groupIds.stream().filter(Objects::nonNull).distinct().toList();
     if (normalized.isEmpty()) {
       return Map.of();
     }
-    var rows =
+    val rows =
         new BlazeJPAQuery<com.querydsl.core.Tuple>(entityManager, criteriaBuilderFactory)
             .from(g)
             .join(g.permissions, p)
@@ -156,19 +159,15 @@ public class PermissionGroupRepository extends BasePanacheCommandRepository<SysP
             .where(g.id.in(normalized))
             .distinct()
             .fetch();
-    var result = new LinkedHashMap<Long, Set<Long>>();
-    for (var row : rows) {
-      if (row == null) {
-        continue;
-      }
-      var gid = row.get(g.id);
-      var pid = row.get(p.id);
-      if (gid == null || pid == null) {
-        continue;
-      }
-      result.computeIfAbsent(gid, __ -> new LinkedHashSet<>()).add(pid);
-    }
-    return result;
+    return rows.stream()
+        .filter(Objects::nonNull)
+        .map(row -> Map.entry(row.get(g.id), row.get(p.id)))
+        .filter(entry -> entry.getKey() != null && entry.getValue() != null)
+        .collect(
+            Collectors.groupingBy(
+                Map.Entry::getKey,
+                LinkedHashMap::new,
+                Collectors.mapping(Map.Entry::getValue, Collectors.toCollection(LinkedHashSet::new))));
   }
 
   @Transactional
@@ -176,11 +175,11 @@ public class PermissionGroupRepository extends BasePanacheCommandRepository<SysP
     if (permissionIds == null || permissionIds.isEmpty()) {
       return 0;
     }
-    var normalized = permissionIds.stream().filter(java.util.Objects::nonNull).distinct().toList();
+    val normalized = permissionIds.stream().filter(Objects::nonNull).distinct().toList();
     if (normalized.isEmpty()) {
       return 0;
     }
-    var clause = jpaQueryFactory.delete(gp).where(gp.id.permissionId.in(normalized));
+    val clause = jpaQueryFactory.delete(gp).where(gp.id.permissionId.in(normalized));
     if (excludeGroupId != null) {
       clause.where(gp.id.permissionGroupId.ne(excludeGroupId));
     }
@@ -203,22 +202,22 @@ public class PermissionGroupRepository extends BasePanacheCommandRepository<SysP
     if (permissionIds == null || permissionIds.isEmpty()) {
       return;
     }
-    var normalized = permissionIds.stream().filter(java.util.Objects::nonNull).distinct().toList();
+    val normalized = permissionIds.stream().filter(Objects::nonNull).distinct().toList();
     if (normalized.isEmpty()) {
       return;
     }
     // Insert rows via JPA; relies on JDBC batch settings when configured.
-    for (Long pid : normalized) {
-      entityManager.persist(new SysPermissionGroupRefPermission(groupId, pid));
-    }
+    normalized.stream()
+        .map(pid -> new SysPermissionGroupRefPermission(groupId, pid))
+        .forEach(entityManager::persist);
   }
 
   @Override
   public PageSlice<PermissionGroupListProjection> page(PermissionGroupPageQuery query) {
-    var spec = queryBuilder.build(query);
-    var filter = spec.filter();
+    val spec = queryBuilder.build(query);
+    val filter = spec.filter();
 
-    var blazeQuery =
+    val blazeQuery =
         new BlazeJPAQuery<SysPermissionGroup>(entityManager, criteriaBuilderFactory)
             .from(g)
             .select(g);
@@ -237,13 +236,13 @@ public class PermissionGroupRepository extends BasePanacheCommandRepository<SysP
   }
 
   private void applyKeyword(BlazeJPAQuery<SysPermissionGroup> q, String keyword) {
-    var like = BlazeQueryDSLSupport.likePattern(keyword);
+    val like = BlazeQueryDSLSupport.likePattern(keyword);
     if (like == null) return;
     q.where(Expressions.anyOf(g.name.lower().like(like), g.code.lower().like(like)));
   }
 
   private void applyName(BlazeJPAQuery<SysPermissionGroup> q, String name) {
-    var like = BlazeQueryDSLSupport.likePattern(name);
+    val like = BlazeQueryDSLSupport.likePattern(name);
     if (like == null) return;
     q.where(g.name.lower().like(like));
   }

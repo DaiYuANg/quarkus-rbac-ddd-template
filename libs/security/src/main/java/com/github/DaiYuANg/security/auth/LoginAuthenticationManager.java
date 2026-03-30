@@ -2,9 +2,10 @@ package com.github.DaiYuANg.security.auth;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jspecify.annotations.NonNull;
+import lombok.val;
 
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
@@ -19,14 +20,14 @@ public class LoginAuthenticationManager {
         .addKeyValue("requestType", request.getClass().getSimpleName())
         .log("authenticate");
     AuthenticationProviderResult lastFailure = null;
-    for (var provider : authenticationProviders.orderedProviders()) {
+    for (val provider : authenticationProviders.orderedProviders()) {
       if (!provider.supports(request)) {
         log.debug("provider {} does not support request, skip", provider.providerId());
         continue;
       }
       @SuppressWarnings("unchecked")
-      var casted = (LoginAuthenticationProvider<LoginAuthenticationRequest>) provider;
-      var result = casted.authenticate(request);
+      val casted = (LoginAuthenticationProvider<LoginAuthenticationRequest>) provider;
+      val result = casted.authenticate(request);
       if (result == null || result.decision() == AuthenticationDecision.ABSTAIN) {
         log.atDebug().addKeyValue("provider", provider.providerId()).log("provider abstained");
         continue;

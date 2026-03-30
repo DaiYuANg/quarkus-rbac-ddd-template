@@ -1,6 +1,7 @@
 package com.github.DaiYuANg.persistence.query;
 
 import com.blazebit.persistence.CriteriaBuilder;
+import lombok.val;
 
 public abstract class BaseMetamodelQueryBuilder<Q, S> {
   public abstract S build(Q query);
@@ -9,11 +10,12 @@ public abstract class BaseMetamodelQueryBuilder<Q, S> {
     if (sorts == null) {
       return;
     }
-    for (var sort : sorts) {
-      switch (sort.direction()) {
-        case ASC -> builder.orderByAsc(sort.property());
-        case DESC -> builder.orderByDesc(sort.property());
-      }
-    }
+    sorts.forEach(
+        sort -> {
+          switch (sort.direction()) {
+            case ASC -> builder.orderByAsc(sort.property());
+            case DESC -> builder.orderByDesc(sort.property());
+          }
+        });
   }
 }

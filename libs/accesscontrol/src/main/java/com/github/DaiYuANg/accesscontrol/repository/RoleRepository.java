@@ -21,8 +21,10 @@ import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 /**
  * Repository for roles.
@@ -49,7 +51,7 @@ public class RoleRepository extends BasePanacheCommandRepository<SysRole>
     if (name == null || name.isBlank()) {
       return Optional.empty();
     }
-    var rows =
+    val rows =
         new BlazeJPAQuery<SysRole>(entityManager, criteriaBuilderFactory)
             .from(r)
             .select(r)
@@ -63,7 +65,7 @@ public class RoleRepository extends BasePanacheCommandRepository<SysRole>
     if (code == null || code.isBlank()) {
       return Optional.empty();
     }
-    var rows =
+    val rows =
         new BlazeJPAQuery<SysRole>(entityManager, criteriaBuilderFactory)
             .from(r)
             .select(r)
@@ -100,7 +102,7 @@ public class RoleRepository extends BasePanacheCommandRepository<SysRole>
     if (ids == null || ids.isEmpty()) {
       return List.of();
     }
-    var normalized = ids.stream().filter(java.util.Objects::nonNull).distinct().toList();
+    val normalized = ids.stream().filter(Objects::nonNull).distinct().toList();
     if (normalized.isEmpty()) {
       return List.of();
     }
@@ -113,10 +115,10 @@ public class RoleRepository extends BasePanacheCommandRepository<SysRole>
 
   @Override
   public PageSlice<RoleListProjection> page(RolePageQuery query) {
-    var spec = queryBuilder.build(query);
-    var filter = spec.filter();
+    val spec = queryBuilder.build(query);
+    val filter = spec.filter();
 
-    var blazeQuery =
+    val blazeQuery =
         new BlazeJPAQuery<SysRole>(entityManager, criteriaBuilderFactory).from(r).select(r);
 
     applyKeyword(blazeQuery, query.getKeyword());
@@ -129,13 +131,13 @@ public class RoleRepository extends BasePanacheCommandRepository<SysRole>
   }
 
   private void applyKeyword(BlazeJPAQuery<SysRole> q, String keyword) {
-    var like = BlazeQueryDSLSupport.likePattern(keyword);
+    val like = BlazeQueryDSLSupport.likePattern(keyword);
     if (like == null) return;
     q.where(Expressions.anyOf(r.name.lower().like(like), r.code.lower().like(like)));
   }
 
   private void applyName(BlazeJPAQuery<SysRole> q, String name) {
-    var like = BlazeQueryDSLSupport.likePattern(name);
+    val like = BlazeQueryDSLSupport.likePattern(name);
     if (like == null) return;
     q.where(r.name.lower().like(like));
   }

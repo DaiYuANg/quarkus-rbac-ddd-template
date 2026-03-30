@@ -9,6 +9,7 @@ import com.github.DaiYuANg.persistence.query.SortDirection;
 import jakarta.enterprise.context.ApplicationScoped;
 import java.util.List;
 import java.util.Map;
+import lombok.val;
 
 @ApplicationScoped
 public class MetamodelRoleQueryBuilder {
@@ -40,7 +41,7 @@ public class MetamodelRoleQueryBuilder {
 
   private String normalize(String value) {
     if (value == null) return null;
-    var trimmed = value.trim();
+    val trimmed = value.trim();
     return trimmed.isEmpty() ? null : trimmed;
   }
 }

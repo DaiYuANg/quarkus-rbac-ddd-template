@@ -11,6 +11,7 @@ import jakarta.inject.Inject;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
@@ -40,7 +41,7 @@ public class PermissionApplicationService {
   public ApiPageResult<PermissionVO> queryPermissionPage(PermissionPageQuery query) {
     authorizationService.check(Permission.VIEW);
     ensureCatalogLoaded();
-    var page =
+    val page =
         catalogStore.findPage(
             query.getKeyword(),
             query.getName(),

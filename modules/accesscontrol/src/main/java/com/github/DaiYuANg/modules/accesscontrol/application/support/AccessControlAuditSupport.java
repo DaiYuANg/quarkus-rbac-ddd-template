@@ -8,6 +8,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
@@ -21,8 +22,8 @@ public class AccessControlAuditSupport {
   }
 
   public void record(String module, String action, String target, boolean success, String detail) {
-    var snapshot = auditSnapshotProvider.snapshot();
-    var log = new SysOperationLog();
+    val snapshot = auditSnapshotProvider.snapshot();
+    val log = new SysOperationLog();
     log.module = module;
     log.action = action;
     log.target = target;

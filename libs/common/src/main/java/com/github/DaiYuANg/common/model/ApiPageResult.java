@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Collection;
 import java.util.List;
+import lombok.val;
 import org.toolkit4j.data.model.page.PageResult;
 
 public class ApiPageResult<T> extends PageResult<T> {
@@ -36,7 +37,7 @@ public class ApiPageResult<T> extends PageResult<T> {
 
   @JsonProperty("records")
   public List<T> records() {
-    var content = super.getContent();
+    val content = super.getContent();
     if (content == null || content.isEmpty()) {
       return List.of();
     }

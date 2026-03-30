@@ -18,7 +18,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 /**
@@ -47,8 +49,8 @@ public class AdminPermissionSnapshotLoader implements PermissionSnapshotLoader {
 
   @Override
   @Transactional
-  public Optional<PermissionSnapshot> load(String username) {
-    var user = userRepository.findByUsername(username).orElse(null);
+  public Optional<PermissionSnapshot> load(@NonNull String username) {
+    val user = userRepository.findByUsername(username).orElse(null);
     if (user != null) {
       return snapshotFromDbUser(user);
     }
@@ -69,21 +71,21 @@ public class AdminPermissionSnapshotLoader implements PermissionSnapshotLoader {
         .filter(snapshot -> userId == null || Objects.equals(userId, snapshot.userId()));
   }
 
-  private Optional<PermissionSnapshot> snapshotFromDbUser(SysUser user) {
-    if (user == null || user.userStatus != UserStatus.ENABLED) {
+  private Optional<PermissionSnapshot> snapshotFromDbUser(@NonNull SysUser user) {
+    if (user.userStatus != UserStatus.ENABLED) {
       return Optional.empty();
     }
-    var roles = new LinkedHashSet<>(userRepository.findRoleCodesByUsername(user.username));
-    var permissions =
+    val roles = new LinkedHashSet<>(userRepository.findRoleCodesByUsername(user.username));
+    val permissions =
         new LinkedHashSet<>(userRepository.findPermissionCodesByUsername(user.username));
-    var attributes = new LinkedHashMap<String, Object>();
+    val attributes = new LinkedHashMap<String, Object>();
+    val version = authorityVersionStore.versionFor(user.username);
     attributes.put(PrincipalAttributeKeys.SOURCE, "db");
     attributes.put(PrincipalAttributeKeys.DISPLAY_NAME, user.nickname);
     attributes.put(PrincipalAttributeKeys.ROLES, roles);
     attributes.put(PrincipalAttributeKeys.PERMISSIONS, permissions);
     attributes.put(PrincipalAttributeKeys.USER_ID, user.id);
-    attributes.put(
-        PrincipalAttributeKeys.AUTHORITY_VERSION, authorityVersionStore.versionFor(user.username));
+    attributes.put(PrincipalAttributeKeys.AUTHORITY_VERSION, version);
     return Optional.of(
         new PermissionSnapshot(
             user.username,
@@ -91,37 +93,37 @@ public class AdminPermissionSnapshotLoader implements PermissionSnapshotLoader {
             dbUserType,
             roles,
             permissions,
-            authorityVersionStore.versionFor(user.username),
+            version,
             attributes,
             user.id));
   }
 
   private PermissionSnapshot snapshotFromConfig(
-      ConfigUserAccountConfig.ConfigUser entry, String lookupUsername) {
-    var roles =
+      @NonNull ConfigUserAccountConfig.ConfigUser entry, @NonNull String lookupUsername) {
+    val roles =
         new LinkedHashSet<>(
             entry.roles().orElseGet(List::of).stream()
                 .filter(Objects::nonNull)
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
                 .toList());
-    var permissions =
+    val permissions =
         new LinkedHashSet<>(
             entry.permissions().orElseGet(List::of).stream()
                 .filter(Objects::nonNull)
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
                 .toList());
-    var displayName = entry.displayName().orElse(entry.username());
-    var version = authorityVersionStore.versionFor(lookupUsername);
-    var principalType = entry.principalUserType().orElse(configUserFallbackType);
-    var attributes = new LinkedHashMap<String, Object>();
+    val displayName = entry.displayName().orElse(entry.username());
+    val version = authorityVersionStore.versionFor(lookupUsername);
+    val principalType = entry.principalUserType().orElse(configUserFallbackType);
+    val attributes = new LinkedHashMap<String, Object>();
+    val syntheticUserId = ConfigUserAuthorityId.forUsername(entry.username());
     attributes.put(PrincipalAttributeKeys.SOURCE, "config");
     attributes.put(PrincipalAttributeKeys.DISPLAY_NAME, displayName);
     attributes.put(PrincipalAttributeKeys.ROLES, roles);
     attributes.put(PrincipalAttributeKeys.PERMISSIONS, permissions);
-    attributes.put(
-        PrincipalAttributeKeys.USER_ID, ConfigUserAuthorityId.forUsername(entry.username()));
+    attributes.put(PrincipalAttributeKeys.USER_ID, syntheticUserId);
     attributes.put(PrincipalAttributeKeys.AUTHORITY_VERSION, version);
     return new PermissionSnapshot(
         entry.username(),
@@ -131,7 +133,7 @@ public class AdminPermissionSnapshotLoader implements PermissionSnapshotLoader {
         permissions,
         version,
         attributes,
-        ConfigUserAuthorityId.forUsername(entry.username()));
+        syntheticUserId);
   }
 
   // DB permissions/roles are resolved via UserRepository queries to avoid N+1 lazy loads.

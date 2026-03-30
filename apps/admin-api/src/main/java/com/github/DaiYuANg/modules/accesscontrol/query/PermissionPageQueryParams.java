@@ -4,6 +4,7 @@ import com.github.DaiYuANg.accesscontrol.query.PermissionPageQuery;
 import jakarta.ws.rs.QueryParam;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.val;
 
 @Getter
 @Setter
@@ -24,7 +25,7 @@ public class PermissionPageQueryParams extends AbstractAdminPageQueryParams<Perm
   private String groupCode;
 
   public PermissionPageQuery toQuery() {
-    var query = applyTo(new PermissionPageQuery());
+    val query = applyTo(new PermissionPageQuery());
     query.setName(name);
     query.setCode(code);
     query.setResource(resource);

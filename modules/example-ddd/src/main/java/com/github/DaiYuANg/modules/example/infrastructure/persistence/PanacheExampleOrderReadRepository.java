@@ -10,6 +10,7 @@ import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 /**
  * Example order read adapter.
@@ -29,7 +30,7 @@ public class PanacheExampleOrderReadRepository implements ExampleOrderReadReposi
 
   @Override
   public List<ExampleOrderView> listByBuyer(String buyerUsername) {
-    var orders =
+    val orders =
         new BlazeJPAQuery<ExampleOrderEntity>(entityManager, criteriaBuilderFactory)
             .from(ORDER)
             .leftJoin(ORDER.lines, LINE)
@@ -43,7 +44,7 @@ public class PanacheExampleOrderReadRepository implements ExampleOrderReadReposi
   }
 
   private ExampleOrderView toView(ExampleOrderEntity entity) {
-    var lineViews =
+    val lineViews =
         entity.lines.stream()
             .map(
                 line ->

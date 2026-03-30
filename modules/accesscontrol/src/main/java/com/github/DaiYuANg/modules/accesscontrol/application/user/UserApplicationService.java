@@ -29,9 +29,14 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
 import java.util.stream.Collectors;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 /**
  * User management application service.
@@ -58,9 +63,9 @@ public class UserApplicationService {
   private final PermissionSnapshotStore permissionSnapshotStore;
   private final RefreshTokenStore refreshTokenStore;
 
-  public ApiPageResult<UserVO> queryUserPage(UserPageQuery query) {
+  public ApiPageResult<UserVO> queryUserPage(@NonNull UserPageQuery query) {
     authorizationService.check(User.VIEW);
-    var slice = userRepository.page(query);
+    val slice = userRepository.page(query);
     return ApiPageResult.of(
         slice.total(),
         query.getPageNum(),
@@ -69,7 +74,7 @@ public class UserApplicationService {
   }
 
   @Transactional
-  public UserVO createUser(UserCreationForm form) {
+  public UserVO createUser(@NonNull UserCreationForm form) {
     authorizationService.check(User.ADD);
     if (userRepository.countByUsername(form.username()) > 0)
       throw new BizException(ResultCode.DATA_ALREADY_EXISTS, "username already exists");
@@ -81,7 +86,7 @@ public class UserApplicationService {
         && !form.mobilePhone().isBlank()
         && userRepository.countByMobilePhone(form.mobilePhone()) > 0)
       throw new BizException(ResultCode.DATA_ALREADY_EXISTS, "mobilePhone already exists");
-    var user = new SysUser();
+    val user = new SysUser();
     user.username = form.username();
     user.password = passwordHasher.hash(form.password());
     user.mobilePhone = form.mobilePhone();
@@ -95,12 +100,12 @@ public class UserApplicationService {
   }
 
   @Transactional
-  public void updateUserPassword(Long id, String newPassword) {
-    var user =
+  public void updateUserPassword(@NonNull Long id, @NonNull String newPassword) {
+    val user =
         userRepository
             .findByIdOptional(id)
             .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
-    var currentUsername =
+    val currentUsername =
         currentUserAccess.currentUser().map(CurrentAuthenticatedUser::username).orElse(null);
     if (currentUsername != null && currentUsername.equals(user.username)) {
       authorizationService.checkAny(Auth.CHANGE_PASSWORD, User.RESET_PASSWORD, User.EDIT);
@@ -115,7 +120,7 @@ public class UserApplicationService {
     auditSupport.record("user", "change-password", String.valueOf(id), true, "change password");
   }
 
-  public Optional<UserVO> getUserById(Long id) {
+  public Optional<UserVO> getUserById(@NonNull Long id) {
     authorizationService.check(User.VIEW);
     return userRepository.findByIdWithRbacGraph(id).map(this::toUserVO);
   }
@@ -126,13 +131,13 @@ public class UserApplicationService {
   }
 
   @Transactional
-  public UserVO updateUser(Long id, UpdateUserForm form) {
+  public UserVO updateUser(@NonNull Long id, @NonNull UpdateUserForm form) {
     authorizationService.check(User.EDIT);
-    var user =
+    val user =
         userRepository
             .findByIdOptional(id)
             .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
-    var originalUsername = user.username;
+    val originalUsername = user.username;
     if (form.username() != null
         && !form.username().equals(user.username)
         && userRepository.countByUsername(form.username()) > 0)
@@ -145,7 +150,7 @@ public class UserApplicationService {
         && !form.mobilePhone().equals(user.mobilePhone)
         && userRepository.countByMobilePhone(form.mobilePhone()) > 0)
       throw new BizException(ResultCode.DATA_ALREADY_EXISTS, "mobilePhone already exists");
-    var usernameChanged = form.username() != null && !form.username().equals(user.username);
+    val usernameChanged = form.username() != null && !form.username().equals(user.username);
     if (form.username() != null) user.username = form.username();
     if (form.mobilePhone() != null) user.mobilePhone = form.mobilePhone();
     if (form.nickname() != null) user.nickname = form.nickname();
@@ -174,9 +179,9 @@ public class UserApplicationService {
   }
 
   @Transactional
-  public void deleteUser(Long id) {
+  public void deleteUser(@NonNull Long id) {
     authorizationService.check(User.DELETE);
-    var user =
+    val user =
         userRepository
             .findByIdOptional(id)
             .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
@@ -188,15 +193,15 @@ public class UserApplicationService {
     auditSupport.record("user", "delete", String.valueOf(id), true, "delete user");
   }
 
-  public Optional<UserVO> getUserByUsername(String username) {
+  public Optional<UserVO> getUserByUsername(@NonNull String username) {
     authorizationService.check(User.VIEW);
     return userRepository.findByUsernameWithRbacGraph(username).map(this::toUserVO);
   }
 
   @Transactional
-  public void assignRole(UserRefRoleForm form) {
+  public void assignRole(@NonNull UserRefRoleForm form) {
     authorizationService.checkAny(User.EDIT, User.ASSIGN_ROLE);
-    var user =
+    val user =
         userRepository
             .findByIdOptional(form.userId())
             .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
@@ -211,9 +216,9 @@ public class UserApplicationService {
   }
 
   @Transactional
-  public void updateUserStatus(Long id, Integer status) {
+  public void updateUserStatus(@NonNull Long id, Integer status) {
     authorizationService.check(User.EDIT);
-    var user =
+    val user =
         userRepository
             .findByIdOptional(id)
             .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
@@ -257,7 +262,8 @@ public class UserApplicationService {
     return userRepository.countUserLoginTotal();
   }
 
-  private UserVO toUserVO(com.github.DaiYuANg.identity.projection.UserListProjection user) {
+  private UserVO toUserVO(
+      @NonNull com.github.DaiYuANg.identity.projection.UserListProjection user) {
     return new UserVO(
         user.id(),
         user.username(),
@@ -272,13 +278,11 @@ public class UserApplicationService {
         new LinkedHashSet<>());
   }
 
-  private UserVO toUserVO(SysUser user) {
-    var roles =
-        user.roles == null
-            ? new LinkedHashSet<RoleVO>()
-            : user.roles.stream()
-                .map(this::toRoleVO)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
+  private UserVO toUserVO(@NonNull SysUser user) {
+    val roles =
+        streamRoles(user)
+            .map(this::toRoleVO)
+            .collect(Collectors.toCollection(LinkedHashSet::new));
     return new UserVO(
         user.id,
         user.username,
@@ -293,13 +297,11 @@ public class UserApplicationService {
         roles);
   }
 
-  private RoleVO toRoleVO(com.github.DaiYuANg.accesscontrol.entity.SysRole role) {
-    var groups =
-        role.permissionGroups == null
-            ? new LinkedHashSet<PermissionGroupVO>()
-            : role.permissionGroups.stream()
-                .map(this::toPermissionGroupVO)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
+  private RoleVO toRoleVO(@NonNull com.github.DaiYuANg.accesscontrol.entity.SysRole role) {
+    val groups =
+        streamPermissionGroups(role)
+            .map(this::toPermissionGroupVO)
+            .collect(Collectors.toCollection(LinkedHashSet::new));
     return new RoleVO(
         role.id,
         role.name,
@@ -312,13 +314,11 @@ public class UserApplicationService {
   }
 
   private PermissionGroupVO toPermissionGroupVO(
-      com.github.DaiYuANg.accesscontrol.entity.SysPermissionGroup group) {
-    var permissions =
-        group.permissions == null
-            ? new LinkedHashSet<PermissionVO>()
-            : group.permissions.stream()
-                .map(this::toPermissionVO)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
+      @NonNull com.github.DaiYuANg.accesscontrol.entity.SysPermissionGroup group) {
+    val permissions =
+        streamPermissions(group)
+            .map(this::toPermissionVO)
+            .collect(Collectors.toCollection(LinkedHashSet::new));
     return new PermissionGroupVO(
         group.id,
         group.name,
@@ -331,7 +331,7 @@ public class UserApplicationService {
   }
 
   private PermissionVO toPermissionVO(
-      com.github.DaiYuANg.accesscontrol.entity.SysPermission permission) {
+      @NonNull com.github.DaiYuANg.accesscontrol.entity.SysPermission permission) {
     return new PermissionVO(
         permission.id,
         permission.name,
@@ -348,5 +348,24 @@ public class UserApplicationService {
       return UserStatus.ENABLED;
     }
     return UserStatus.valueOf(value);
+  }
+
+  private Stream<com.github.DaiYuANg.accesscontrol.entity.SysRole> streamRoles(
+      @NonNull SysUser user) {
+    return user.roles == null ? Stream.empty() : user.roles.stream().filter(Objects::nonNull);
+  }
+
+  private Stream<com.github.DaiYuANg.accesscontrol.entity.SysPermissionGroup> streamPermissionGroups(
+      @NonNull com.github.DaiYuANg.accesscontrol.entity.SysRole role) {
+    return role.permissionGroups == null
+        ? Stream.empty()
+        : role.permissionGroups.stream().filter(Objects::nonNull);
+  }
+
+  private Stream<com.github.DaiYuANg.accesscontrol.entity.SysPermission> streamPermissions(
+      @NonNull com.github.DaiYuANg.accesscontrol.entity.SysPermissionGroup group) {
+    return group.permissions == null
+        ? Stream.empty()
+        : group.permissions.stream().filter(Objects::nonNull);
   }
 }

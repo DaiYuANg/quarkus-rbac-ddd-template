@@ -9,7 +9,9 @@ import jakarta.inject.Inject;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 /**
  * Profile for {@code app.security.config-users}: no DB row. Permissions = full permission catalog
@@ -30,20 +32,20 @@ public class ConfigUserProfileProvider implements UserProfileProvider {
   }
 
   @Override
-  public boolean supports(CurrentAuthenticatedUser user) {
+  public boolean supports(@NonNull CurrentAuthenticatedUser user) {
     return CONFIG_USER_TYPE.equalsIgnoreCase(safeUserType(user));
   }
 
   @Override
-  public UserDetailVo buildProfile(CurrentAuthenticatedUser user) {
-    var permissions =
+  public UserDetailVo buildProfile(@NonNull CurrentAuthenticatedUser user) {
+    val permissions =
         permissionCatalogStore.getAll().stream()
             .map(e -> e.code())
             .filter(Objects::nonNull)
             .map(String::trim)
             .filter(s -> !s.isEmpty())
             .collect(Collectors.toCollection(LinkedHashSet::new));
-    var roleCodes =
+    val roleCodes =
         user.roles() == null
             ? new LinkedHashSet<String>()
             : user.roles().stream()
@@ -51,18 +53,18 @@ public class ConfigUserProfileProvider implements UserProfileProvider {
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
                 .collect(Collectors.toCollection(LinkedHashSet::new));
-    var nickname =
+    val nickname =
         user.displayName() == null || user.displayName().isBlank()
             ? user.username()
             : user.displayName();
-    var authorityKey =
+    val authorityKey =
         authorityVersionStore.currentVersion()
             + ":"
             + UserDetailVo.encodeAuthorityKey(permissions, roleCodes);
     return new UserDetailVo(null, user.username(), nickname, permissions, roleCodes, authorityKey);
   }
 
-  private static String safeUserType(CurrentAuthenticatedUser user) {
+  private static String safeUserType(@NonNull CurrentAuthenticatedUser user) {
     return user.userType() == null ? "" : user.userType().trim();
   }
 }

@@ -7,12 +7,16 @@ import jakarta.enterprise.context.ApplicationScoped;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
+import lombok.NonNull;
+import lombok.val;
 
 @ApplicationScoped
 public class PrincipalAttributesSerializer {
-  public Map<String, Object> toAttributes(AuthenticatedUser user) {
-    var attributes = new LinkedHashMap<String, Object>();
+  public Map<String, Object> toAttributes(@NonNull AuthenticatedUser user) {
+    val attributes = new LinkedHashMap<String, Object>();
     if (user.attributes() != null) {
       attributes.putAll(user.attributes());
     }
@@ -33,8 +37,8 @@ public class PrincipalAttributesSerializer {
 
   @SuppressWarnings("unchecked")
   public CurrentAuthenticatedUser toCurrentUser(
-      Map<String, Object> attributes, String principalName) {
-    var values = attributes == null ? Map.<String, Object>of() : attributes;
+      Map<String, Object> attributes, @NonNull String principalName) {
+    val values = attributes == null ? Map.<String, Object>of() : attributes;
     return new CurrentAuthenticatedUser(
         stringValue(
             values.getOrDefault(PrincipalAttributeKeys.SUBJECT, principalName), principalName),
@@ -50,12 +54,13 @@ public class PrincipalAttributesSerializer {
     if (value instanceof Set<?> set) {
       return set.stream()
           .map(String::valueOf)
-          .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+          .collect(Collectors.toCollection(LinkedHashSet::new));
     }
     if (value instanceof Iterable<?> iterable) {
-      var result = new LinkedHashSet<String>();
-      iterable.forEach(item -> result.add(String.valueOf(item)));
-      return result;
+      return java.util.stream.StreamSupport.stream(iterable.spliterator(), false)
+          .filter(Objects::nonNull)
+          .map(String::valueOf)
+          .collect(Collectors.toCollection(LinkedHashSet::new));
     }
     if (value == null) {
       return Set.of();
@@ -67,7 +72,7 @@ public class PrincipalAttributesSerializer {
     return values == null ? Set.of() : Set.copyOf(values);
   }
 
-  private String stringValue(Object value, String defaultValue) {
+  private String stringValue(Object value, @NonNull String defaultValue) {
     return value == null ? defaultValue : String.valueOf(value);
   }
 }

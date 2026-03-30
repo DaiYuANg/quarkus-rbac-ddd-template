@@ -14,6 +14,7 @@ import jakarta.persistence.EntityManager;
 import java.util.List;
 import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 /**
  * Support for executing BlazeJPAQuery (type-safe QueryDSL) with Blaze Entity View projections.
@@ -42,17 +43,17 @@ public final class BlazeQueryDSLSupport {
       int offset,
       int limit,
       Function<V, P> mapper) {
-    var renderer =
+    val renderer =
         new BlazeCriteriaBuilderRenderer<>(
             criteriaBuilderFactory, entityManager, JPQLNextTemplates.DEFAULT);
-    var criteriaBuilder = (CriteriaBuilder<E>) renderer.render(query);
-    var setting = EntityViewSetting.create(entityViewClass, offset, limit);
-    var results = entityViewManager.applySetting(setting, criteriaBuilder).getResultList();
+    val criteriaBuilder = (CriteriaBuilder<E>) renderer.render(query);
+    val setting = EntityViewSetting.create(entityViewClass, offset, limit);
+    val results = entityViewManager.applySetting(setting, criteriaBuilder).getResultList();
     if (results instanceof PagedList<?> paged) {
-      var items = paged.stream().map(v -> mapper.apply((V) v)).toList();
+      val items = paged.stream().map(v -> mapper.apply((V) v)).toList();
       return new PageSlice<>(items, paged.getTotalSize());
     }
-    var items = results.stream().map(v -> mapper.apply((V) v)).toList();
+    val items = results.stream().map(v -> mapper.apply((V) v)).toList();
     return new PageSlice<>(items, items.size());
   }
 
@@ -63,16 +64,19 @@ public final class BlazeQueryDSLSupport {
   public static <E> void applySorts(
       BlazeJPAQuery<E> query, List<QuerySort> sorts, SortFieldMapper fieldMapper) {
     if (sorts == null) return;
-    for (var sort : sorts) {
-      var expr = fieldMapper.get(sort.property());
-      if (expr != null) {
-        query.orderBy(
-            switch (sort.direction()) {
-              case ASC -> expr.asc();
-              case DESC -> expr.desc();
-            });
-      }
-    }
+    sorts.stream()
+        .map(
+            sort -> {
+              val expr = fieldMapper.get(sort.property());
+              return expr == null
+                  ? null
+                  : switch (sort.direction()) {
+                    case ASC -> expr.asc();
+                    case DESC -> expr.desc();
+                  };
+            })
+        .filter(java.util.Objects::nonNull)
+        .forEach(query::orderBy);
   }
 
   /** Type-safe like for case-insensitive contains on string path. */

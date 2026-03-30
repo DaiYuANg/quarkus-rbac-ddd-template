@@ -23,9 +23,14 @@ import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
 import java.util.stream.Collectors;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 /**
  * Permission-group management application service.
@@ -50,12 +55,12 @@ public class PermissionGroupApplicationService {
   private final AuthorizationService authorizationService;
 
   @Transactional
-  public PermissionGroupVO createPermissionGroup(PermissionGroupCreationForm form) {
+  public PermissionGroupVO createPermissionGroup(@NonNull PermissionGroupCreationForm form) {
     authorizationService.check(PermissionGroup.ADD);
     if (repository.countByName(form.name()) > 0)
       throw new BizException(
           ResultCode.DATA_ALREADY_EXISTS, "permission group name already exists");
-    var group = new SysPermissionGroup();
+    val group = new SysPermissionGroup();
     group.name = form.name();
     group.code = form.code();
     group.sort = form.sort();
@@ -66,15 +71,16 @@ public class PermissionGroupApplicationService {
     return toPermissionGroupVOWithCatalog(group);
   }
 
-  public Optional<PermissionGroupVO> getPermissionGroupById(Long id) {
+  public Optional<PermissionGroupVO> getPermissionGroupById(@NonNull Long id) {
     authorizationService.check(PermissionGroup.VIEW);
     return repository.findByIdOptional(id).map(this::toPermissionGroupVOWithCatalog);
   }
 
   @Transactional
-  public PermissionGroupVO updatePermissionGroup(Long id, UpdatePermissionGroupForm form) {
+  public PermissionGroupVO updatePermissionGroup(
+      @NonNull Long id, @NonNull UpdatePermissionGroupForm form) {
     authorizationService.check(PermissionGroup.EDIT);
-    var group =
+    val group =
         repository
             .findByIdOptional(id)
             .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
@@ -94,9 +100,9 @@ public class PermissionGroupApplicationService {
   }
 
   @Transactional
-  public void deletePermissionGroup(Long id) {
+  public void deletePermissionGroup(@NonNull Long id) {
     authorizationService.check(PermissionGroup.DELETE);
-    var group =
+    val group =
         repository
             .findByIdOptional(id)
             .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
@@ -106,9 +112,10 @@ public class PermissionGroupApplicationService {
         "permission-group", "delete", String.valueOf(id), true, "delete permission group");
   }
 
-  public ApiPageResult<PermissionGroupVO> queryPermissionGroupPage(PermissionGroupPageQuery query) {
+  public ApiPageResult<PermissionGroupVO> queryPermissionGroupPage(
+      @NonNull PermissionGroupPageQuery query) {
     authorizationService.check(PermissionGroup.VIEW);
-    var slice = repository.page(query);
+    val slice = repository.page(query);
     return ApiPageResult.of(
         slice.total(),
         query.getPageNum(),
@@ -116,23 +123,23 @@ public class PermissionGroupApplicationService {
         slice.content().stream().map(this::toPermissionGroupVO).toList());
   }
 
-  public Optional<PermissionGroupVO> getPermissionGroupByName(String name) {
+  public Optional<PermissionGroupVO> getPermissionGroupByName(@NonNull String name) {
     authorizationService.check(PermissionGroup.VIEW);
     return repository.findByName(name).map(this::toPermissionGroupVOWithCatalog);
   }
 
   @Transactional
-  public void assignPermissions(PermissionGroupRefPermissionForm form) {
+  public void assignPermissions(@NonNull PermissionGroupRefPermissionForm form) {
     authorizationService.checkAny(PermissionGroup.EDIT, PermissionGroup.ASSIGN_PERMISSION);
-    var group =
+    val group =
         repository
             .findByIdOptional(form.permissionGroupId())
             .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
-    var ids =
+    val ids =
         form.permissionIds() == null
             ? List.<Long>of()
             : form.permissionIds().stream()
-                .filter(java.util.Objects::nonNull)
+                .filter(Objects::nonNull)
                 .filter(id -> catalogStore.getById(id).isPresent())
                 .distinct()
                 .toList();
@@ -148,23 +155,19 @@ public class PermissionGroupApplicationService {
 
   public List<PermissionGroupVO> getAllPermissionGroups() {
     authorizationService.check(PermissionGroup.VIEW);
-    var groups = repository.listAll();
+    val groups = repository.listAll();
     if (groups == null || groups.isEmpty()) {
       return List.of();
     }
-    var groupIds = groups.stream().map(g -> g == null ? null : g.id).toList();
-    var permissionIdsByGroupId = repository.findPermissionIdsByGroupIds(groupIds);
+    val groupIds =
+        groups.stream().filter(Objects::nonNull).map(group -> group.id).toList();
+    val permissionIdsByGroupId = repository.findPermissionIdsByGroupIds(groupIds);
     return groups.stream()
+        .filter(Objects::nonNull)
         .map(
-            g -> {
-              if (g == null) {
-                return null;
-              }
-              var permissionIds =
-                  permissionIdsByGroupId.getOrDefault(g.id, java.util.Set.of()).stream().toList();
-              return toPermissionGroupVOWithCatalog(g, permissionIds);
-            })
-        .filter(java.util.Objects::nonNull)
+            group ->
+                toPermissionGroupVOWithCatalog(
+                    group, permissionIdsByGroupId.getOrDefault(group.id, Set.of()).stream().toList()))
         .toList();
   }
 
@@ -174,9 +177,9 @@ public class PermissionGroupApplicationService {
     if (permissionIds == null || permissionIds.isEmpty()) {
       return;
     }
-    var normalizedIds =
+    val normalizedIds =
         permissionIds.stream()
-            .filter(java.util.Objects::nonNull)
+            .filter(Objects::nonNull)
             .collect(Collectors.toCollection(LinkedHashSet::new));
     if (normalizedIds.isEmpty()) {
       return;
@@ -190,7 +193,7 @@ public class PermissionGroupApplicationService {
               .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
     }
 
-    var refs =
+    val refs =
         normalizedIds.stream()
             .filter(id -> catalogStore.getById(id).isPresent())
             .map(id -> entityManager.getReference(SysPermission.class, id))
@@ -237,20 +240,19 @@ public class PermissionGroupApplicationService {
         new LinkedHashSet<>());
   }
 
-  public PermissionGroupVO toPermissionGroupVOWithCatalog(SysPermissionGroup group) {
-    var permissionIds = repository.findPermissionIdsByGroupId(group.id);
+  public PermissionGroupVO toPermissionGroupVOWithCatalog(@NonNull SysPermissionGroup group) {
+    val permissionIds = repository.findPermissionIdsByGroupId(group.id);
     return toPermissionGroupVOWithCatalog(group, permissionIds);
   }
 
   public PermissionGroupVO toPermissionGroupVOWithCatalog(
-      SysPermissionGroup group, List<Long> permissionIds) {
-    var permissions =
-        (permissionIds == null ? List.<Long>of() : permissionIds)
-            .stream()
-                .map(catalogStore::getById)
-                .flatMap(Optional::stream)
-                .map(this::toPermissionVO)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
+      @NonNull SysPermissionGroup group, List<Long> permissionIds) {
+    val permissions =
+        streamPermissionIds(permissionIds)
+            .map(catalogStore::getById)
+            .flatMap(Optional::stream)
+            .map(this::toPermissionVO)
+            .collect(Collectors.toCollection(LinkedHashSet::new));
     return new PermissionGroupVO(
         group.id,
         group.name,
@@ -262,7 +264,7 @@ public class PermissionGroupApplicationService {
         permissions);
   }
 
-  private PermissionVO toPermissionVO(PermissionCatalogEntry e) {
+  private PermissionVO toPermissionVO(@NonNull PermissionCatalogEntry e) {
     return new PermissionVO(
         e.id(),
         e.name(),
@@ -272,5 +274,9 @@ public class PermissionGroupApplicationService {
         e.groupCode(),
         e.description(),
         e.expression());
+  }
+
+  private Stream<Long> streamPermissionIds(List<Long> permissionIds) {
+    return permissionIds == null ? Stream.empty() : permissionIds.stream().filter(Objects::nonNull);
   }
 }

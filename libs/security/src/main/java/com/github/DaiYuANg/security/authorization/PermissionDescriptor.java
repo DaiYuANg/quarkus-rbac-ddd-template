@@ -1,10 +1,9 @@
 package com.github.DaiYuANg.security.authorization;
 
+import java.util.Optional;
+import lombok.NonNull;
 import lombok.val;
 import org.jetbrains.annotations.Contract;
-import org.jspecify.annotations.NonNull;
-
-import java.util.Optional;
 
 /** Permission in resource:action format (e.g. user:view, role:edit). */
 public record PermissionDescriptor(String code, String resource, String action) {

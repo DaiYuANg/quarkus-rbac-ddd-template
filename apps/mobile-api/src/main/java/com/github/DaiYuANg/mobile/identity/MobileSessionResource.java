@@ -7,8 +7,9 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import lombok.val;
 import lombok.RequiredArgsConstructor;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.toolkit4j.data.model.envelope.Result;
@@ -23,16 +24,15 @@ public class MobileSessionResource {
   @GET
   @Authenticated
   public Result<String, MobilePrincipalView> currentPrincipal() {
-    Object userType = jwt.getClaim(PrincipalAttributeKeys.USER_TYPE);
-    Object rolesClaim = jwt.getClaim(PrincipalAttributeKeys.ROLES);
-    List<String> roles = new ArrayList<>();
-    if (rolesClaim instanceof List<?> list) {
-      for (Object o : list) {
-        if (o != null) {
-          roles.add(String.valueOf(o));
-        }
-      }
-    }
+    val userType = jwt.getClaim(PrincipalAttributeKeys.USER_TYPE);
+    val rolesClaim = jwt.getClaim(PrincipalAttributeKeys.ROLES);
+    val roles =
+        rolesClaim instanceof List<?> list
+            ? list.stream()
+                .filter(Objects::nonNull)
+                .map(String::valueOf)
+                .toList()
+            : List.<String>of();
     return Results.ok(
         new MobilePrincipalView(
             jwt.getName(), userType == null ? "" : String.valueOf(userType), List.copyOf(roles)));

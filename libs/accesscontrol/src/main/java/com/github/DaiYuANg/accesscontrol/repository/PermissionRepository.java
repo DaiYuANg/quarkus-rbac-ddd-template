@@ -20,6 +20,7 @@ import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 /**
  * Repository for permissions.
@@ -45,7 +46,7 @@ public class PermissionRepository extends BasePanacheCommandRepository<SysPermis
     if (code == null || code.isBlank()) {
       return Optional.empty();
     }
-    var rows =
+    val rows =
         new BlazeJPAQuery<SysPermission>(entityManager, criteriaBuilderFactory)
             .from(p)
             .select(p)
@@ -59,7 +60,7 @@ public class PermissionRepository extends BasePanacheCommandRepository<SysPermis
     if (name == null || name.isBlank()) {
       return Optional.empty();
     }
-    var rows =
+    val rows =
         new BlazeJPAQuery<SysPermission>(entityManager, criteriaBuilderFactory)
             .from(p)
             .select(p)
@@ -84,10 +85,10 @@ public class PermissionRepository extends BasePanacheCommandRepository<SysPermis
 
   @Override
   public PageSlice<PermissionListProjection> page(PermissionPageQuery query) {
-    var spec = queryBuilder.build(query);
-    var filter = spec.filter();
+    val spec = queryBuilder.build(query);
+    val filter = spec.filter();
 
-    var blazeQuery =
+    val blazeQuery =
         new BlazeJPAQuery<SysPermission>(entityManager, criteriaBuilderFactory).from(p).select(p);
 
     applyKeyword(blazeQuery, query.getKeyword());
@@ -107,7 +108,7 @@ public class PermissionRepository extends BasePanacheCommandRepository<SysPermis
   }
 
   private void applyKeyword(BlazeJPAQuery<SysPermission> q, String keyword) {
-    var like = BlazeQueryDSLSupport.likePattern(keyword);
+    val like = BlazeQueryDSLSupport.likePattern(keyword);
     if (like == null) return;
     q.where(
         Expressions.anyOf(
@@ -121,7 +122,7 @@ public class PermissionRepository extends BasePanacheCommandRepository<SysPermis
 
   private void applyLike(
       BlazeJPAQuery<SysPermission> q, com.querydsl.core.types.dsl.StringPath path, String value) {
-    var like = BlazeQueryDSLSupport.likePattern(value);
+    val like = BlazeQueryDSLSupport.likePattern(value);
     if (like == null) return;
     q.where(path.lower().like(like));
   }

@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 /**
  * Repository for {@code SysUser}.
@@ -55,7 +56,7 @@ public class UserRepository extends BasePanacheCommandRepository<SysUser>
     if (username == null || username.isBlank()) {
       return Optional.empty();
     }
-    var rows =
+    val rows =
         new BlazeJPAQuery<SysUser>(entityManager, criteriaBuilderFactory)
             .from(u)
             .select(u)
@@ -70,7 +71,7 @@ public class UserRepository extends BasePanacheCommandRepository<SysUser>
     if (username == null || username.isBlank()) {
       return Optional.empty();
     }
-    var rows =
+    val rows =
         new BlazeJPAQuery<SysUser>(entityManager, criteriaBuilderFactory)
             .from(u)
             .leftJoin(u.roles, r)
@@ -91,7 +92,7 @@ public class UserRepository extends BasePanacheCommandRepository<SysUser>
     if (id == null) {
       return Optional.empty();
     }
-    var rows =
+    val rows =
         new BlazeJPAQuery<SysUser>(entityManager, criteriaBuilderFactory)
             .from(u)
             .leftJoin(u.roles, r)
@@ -129,7 +130,7 @@ public class UserRepository extends BasePanacheCommandRepository<SysUser>
     if (username == null || username.isBlank()) {
       return Set.of();
     }
-    var rows =
+    val rows =
         new BlazeJPAQuery<String>(entityManager, criteriaBuilderFactory)
             .from(u)
             .join(u.roles, r)
@@ -137,12 +138,11 @@ public class UserRepository extends BasePanacheCommandRepository<SysUser>
             .where(u.username.eq(username))
             .distinct()
             .fetch();
-    var result = new LinkedHashSet<String>();
-    for (var code : rows) {
-      if (code != null && !code.isBlank()) {
-        result.add(code.trim());
-      }
-    }
+    val result =
+        rows.stream()
+            .filter(code -> code != null && !code.isBlank())
+            .map(String::trim)
+            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
     return Set.copyOf(result);
   }
 
@@ -151,7 +151,7 @@ public class UserRepository extends BasePanacheCommandRepository<SysUser>
     if (username == null || username.isBlank()) {
       return Set.of();
     }
-    var rows =
+    val rows =
         new BlazeJPAQuery<String>(entityManager, criteriaBuilderFactory)
             .from(u)
             .join(u.roles, r)
@@ -161,12 +161,11 @@ public class UserRepository extends BasePanacheCommandRepository<SysUser>
             .where(u.username.eq(username))
             .distinct()
             .fetch();
-    var result = new LinkedHashSet<String>();
-    for (var code : rows) {
-      if (code != null && !code.isBlank()) {
-        result.add(code.trim());
-      }
-    }
+    val result =
+        rows.stream()
+            .filter(code -> code != null && !code.isBlank())
+            .map(String::trim)
+            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
     return Set.copyOf(result);
   }
 
@@ -234,10 +233,10 @@ public class UserRepository extends BasePanacheCommandRepository<SysUser>
 
   @Override
   public PageSlice<UserListProjection> page(UserPageQuery query) {
-    var spec = queryBuilder.build(query);
-    var filter = spec.filter();
+    val spec = queryBuilder.build(query);
+    val filter = spec.filter();
 
-    var blazeQuery =
+    val blazeQuery =
         new BlazeJPAQuery<SysUser>(entityManager, criteriaBuilderFactory).from(u).select(u);
 
     applyKeyword(blazeQuery, query.getKeyword());
@@ -250,7 +249,7 @@ public class UserRepository extends BasePanacheCommandRepository<SysUser>
   }
 
   private void applyKeyword(BlazeJPAQuery<SysUser> q, String keyword) {
-    var like = BlazeQueryDSLSupport.likePattern(keyword);
+    val like = BlazeQueryDSLSupport.likePattern(keyword);
     if (like == null) return;
     q.where(
         Expressions.anyOf(
@@ -260,7 +259,7 @@ public class UserRepository extends BasePanacheCommandRepository<SysUser>
   }
 
   private void applyUsername(BlazeJPAQuery<SysUser> q, String username) {
-    var like = BlazeQueryDSLSupport.likePattern(username);
+    val like = BlazeQueryDSLSupport.likePattern(username);
     if (like == null) return;
     q.where(u.username.lower().like(like));
   }

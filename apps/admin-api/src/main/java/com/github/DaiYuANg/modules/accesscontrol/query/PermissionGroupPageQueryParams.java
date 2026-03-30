@@ -4,6 +4,7 @@ import com.github.DaiYuANg.accesscontrol.query.PermissionGroupPageQuery;
 import jakarta.ws.rs.QueryParam;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.val;
 
 @Getter
 @Setter
@@ -13,7 +14,7 @@ public class PermissionGroupPageQueryParams
   private String name;
 
   public PermissionGroupPageQuery toQuery() {
-    var query = applyTo(new PermissionGroupPageQuery());
+    val query = applyTo(new PermissionGroupPageQuery());
     query.setName(name);
     return query;
   }

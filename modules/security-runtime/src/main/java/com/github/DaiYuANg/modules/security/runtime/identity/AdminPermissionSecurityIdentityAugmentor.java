@@ -13,11 +13,10 @@ import io.quarkus.security.runtime.QuarkusSecurityIdentity;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import org.eclipse.microprofile.jwt.JsonWebToken;
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 
 /**
  * Request-time permission enrichment.
@@ -52,17 +51,17 @@ public class AdminPermissionSecurityIdentityAugmentor implements SecurityIdentit
   }
 
   private SecurityIdentity enrichBlocking(@NonNull SecurityIdentity identity) {
-    var principalName = identity.getPrincipal().getName();
-    var expectedVersion = extractAuthorityVersion(identity);
-    var userId = extractUserId(identity);
-    var cached = cachedSnapshot(userId, principalName);
+    val principalName = identity.getPrincipal().getName();
+    val expectedVersion = extractAuthorityVersion(identity);
+    val userId = extractUserId(identity);
+    val cached = cachedSnapshot(userId, principalName);
     if (isReusableSnapshot(cached, expectedVersion, principalName, userId)) {
       return securityIdentityFactory.create(cached.toAuthenticatedUser());
     }
     if (shouldRejectStaleIdentity(expectedVersion, userId) && userId == null) {
       return anonymousIdentity();
     }
-    var loaded = permissionSnapshotLoader.load(userId, principalName).orElse(null);
+    val loaded = permissionSnapshotLoader.load(userId, principalName).orElse(null);
     if (!isBoundToCurrentToken(loaded, principalName, userId)) {
       return shouldRejectStaleIdentity(expectedVersion, userId) ? anonymousIdentity() : identity;
     }
@@ -70,7 +69,7 @@ public class AdminPermissionSecurityIdentityAugmentor implements SecurityIdentit
     return securityIdentityFactory.create(loaded.toAuthenticatedUser());
   }
 
-  private @Nullable String extractAuthorityVersion(@NonNull SecurityIdentity identity) {
+  private String extractAuthorityVersion(@NonNull SecurityIdentity identity) {
     val direct = identity.getAttribute(PrincipalAttributeKeys.AUTHORITY_VERSION);
     if (direct != null) {
       return String.valueOf(direct);
@@ -112,7 +111,7 @@ public class AdminPermissionSecurityIdentityAugmentor implements SecurityIdentit
     return userId != null || (expectedVersion != null && !expectedVersion.isBlank());
   }
 
-  private @Nullable Long extractUserId(@NonNull SecurityIdentity identity) {
+  private Long extractUserId(@NonNull SecurityIdentity identity) {
     val direct = identity.getAttribute(PrincipalAttributeKeys.USER_ID);
     if (direct != null) {
       return parseUserId(direct);

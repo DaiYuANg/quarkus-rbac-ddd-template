@@ -6,9 +6,10 @@ import jakarta.enterprise.context.RequestScoped;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
+import java.util.stream.Stream;
+import lombok.NonNull;
 
 @RequestScoped
 public class JaxRsRequestMetadataProvider implements RequestMetadataProvider {
@@ -30,17 +31,17 @@ public class JaxRsRequestMetadataProvider implements RequestMetadataProvider {
         new RequestMetadata(blankToNull(remoteIp), blankToNull(userAgent), blankToNull(requestId)));
   }
 
-  private @Nullable String firstHeader(String @NonNull ... names) {
-    for (String name : names) {
-      List<String> values = headers.getRequestHeader(name);
-      if (values != null && !values.isEmpty()) {
-        String value = values.getFirst();
-        if (value != null && !value.isBlank()) {
-          return value;
-        }
-      }
-    }
-    return null;
+  private String firstHeader(@NonNull String... names) {
+    return Stream.of(names)
+        .map(headers::getRequestHeader)
+        .filter(Objects::nonNull)
+        .filter(values -> !values.isEmpty())
+        .map(List::getFirst)
+        .filter(Objects::nonNull)
+        .map(String::trim)
+        .filter(value -> !value.isEmpty())
+        .findFirst()
+        .orElse(null);
   }
 
   private String blankToNull(String value) {

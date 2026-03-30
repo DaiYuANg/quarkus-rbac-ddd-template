@@ -9,8 +9,9 @@ import com.github.DaiYuANg.security.identity.PrincipalAttributeKeys;
 import com.github.DaiYuANg.security.snapshot.PermissionSnapshot;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.jspecify.annotations.NonNull;
+import lombok.val;
 
 /**
  * Authentication lifecycle hooks for admin flows.
@@ -33,14 +34,15 @@ public class AdminAuthenticationLifecycle implements AuthenticationLifecyclePort
 
   @Override
   public void publishSnapshot(@NonNull AuthenticatedUser user) {
-    var snapshot =
+    val authorityVersion = authorityVersion(user.username());
+    val snapshot =
         new PermissionSnapshot(
             user.username(),
             user.displayName(),
             user.userType(),
             user.roles(),
             user.permissions(),
-            authorityVersion(user.username()),
+            authorityVersion,
             java.util.Map.of(
                 PrincipalAttributeKeys.DISPLAY_NAME,
                 user.displayName(),
@@ -51,7 +53,7 @@ public class AdminAuthenticationLifecycle implements AuthenticationLifecyclePort
                 PrincipalAttributeKeys.PERMISSIONS,
                 user.permissions(),
                 PrincipalAttributeKeys.AUTHORITY_VERSION,
-                authorityVersion(user.username())),
+                authorityVersion),
             user.userId());
     permissionSnapshotStore.save(snapshot);
   }
