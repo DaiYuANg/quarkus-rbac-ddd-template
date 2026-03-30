@@ -1,5 +1,8 @@
 package com.github.DaiYuANg.audit.support;
 
+import io.soabase.recordbuilder.core.RecordBuilder;
+
+@RecordBuilder
 public record AuditSnapshot(
     String actorKey,
     String actorDisplayName,
@@ -8,6 +11,13 @@ public record AuditSnapshot(
     String userAgent,
     String requestId) {
   public static AuditSnapshot system() {
-    return new AuditSnapshot("system", "system", "SYSTEM", null, null, null);
+    return AuditSnapshotBuilder.builder()
+        .actorKey("system")
+        .actorDisplayName("system")
+        .actorType("SYSTEM")
+        .remoteIp(null)
+        .userAgent(null)
+        .requestId(null)
+        .build();
   }
 }

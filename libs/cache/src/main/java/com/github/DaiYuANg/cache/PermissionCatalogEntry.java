@@ -1,11 +1,13 @@
 package com.github.DaiYuANg.cache;
 
+import io.soabase.recordbuilder.core.RecordBuilder;
 import java.time.Instant;
 
 /**
  * In-memory representation of a permission for the catalog cache. Used when loading from DB and
  * reading from Redis.
  */
+@RecordBuilder
 public record PermissionCatalogEntry(
     Long id,
     String name,

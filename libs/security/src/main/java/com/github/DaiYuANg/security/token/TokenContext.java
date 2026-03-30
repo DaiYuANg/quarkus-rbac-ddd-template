@@ -1,11 +1,13 @@
 package com.github.DaiYuANg.security.token;
 
+import io.soabase.recordbuilder.core.RecordBuilder;
 import io.quarkus.security.identity.SecurityIdentity;
 import java.security.Principal;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+@RecordBuilder
 public record TokenContext(
     String subject,
     String userType,

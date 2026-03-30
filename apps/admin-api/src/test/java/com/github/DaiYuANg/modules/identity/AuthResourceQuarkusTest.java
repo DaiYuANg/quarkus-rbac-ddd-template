@@ -10,8 +10,10 @@ import static org.mockito.Mockito.when;
 import com.github.DaiYuANg.modules.accesscontrol.application.permission.PermissionCatalogLoader;
 import com.github.DaiYuANg.modules.identity.application.AuthApplicationService;
 import com.github.DaiYuANg.modules.identity.application.dto.response.MeResponse;
+import com.github.DaiYuANg.modules.identity.application.dto.response.MeResponseBuilder;
 import com.github.DaiYuANg.modules.identity.application.dto.response.MeRoleItem;
 import com.github.DaiYuANg.modules.identity.application.dto.response.SystemAuthenticationToken;
+import com.github.DaiYuANg.modules.identity.application.dto.response.SystemAuthenticationTokenBuilder;
 import com.github.DaiYuANg.security.authorization.RbacPermissionCodes.Role;
 import com.github.DaiYuANg.security.authorization.RbacPermissionCodes.User;
 import com.github.DaiYuANg.testsupport.QuarkusPostgresValkeyTestProfile;
@@ -37,7 +39,13 @@ class AuthResourceQuarkusTest {
   void loginReturnsTokenAndSetsRefreshCookie() {
     when(authApplicationService.login(any()))
         .thenReturn(
-            new SystemAuthenticationToken("access-login", "rt-login", "Bearer", 120L, "v1"));
+            SystemAuthenticationTokenBuilder.builder()
+                .accessToken("access-login")
+                .refreshToken("rt-login")
+                .tokenType("Bearer")
+                .expiresIn(120L)
+                .authorityVersion("v1")
+                .build());
 
     given()
         .contentType("application/json")
@@ -64,7 +72,13 @@ class AuthResourceQuarkusTest {
   void refreshPrefersHeaderTokenOverCookieToken() {
     when(authApplicationService.refreshToken("rt-header"))
         .thenReturn(
-            new SystemAuthenticationToken("access-header", "rt-next", "Bearer", 120L, "v2"));
+            SystemAuthenticationTokenBuilder.builder()
+                .accessToken("access-header")
+                .refreshToken("rt-next")
+                .tokenType("Bearer")
+                .expiresIn(120L)
+                .authorityVersion("v2")
+                .build());
 
     given()
         .contentType("application/json")
@@ -86,7 +100,13 @@ class AuthResourceQuarkusTest {
   void refreshUsesCookieTokenWhenHeaderMissing() {
     when(authApplicationService.refreshToken("rt-cookie"))
         .thenReturn(
-            new SystemAuthenticationToken("access-cookie", "rt-next-2", "Bearer", 120L, "v3"));
+            SystemAuthenticationTokenBuilder.builder()
+                .accessToken("access-cookie")
+                .refreshToken("rt-next-2")
+                .tokenType("Bearer")
+                .expiresIn(120L)
+                .authorityVersion("v3")
+                .build());
 
     given()
         .contentType("application/json")
@@ -109,12 +129,13 @@ class AuthResourceQuarkusTest {
   void meEndpointReturnsFrontendContractShape() {
     when(authApplicationService.me("root"))
         .thenReturn(
-            new MeResponse(
-                "1",
-                "Root Admin",
-                "root@example.com",
-                List.of(new MeRoleItem("1", "admin")),
-                Set.of(User.VIEW, Role.VIEW)));
+            MeResponseBuilder.builder()
+                .id("1")
+                .name("Root Admin")
+                .email("root@example.com")
+                .roles(List.of(new MeRoleItem("1", "admin")))
+                .permissions(Set.of(User.VIEW, Role.VIEW))
+                .build());
 
     given()
         .when()
@@ -135,7 +156,13 @@ class AuthResourceQuarkusTest {
   void refreshAliasUsesSameFlowAsAuthRefresh() {
     when(authApplicationService.refreshToken("rt-cookie-alias"))
         .thenReturn(
-            new SystemAuthenticationToken("access-alias", "rt-next-alias", "Bearer", 120L, "v4"));
+            SystemAuthenticationTokenBuilder.builder()
+                .accessToken("access-alias")
+                .refreshToken("rt-next-alias")
+                .tokenType("Bearer")
+                .expiresIn(120L)
+                .authorityVersion("v4")
+                .build());
 
     given()
         .contentType("application/json")

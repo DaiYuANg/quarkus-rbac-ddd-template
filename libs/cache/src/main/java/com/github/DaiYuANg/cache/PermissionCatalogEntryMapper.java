@@ -35,17 +35,18 @@ final class PermissionCatalogEntryMapper {
   static PermissionCatalogEntry fromMap(Long id, Map<String, String> map) {
     var createAt = parseInstant(map.get(HASH_CREATE_AT));
     var updateAt = parseInstant(map.get(HASH_UPDATE_AT));
-    return new PermissionCatalogEntry(
-        id,
-        map.getOrDefault(HASH_NAME, ""),
-        map.getOrDefault(HASH_CODE, ""),
-        map.getOrDefault(HASH_RESOURCE, ""),
-        map.getOrDefault(HASH_ACTION, ""),
-        nullOrEmpty(map.get(HASH_GROUP_CODE)),
-        nullOrEmpty(map.get(HASH_DESCRIPTION)),
-        nullOrEmpty(map.get(HASH_EXPRESSION)),
-        createAt,
-        updateAt);
+    return PermissionCatalogEntryBuilder.builder()
+        .id(id)
+        .name(map.getOrDefault(HASH_NAME, ""))
+        .code(map.getOrDefault(HASH_CODE, ""))
+        .resource(map.getOrDefault(HASH_RESOURCE, ""))
+        .action(map.getOrDefault(HASH_ACTION, ""))
+        .groupCode(nullOrEmpty(map.get(HASH_GROUP_CODE)))
+        .description(nullOrEmpty(map.get(HASH_DESCRIPTION)))
+        .expression(nullOrEmpty(map.get(HASH_EXPRESSION)))
+        .createAt(createAt)
+        .updateAt(updateAt)
+        .build();
   }
 
   private static Instant parseInstant(String s) {

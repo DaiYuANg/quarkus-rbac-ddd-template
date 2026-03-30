@@ -4,6 +4,7 @@ import com.github.DaiYuANg.accesscontrol.query.PermissionPageQuery;
 import com.github.DaiYuANg.cache.PermissionCatalogStore;
 import com.github.DaiYuANg.common.model.ApiPageResult;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.PermissionVO;
+import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.PermissionVOBuilder;
 import com.github.DaiYuANg.security.authorization.AuthorizationService;
 import com.github.DaiYuANg.security.authorization.RbacPermissionCodes.Permission;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -67,14 +68,15 @@ public class PermissionApplicationService {
   }
 
   private PermissionVO toVO(com.github.DaiYuANg.cache.PermissionCatalogEntry e) {
-    return new PermissionVO(
-        e.id(),
-        e.name(),
-        e.code(),
-        e.resource(),
-        e.action(),
-        e.groupCode(),
-        e.description(),
-        e.expression());
+    return PermissionVOBuilder.builder()
+        .id(e.id())
+        .name(e.name())
+        .code(e.code())
+        .resource(e.resource())
+        .action(e.action())
+        .groupCode(e.groupCode())
+        .description(e.description())
+        .expression(e.expression())
+        .build();
   }
 }

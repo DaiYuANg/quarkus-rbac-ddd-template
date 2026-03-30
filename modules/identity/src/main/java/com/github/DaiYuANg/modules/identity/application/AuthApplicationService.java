@@ -9,6 +9,7 @@ import com.github.DaiYuANg.common.exception.BizException;
 import com.github.DaiYuANg.identity.repository.UserRepository;
 import com.github.DaiYuANg.modules.identity.application.dto.request.LoginRequest;
 import com.github.DaiYuANg.modules.identity.application.dto.response.MeResponse;
+import com.github.DaiYuANg.modules.identity.application.dto.response.MeResponseBuilder;
 import com.github.DaiYuANg.modules.identity.application.dto.response.MeRoleItem;
 import com.github.DaiYuANg.modules.identity.application.dto.response.SystemAuthenticationToken;
 import com.github.DaiYuANg.modules.identity.application.dto.response.UserDetailVo;
@@ -135,13 +136,23 @@ public class AuthApplicationService {
           user.roles.stream()
               .map(role -> new MeRoleItem(String.valueOf(role.id), role.name))
               .toList();
-      return new MeResponse(
-          String.valueOf(user.id), current.displayName(), user.email, roles, current.permissions());
+      return MeResponseBuilder.builder()
+          .id(String.valueOf(user.id))
+          .name(current.displayName())
+          .email(user.email)
+          .roles(roles)
+          .permissions(current.permissions())
+          .build();
     }
 
     val configRoles = current.roles().stream().map(role -> new MeRoleItem(role, role)).toList();
-    return new MeResponse(
-        current.username(), current.displayName(), null, configRoles, current.permissions());
+    return MeResponseBuilder.builder()
+        .id(current.username())
+        .name(current.displayName())
+        .email(null)
+        .roles(configRoles)
+        .permissions(current.permissions())
+        .build();
   }
 
   public void logout(@NonNull String refreshToken) {

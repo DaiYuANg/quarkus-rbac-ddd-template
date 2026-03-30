@@ -17,20 +17,22 @@ public class AuditSnapshotProvider {
     val request = requestMetadataAccess.current();
     val user = currentAuthenticatedUserProvider.getCurrentUser().orElse(null);
     if (user == null) {
-      return new AuditSnapshot(
-          "SYSTEM:anonymous",
-          "anonymous",
-          "SYSTEM",
-          request.remoteIp(),
-          request.userAgent(),
-          request.requestId());
+      return AuditSnapshotBuilder.builder()
+          .actorKey("SYSTEM:anonymous")
+          .actorDisplayName("anonymous")
+          .actorType("SYSTEM")
+          .remoteIp(request.remoteIp())
+          .userAgent(request.userAgent())
+          .requestId(request.requestId())
+          .build();
     }
-    return new AuditSnapshot(
-        user.userType() + ":" + user.username(),
-        user.displayName(),
-        user.userType(),
-        request.remoteIp(),
-        request.userAgent(),
-        request.requestId());
+    return AuditSnapshotBuilder.builder()
+        .actorKey(user.userType() + ":" + user.username())
+        .actorDisplayName(user.displayName())
+        .actorType(user.userType())
+        .remoteIp(request.remoteIp())
+        .userAgent(request.userAgent())
+        .requestId(request.requestId())
+        .build();
   }
 }

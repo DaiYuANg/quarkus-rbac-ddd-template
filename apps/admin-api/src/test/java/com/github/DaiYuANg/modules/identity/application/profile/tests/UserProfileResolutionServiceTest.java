@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 import com.github.DaiYuANg.common.constant.ResultCode;
 import com.github.DaiYuANg.common.exception.BizException;
 import com.github.DaiYuANg.modules.identity.application.dto.response.UserDetailVo;
+import com.github.DaiYuANg.modules.identity.application.dto.response.UserDetailVoBuilder;
 import com.github.DaiYuANg.modules.identity.application.profile.UserProfileProvider;
 import com.github.DaiYuANg.modules.identity.application.profile.UserProfileResolutionService;
 import com.github.DaiYuANg.security.identity.CurrentAuthenticatedUser;
@@ -29,7 +30,15 @@ class UserProfileResolutionServiceTest {
     var current = new CurrentAuthenticatedUser("u", "U", "ADMIN", Set.of(), Set.of(), Map.of());
     when(p100.supports(current)).thenReturn(false);
     when(p200.supports(current)).thenReturn(true);
-    var expected = new UserDetailVo(1L, "u", "U", Set.of(), Set.of(), "k");
+    var expected =
+        UserDetailVoBuilder.builder()
+            .userid(1L)
+            .username("u")
+            .nickname("U")
+            .permissions(Set.of())
+            .roleCodes(Set.of())
+            .authorityKey("k")
+            .build();
     when(p200.buildProfile(current)).thenReturn(expected);
 
     @SuppressWarnings("unchecked")

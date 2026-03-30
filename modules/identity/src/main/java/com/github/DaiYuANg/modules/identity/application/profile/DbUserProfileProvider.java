@@ -5,6 +5,7 @@ import com.github.DaiYuANg.common.constant.ResultCode;
 import com.github.DaiYuANg.common.exception.BizException;
 import com.github.DaiYuANg.identity.repository.UserRepository;
 import com.github.DaiYuANg.modules.identity.application.dto.response.UserDetailVo;
+import com.github.DaiYuANg.modules.identity.application.dto.response.UserDetailVoBuilder;
 import com.github.DaiYuANg.security.identity.CurrentAuthenticatedUser;
 import com.github.DaiYuANg.security.identity.SecurityPrincipalKinds;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -54,25 +55,27 @@ public class DbUserProfileProvider implements UserProfileProvider {
         authorityVersionStore.currentVersion()
             + ":"
             + UserDetailVo.encodeAuthorityKey(detail.permissions(), detail.roleCodes());
-    return new UserDetailVo(
-        detail.userid(),
-        detail.username(),
-        detail.nickname(),
-        detail.permissions(),
-        detail.roleCodes(),
-        authorityKey);
+    return UserDetailVoBuilder.builder()
+        .userid(detail.userid())
+        .username(detail.username())
+        .nickname(detail.nickname())
+        .permissions(detail.permissions())
+        .roleCodes(detail.roleCodes())
+        .authorityKey(authorityKey)
+        .build();
   }
 
   private UserDetailVo toUserDetail(@NonNull com.github.DaiYuANg.identity.entity.SysUser user) {
     val permissions =
         new LinkedHashSet<>(userRepository.findPermissionCodesByUsername(user.username));
     val roleCodes = new LinkedHashSet<>(userRepository.findRoleCodesByUsername(user.username));
-    return new UserDetailVo(
-        user.id,
-        user.username,
-        user.nickname,
-        permissions,
-        roleCodes,
-        UserDetailVo.encodeAuthorityKey(permissions, roleCodes));
+    return UserDetailVoBuilder.builder()
+        .userid(user.id)
+        .username(user.username)
+        .nickname(user.nickname)
+        .permissions(permissions)
+        .roleCodes(roleCodes)
+        .authorityKey(UserDetailVo.encodeAuthorityKey(permissions, roleCodes))
+        .build();
   }
 }

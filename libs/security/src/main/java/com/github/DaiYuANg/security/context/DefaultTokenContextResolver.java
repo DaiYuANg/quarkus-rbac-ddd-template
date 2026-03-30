@@ -3,6 +3,7 @@ package com.github.DaiYuANg.security.context;
 import com.github.DaiYuANg.security.identity.PrincipalAttributeKeys;
 import com.github.DaiYuANg.security.token.PrincipalAttributesSerializer;
 import com.github.DaiYuANg.security.token.TokenContext;
+import com.github.DaiYuANg.security.token.TokenContextBuilder;
 import com.github.DaiYuANg.security.token.TokenContextResolver;
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -24,16 +25,18 @@ public class DefaultTokenContextResolver implements TokenContextResolver {
     }
     Map<String, Object> attributes = serializer.deserialize(identity.getAttributes());
     return Optional.of(
-        new TokenContext(
-            identity.getPrincipal().getName(),
-            (String) attributes.getOrDefault(PrincipalAttributeKeys.USER_TYPE, "UNKNOWN"),
-            (String)
-                attributes.getOrDefault(
-                    PrincipalAttributeKeys.DISPLAY_NAME, identity.getPrincipal().getName()),
-            castSet(attributes.get(PrincipalAttributeKeys.ROLES)),
-            castSet(attributes.get(PrincipalAttributeKeys.PERMISSIONS)),
-            attributes,
-            identity));
+        TokenContextBuilder.builder()
+            .subject(identity.getPrincipal().getName())
+            .userType((String) attributes.getOrDefault(PrincipalAttributeKeys.USER_TYPE, "UNKNOWN"))
+            .displayName(
+                (String)
+                    attributes.getOrDefault(
+                        PrincipalAttributeKeys.DISPLAY_NAME, identity.getPrincipal().getName()))
+            .roles(castSet(attributes.get(PrincipalAttributeKeys.ROLES)))
+            .permissions(castSet(attributes.get(PrincipalAttributeKeys.PERMISSIONS)))
+            .attributes(attributes)
+            .securityIdentity(identity)
+            .build());
   }
 
   @SuppressWarnings("unchecked")

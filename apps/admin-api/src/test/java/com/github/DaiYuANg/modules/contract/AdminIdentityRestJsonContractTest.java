@@ -9,8 +9,10 @@ import static org.mockito.Mockito.when;
 import com.github.DaiYuANg.modules.accesscontrol.application.permission.PermissionCatalogLoader;
 import com.github.DaiYuANg.modules.identity.application.AuthApplicationService;
 import com.github.DaiYuANg.modules.identity.application.dto.response.MeResponse;
+import com.github.DaiYuANg.modules.identity.application.dto.response.MeResponseBuilder;
 import com.github.DaiYuANg.modules.identity.application.dto.response.MeRoleItem;
 import com.github.DaiYuANg.modules.identity.application.dto.response.SystemAuthenticationToken;
+import com.github.DaiYuANg.modules.identity.application.dto.response.SystemAuthenticationTokenBuilder;
 import com.github.DaiYuANg.testsupport.QuarkusPostgresValkeyTestProfile;
 import com.github.DaiYuANg.testsupport.ValkeyTestResource;
 import io.quarkus.test.InjectMock;
@@ -37,7 +39,14 @@ class AdminIdentityRestJsonContractTest {
   @Test
   void loginWrapsTokenInResultEnvelopeWithStableFieldNames() {
     when(authApplicationService.login(any()))
-        .thenReturn(new SystemAuthenticationToken("a", "r", "Bearer", 120L, "v-contract"));
+        .thenReturn(
+            SystemAuthenticationTokenBuilder.builder()
+                .accessToken("a")
+                .refreshToken("r")
+                .tokenType("Bearer")
+                .expiresIn(120L)
+                .authorityVersion("v-contract")
+                .build());
 
     given()
         .contentType("application/json")
@@ -62,8 +71,13 @@ class AdminIdentityRestJsonContractTest {
   void meExposesStableProfileShapeUnderData() {
     when(authApplicationService.me("u1"))
         .thenReturn(
-            new MeResponse(
-                "id-1", "N", "e@x", List.of(new MeRoleItem("rid", "rname")), Set.of("p1")));
+            MeResponseBuilder.builder()
+                .id("id-1")
+                .name("N")
+                .email("e@x")
+                .roles(List.of(new MeRoleItem("rid", "rname")))
+                .permissions(Set.of("p1"))
+                .build());
 
     given()
         .when()

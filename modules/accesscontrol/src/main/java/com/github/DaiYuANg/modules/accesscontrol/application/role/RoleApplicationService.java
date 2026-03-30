@@ -12,6 +12,7 @@ import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.RoleCre
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.RoleRefPermissionGroupForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UpdateRoleForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.RoleVO;
+import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.RoleVOBuilder;
 import com.github.DaiYuANg.modules.accesscontrol.application.permissiongroup.PermissionGroupApplicationService;
 import com.github.DaiYuANg.modules.accesscontrol.application.support.AccessControlAuditSupport;
 import com.github.DaiYuANg.security.authorization.AuthorizationService;
@@ -181,15 +182,16 @@ public class RoleApplicationService {
 
   private RoleVO toRoleVO(
       @NonNull com.github.DaiYuANg.accesscontrol.projection.RoleListProjection role) {
-    return new RoleVO(
-        role.id(),
-        role.name(),
-        role.code(),
-        parseRoleStatus(role.status()),
-        role.sort(),
-        null,
-        null,
-        new LinkedHashSet<>());
+    return RoleVOBuilder.builder()
+        .id(role.id())
+        .name(role.name())
+        .code(role.code())
+        .status(parseRoleStatus(role.status()))
+        .sort(role.sort())
+        .createAt(null)
+        .updateAt(null)
+        .permissionGroups(new LinkedHashSet<>())
+        .build();
   }
 
   private RoleVO toRoleVOWithCatalog(@NonNull SysRole role) {
@@ -212,15 +214,16 @@ public class RoleApplicationService {
                     permissionGroupApplicationService.toPermissionGroupVOWithCatalog(
                         group, permissionIdsByGroupId.getOrDefault(group.id, java.util.Set.of()).stream().toList()))
             .collect(Collectors.toCollection(LinkedHashSet::new));
-    return new RoleVO(
-        role.id,
-        role.name,
-        role.code,
-        parseRoleStatus(role.status != null ? role.status.name() : null),
-        role.sort,
-        role.createAt,
-        role.updateAt,
-        permissionGroups);
+    return RoleVOBuilder.builder()
+        .id(role.id)
+        .name(role.name)
+        .code(role.code)
+        .status(parseRoleStatus(role.status != null ? role.status.name() : null))
+        .sort(role.sort)
+        .createAt(role.createAt)
+        .updateAt(role.updateAt)
+        .permissionGroups(permissionGroups)
+        .build();
   }
 
   private RoleStatus parseRoleStatus(String value) {

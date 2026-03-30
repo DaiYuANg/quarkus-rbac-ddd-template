@@ -14,8 +14,10 @@ import com.github.DaiYuANg.common.exception.BizException;
 import com.github.DaiYuANg.modules.identity.application.AuthApplicationService;
 import com.github.DaiYuANg.modules.identity.application.dto.request.LoginRequest;
 import com.github.DaiYuANg.modules.identity.application.dto.response.MeResponse;
+import com.github.DaiYuANg.modules.identity.application.dto.response.MeResponseBuilder;
 import com.github.DaiYuANg.modules.identity.application.dto.response.MeRoleItem;
 import com.github.DaiYuANg.modules.identity.application.dto.response.SystemAuthenticationToken;
+import com.github.DaiYuANg.modules.identity.application.dto.response.SystemAuthenticationTokenBuilder;
 import com.github.DaiYuANg.security.authorization.RbacPermissionCodes.User;
 import com.github.DaiYuANg.security.config.AuthSecurityConfig;
 import jakarta.ws.rs.core.NewCookie;
@@ -39,7 +41,14 @@ class AuthResourceBehaviorTest {
 
     when(authSecurityConfig.refreshTokenTtlSeconds()).thenReturn(3600L);
     when(authApplicationService.login(any()))
-        .thenReturn(new SystemAuthenticationToken("access", "rt-login", "Bearer", 120L, "v1"));
+        .thenReturn(
+            SystemAuthenticationTokenBuilder.builder()
+                .accessToken("access")
+                .refreshToken("rt-login")
+                .tokenType("Bearer")
+                .expiresIn(120L)
+                .authorityVersion("v1")
+                .build());
 
     var resource =
         new AuthResource(authApplicationService, jwt, refreshTokenStore, authSecurityConfig);
@@ -64,7 +73,14 @@ class AuthResourceBehaviorTest {
     var authSecurityConfig = mock(AuthSecurityConfig.class);
     when(authSecurityConfig.refreshTokenTtlSeconds()).thenReturn(3600L);
     when(authApplicationService.refreshToken("header-token"))
-        .thenReturn(new SystemAuthenticationToken("access-new", "rt-new", "Bearer", 120L, "v2"));
+        .thenReturn(
+            SystemAuthenticationTokenBuilder.builder()
+                .accessToken("access-new")
+                .refreshToken("rt-new")
+                .tokenType("Bearer")
+                .expiresIn(120L)
+                .authorityVersion("v2")
+                .build());
 
     var resource =
         new AuthResource(authApplicationService, jwt, refreshTokenStore, authSecurityConfig);
@@ -86,7 +102,14 @@ class AuthResourceBehaviorTest {
     var authSecurityConfig = mock(AuthSecurityConfig.class);
     when(authSecurityConfig.refreshTokenTtlSeconds()).thenReturn(3600L);
     when(authApplicationService.refreshToken("cookie-token"))
-        .thenReturn(new SystemAuthenticationToken("access-new", "rt-new", "Bearer", 120L, "v2"));
+        .thenReturn(
+            SystemAuthenticationTokenBuilder.builder()
+                .accessToken("access-new")
+                .refreshToken("rt-new")
+                .tokenType("Bearer")
+                .expiresIn(120L)
+                .authorityVersion("v2")
+                .build());
 
     var resource =
         new AuthResource(authApplicationService, jwt, refreshTokenStore, authSecurityConfig);
@@ -123,12 +146,13 @@ class AuthResourceBehaviorTest {
     var authSecurityConfig = mock(AuthSecurityConfig.class);
     when(jwt.getName()).thenReturn("root");
     var me =
-        new MeResponse(
-            "1",
-            "Root",
-            "root@example.com",
-            List.of(new MeRoleItem("1", "admin")),
-            Set.of(User.VIEW));
+        MeResponseBuilder.builder()
+            .id("1")
+            .name("Root")
+            .email("root@example.com")
+            .roles(List.of(new MeRoleItem("1", "admin")))
+            .permissions(Set.of(User.VIEW))
+            .build();
     when(authApplicationService.me("root")).thenReturn(me);
 
     var resource =

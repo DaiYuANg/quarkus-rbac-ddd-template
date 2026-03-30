@@ -3,6 +3,7 @@ package com.github.DaiYuANg.modules.security.runtime.auth;
 import com.github.DaiYuANg.cache.AuthorityVersionStore;
 import com.github.DaiYuANg.cache.RefreshTokenStore;
 import com.github.DaiYuANg.modules.identity.application.dto.response.SystemAuthenticationToken;
+import com.github.DaiYuANg.modules.identity.application.dto.response.SystemAuthenticationTokenBuilder;
 import com.github.DaiYuANg.security.identity.AuthenticatedUser;
 import com.github.DaiYuANg.security.token.JwtTokenService;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -23,12 +24,13 @@ public class JwtAdminTokenIssuer implements AdminTokenIssuer {
     var refreshToken = jwtTokenService.generateRefreshToken();
     refreshTokenStore.save(
         refreshToken, user.userId(), user.username(), jwtTokenService.refreshTokenTtl());
-    return new SystemAuthenticationToken(
-        accessToken,
-        refreshToken,
-        "Bearer",
-        jwtTokenService.accessTokenExpiresIn(),
-        authorityVersion);
+    return SystemAuthenticationTokenBuilder.builder()
+        .accessToken(accessToken)
+        .refreshToken(refreshToken)
+        .tokenType("Bearer")
+        .expiresIn(jwtTokenService.accessTokenExpiresIn())
+        .authorityVersion(authorityVersion)
+        .build();
   }
 
   @Override

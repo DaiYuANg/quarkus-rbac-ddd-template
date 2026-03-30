@@ -13,7 +13,9 @@ import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.Permiss
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.PermissionGroupRefPermissionForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UpdatePermissionGroupForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.PermissionGroupVO;
+import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.PermissionGroupVOBuilder;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.PermissionVO;
+import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.PermissionVOBuilder;
 import com.github.DaiYuANg.modules.accesscontrol.application.support.AccessControlAuditSupport;
 import com.github.DaiYuANg.security.authorization.AuthorizationService;
 import com.github.DaiYuANg.security.authorization.RbacPermissionCodes.PermissionGroup;
@@ -224,15 +226,16 @@ public class PermissionGroupApplicationService {
 
   private PermissionGroupVO toPermissionGroupVO(
       com.github.DaiYuANg.accesscontrol.projection.PermissionGroupListProjection group) {
-    return new PermissionGroupVO(
-        group.id(),
-        group.name(),
-        group.description(),
-        group.code(),
-        group.sort(),
-        null,
-        null,
-        new LinkedHashSet<>());
+    return PermissionGroupVOBuilder.builder()
+        .id(group.id())
+        .name(group.name())
+        .description(group.description())
+        .code(group.code())
+        .sort(group.sort())
+        .createAt(null)
+        .updateAt(null)
+        .permissions(new LinkedHashSet<>())
+        .build();
   }
 
   public PermissionGroupVO toPermissionGroupVOWithCatalog(@NonNull SysPermissionGroup group) {
@@ -248,27 +251,29 @@ public class PermissionGroupApplicationService {
             .flatMap(Optional::stream)
             .map(this::toPermissionVO)
             .collect(Collectors.toCollection(LinkedHashSet::new));
-    return new PermissionGroupVO(
-        group.id,
-        group.name,
-        group.description,
-        group.code,
-        group.sort,
-        group.createAt,
-        group.updateAt,
-        permissions);
+    return PermissionGroupVOBuilder.builder()
+        .id(group.id)
+        .name(group.name)
+        .description(group.description)
+        .code(group.code)
+        .sort(group.sort)
+        .createAt(group.createAt)
+        .updateAt(group.updateAt)
+        .permissions(permissions)
+        .build();
   }
 
   private PermissionVO toPermissionVO(@NonNull PermissionCatalogEntry e) {
-    return new PermissionVO(
-        e.id(),
-        e.name(),
-        e.code(),
-        e.resource(),
-        e.action(),
-        e.groupCode(),
-        e.description(),
-        e.expression());
+    return PermissionVOBuilder.builder()
+        .id(e.id())
+        .name(e.name())
+        .code(e.code())
+        .resource(e.resource())
+        .action(e.action())
+        .groupCode(e.groupCode())
+        .description(e.description())
+        .expression(e.expression())
+        .build();
   }
 
   private Stream<Long> streamPermissionIds(List<Long> permissionIds) {

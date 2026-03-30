@@ -9,8 +9,10 @@ import static org.mockito.Mockito.when;
 
 import com.github.DaiYuANg.modules.identity.application.AuthApplicationService;
 import com.github.DaiYuANg.modules.identity.application.dto.response.MeResponse;
+import com.github.DaiYuANg.modules.identity.application.dto.response.MeResponseBuilder;
 import com.github.DaiYuANg.modules.identity.application.dto.response.MeRoleItem;
 import com.github.DaiYuANg.modules.identity.application.dto.response.SystemAuthenticationToken;
+import com.github.DaiYuANg.modules.identity.application.dto.response.SystemAuthenticationTokenBuilder;
 import com.github.DaiYuANg.testsupport.QuarkusPostgresValkeyTestProfile;
 import com.github.DaiYuANg.testsupport.ValkeyTestResource;
 import io.quarkus.test.InjectMock;
@@ -35,7 +37,14 @@ class MobileIdentityRestJsonContractTest {
   @Test
   void mobileLoginUsesIsolatedCookiePathAndStableTokenJson() {
     when(authApplicationService.login(any()))
-        .thenReturn(new SystemAuthenticationToken("ma", "mr", "Bearer", 60L, "mv"));
+        .thenReturn(
+            SystemAuthenticationTokenBuilder.builder()
+                .accessToken("ma")
+                .refreshToken("mr")
+                .tokenType("Bearer")
+                .expiresIn(60L)
+                .authorityVersion("mv")
+                .build());
 
     given()
         .contentType("application/json")
@@ -61,8 +70,13 @@ class MobileIdentityRestJsonContractTest {
   void mobileMeMatchesAdminMeEnvelope() {
     when(authApplicationService.me("member-1"))
         .thenReturn(
-            new MeResponse(
-                "m1", "Member", "m@x", List.of(new MeRoleItem("1", "member")), Set.of()));
+            MeResponseBuilder.builder()
+                .id("m1")
+                .name("Member")
+                .email("m@x")
+                .roles(List.of(new MeRoleItem("1", "member")))
+                .permissions(Set.of())
+                .build());
 
     given()
         .when()

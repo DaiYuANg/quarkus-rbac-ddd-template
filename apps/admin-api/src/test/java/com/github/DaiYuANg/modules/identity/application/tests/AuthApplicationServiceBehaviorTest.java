@@ -17,7 +17,9 @@ import com.github.DaiYuANg.identity.repository.UserRepository;
 import com.github.DaiYuANg.modules.identity.application.AuthApplicationService;
 import com.github.DaiYuANg.modules.identity.application.LoginAuditEvent;
 import com.github.DaiYuANg.modules.identity.application.dto.response.SystemAuthenticationToken;
+import com.github.DaiYuANg.modules.identity.application.dto.response.SystemAuthenticationTokenBuilder;
 import com.github.DaiYuANg.modules.identity.application.dto.response.UserDetailVo;
+import com.github.DaiYuANg.modules.identity.application.dto.response.UserDetailVoBuilder;
 import com.github.DaiYuANg.modules.identity.application.profile.UserProfileResolutionService;
 import com.github.DaiYuANg.modules.security.runtime.auth.AdminAuthenticationLifecycle;
 import com.github.DaiYuANg.modules.security.runtime.auth.AdminTokenIssuer;
@@ -47,7 +49,14 @@ class AuthApplicationServiceBehaviorTest {
         new AuthenticatedUser(
             "alice", "Alice", "ADMIN", Set.of("admin"), Set.of(User.VIEW), Map.of(), 1L);
     var authResult = new AuthenticationResult(user, "refresh-token");
-    var issued = new SystemAuthenticationToken("access", "refresh-new", "Bearer", 120L, "v1");
+    var issued =
+        SystemAuthenticationTokenBuilder.builder()
+            .accessToken("access")
+            .refreshToken("refresh-new")
+            .tokenType("Bearer")
+            .expiresIn(120L)
+            .authorityVersion("v1")
+            .build();
 
     var userRepository = mock(UserRepository.class);
     var authenticationManager = mock(LoginAuthenticationManager.class);
@@ -93,7 +102,15 @@ class AuthApplicationServiceBehaviorTest {
         new CurrentAuthenticatedUser("alice", "Alice", "ADMIN", Set.of(), Set.of(), Map.of());
     var currentUserAccess = mock(CurrentUserAccess.class);
     when(currentUserAccess.currentUser()).thenReturn(Optional.of(current));
-    var expected = new UserDetailVo(1L, "alice", "Alice", Set.of(), Set.of(), "k");
+    var expected =
+        UserDetailVoBuilder.builder()
+            .userid(1L)
+            .username("alice")
+            .nickname("Alice")
+            .permissions(Set.of())
+            .roleCodes(Set.of())
+            .authorityKey("k")
+            .build();
     var userProfileResolutionService = mock(UserProfileResolutionService.class);
     when(userProfileResolutionService.resolve(current)).thenReturn(expected);
 

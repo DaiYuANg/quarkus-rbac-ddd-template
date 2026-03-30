@@ -2,6 +2,7 @@ package com.github.DaiYuANg.modules.identity.application.profile;
 
 import com.github.DaiYuANg.cache.AuthorityVersionStore;
 import com.github.DaiYuANg.modules.identity.application.dto.response.UserDetailVo;
+import com.github.DaiYuANg.modules.identity.application.dto.response.UserDetailVoBuilder;
 import com.github.DaiYuANg.security.identity.CurrentAuthenticatedUser;
 import com.github.DaiYuANg.security.identity.SecurityPrincipalKinds;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -42,7 +43,14 @@ public class SuperAdminProfileProvider implements UserProfileProvider {
         authorityVersionStore.currentVersion()
             + ":"
             + UserDetailVo.encodeAuthorityKey(permissions, roleCodes);
-    return new UserDetailVo(null, user.username(), nickname, permissions, roleCodes, authorityKey);
+    return UserDetailVoBuilder.builder()
+        .userid(null)
+        .username(user.username())
+        .nickname(nickname)
+        .permissions(permissions)
+        .roleCodes(roleCodes)
+        .authorityKey(authorityKey)
+        .build();
   }
 
   private LinkedHashSet<String> normalizeCodes(Set<String> values) {

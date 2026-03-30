@@ -3,6 +3,7 @@ package com.github.DaiYuANg.modules.accesscontrol.application.permission;
 import com.github.DaiYuANg.accesscontrol.entity.SysPermission;
 import com.github.DaiYuANg.accesscontrol.repository.PermissionRepository;
 import com.github.DaiYuANg.cache.PermissionCatalogEntry;
+import com.github.DaiYuANg.cache.PermissionCatalogEntryBuilder;
 import com.github.DaiYuANg.cache.PermissionCatalogStore;
 import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -49,16 +50,17 @@ public class PermissionCatalogLoader {
 
   @Contract("_ -> new")
   private @NonNull PermissionCatalogEntry toEntry(@NonNull SysPermission p) {
-    return new PermissionCatalogEntry(
-        p.id,
-        p.name,
-        p.code,
-        p.resource,
-        p.action,
-        p.groupCode,
-        p.description,
-        p.expression,
-        p.createAt,
-        p.updateAt);
+    return PermissionCatalogEntryBuilder.builder()
+        .id(p.id)
+        .name(p.name)
+        .code(p.code)
+        .resource(p.resource)
+        .action(p.action)
+        .groupCode(p.groupCode)
+        .description(p.description)
+        .expression(p.expression)
+        .createAt(p.createAt)
+        .updateAt(p.updateAt)
+        .build();
   }
 }

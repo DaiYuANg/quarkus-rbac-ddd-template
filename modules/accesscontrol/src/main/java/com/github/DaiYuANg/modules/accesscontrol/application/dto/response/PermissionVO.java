@@ -1,5 +1,8 @@
 package com.github.DaiYuANg.modules.accesscontrol.application.dto.response;
 
+import io.soabase.recordbuilder.core.RecordBuilder;
+
+@RecordBuilder
 public record PermissionVO(
     Long id,
     String name,

@@ -14,9 +14,13 @@ import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UpdateU
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UserCreationForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UserRefRoleForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.PermissionGroupVO;
+import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.PermissionGroupVOBuilder;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.PermissionVO;
+import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.PermissionVOBuilder;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.RoleVO;
+import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.RoleVOBuilder;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.UserVO;
+import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.UserVOBuilder;
 import com.github.DaiYuANg.modules.accesscontrol.application.support.AccessControlAuditSupport;
 import com.github.DaiYuANg.security.access.CurrentUserAccess;
 import com.github.DaiYuANg.security.auth.PasswordHasher;
@@ -258,18 +262,19 @@ public class UserApplicationService {
 
   private UserVO toUserVO(
       @NonNull com.github.DaiYuANg.identity.projection.UserListProjection user) {
-    return new UserVO(
-        user.id(),
-        user.username(),
-        user.identifier(),
-        user.mobilePhone(),
-        user.nickname(),
-        user.email(),
-        user.latestSignIn(),
-        null,
-        null,
-        parseUserStatus(user.userStatus()),
-        new LinkedHashSet<>());
+    return UserVOBuilder.builder()
+        .id(user.id())
+        .username(user.username())
+        .identifier(user.identifier())
+        .mobilePhone(user.mobilePhone())
+        .nickname(user.nickname())
+        .email(user.email())
+        .latestSignIn(user.latestSignIn())
+        .createAt(null)
+        .updateAt(null)
+        .userStatus(parseUserStatus(user.userStatus()))
+        .roles(new LinkedHashSet<>())
+        .build();
   }
 
   private UserVO toUserVO(@NonNull SysUser user) {
@@ -277,18 +282,19 @@ public class UserApplicationService {
         streamRoles(user)
             .map(this::toRoleVO)
             .collect(Collectors.toCollection(LinkedHashSet::new));
-    return new UserVO(
-        user.id,
-        user.username,
-        user.identifier,
-        user.mobilePhone,
-        user.nickname,
-        user.email,
-        user.latestSignIn,
-        user.createAt,
-        user.updateAt,
-        user.userStatus,
-        roles);
+    return UserVOBuilder.builder()
+        .id(user.id)
+        .username(user.username)
+        .identifier(user.identifier)
+        .mobilePhone(user.mobilePhone)
+        .nickname(user.nickname)
+        .email(user.email)
+        .latestSignIn(user.latestSignIn)
+        .createAt(user.createAt)
+        .updateAt(user.updateAt)
+        .userStatus(user.userStatus)
+        .roles(roles)
+        .build();
   }
 
   private RoleVO toRoleVO(@NonNull com.github.DaiYuANg.accesscontrol.entity.SysRole role) {
@@ -296,15 +302,16 @@ public class UserApplicationService {
         streamPermissionGroups(role)
             .map(this::toPermissionGroupVO)
             .collect(Collectors.toCollection(LinkedHashSet::new));
-    return new RoleVO(
-        role.id,
-        role.name,
-        role.code,
-        role.status,
-        role.sort,
-        role.createAt,
-        role.updateAt,
-        groups);
+    return RoleVOBuilder.builder()
+        .id(role.id)
+        .name(role.name)
+        .code(role.code)
+        .status(role.status)
+        .sort(role.sort)
+        .createAt(role.createAt)
+        .updateAt(role.updateAt)
+        .permissionGroups(groups)
+        .build();
   }
 
   private PermissionGroupVO toPermissionGroupVO(
@@ -313,28 +320,30 @@ public class UserApplicationService {
         streamPermissions(group)
             .map(this::toPermissionVO)
             .collect(Collectors.toCollection(LinkedHashSet::new));
-    return new PermissionGroupVO(
-        group.id,
-        group.name,
-        group.description,
-        group.code,
-        group.sort,
-        group.createAt,
-        group.updateAt,
-        permissions);
+    return PermissionGroupVOBuilder.builder()
+        .id(group.id)
+        .name(group.name)
+        .description(group.description)
+        .code(group.code)
+        .sort(group.sort)
+        .createAt(group.createAt)
+        .updateAt(group.updateAt)
+        .permissions(permissions)
+        .build();
   }
 
   private PermissionVO toPermissionVO(
       @NonNull com.github.DaiYuANg.accesscontrol.entity.SysPermission permission) {
-    return new PermissionVO(
-        permission.id,
-        permission.name,
-        permission.code,
-        permission.resource,
-        permission.action,
-        permission.groupCode,
-        permission.description,
-        permission.expression);
+    return PermissionVOBuilder.builder()
+        .id(permission.id)
+        .name(permission.name)
+        .code(permission.code)
+        .resource(permission.resource)
+        .action(permission.action)
+        .groupCode(permission.groupCode)
+        .description(permission.description)
+        .expression(permission.expression)
+        .build();
   }
 
   private UserStatus parseUserStatus(String value) {
