@@ -2,6 +2,7 @@ package com.github.DaiYuANg.accesscontrol.repository;
 
 import com.github.DaiYuANg.accesscontrol.entity.QSysPermission;
 import com.github.DaiYuANg.accesscontrol.entity.SysPermission;
+import com.github.DaiYuANg.accesscontrol.mapper.PermissionListViewMapper;
 import com.github.DaiYuANg.accesscontrol.projection.PermissionListProjection;
 import com.github.DaiYuANg.accesscontrol.query.PermissionPageQuery;
 import com.github.DaiYuANg.accesscontrol.query.PermissionQueryRepository;
@@ -34,6 +35,7 @@ public class PermissionRepository extends BasePanacheCommandRepository<SysPermis
 
   private final BlazeJPAQueryFactory blazeQueryFactory;
   private final BlazeQueryDSLSupport queryDslSupport;
+  private final PermissionListViewMapper mapper;
 
   public Optional<SysPermission> findByCode(String code) {
     if (code == null || code.isBlank()) {
@@ -76,20 +78,8 @@ public class PermissionRepository extends BasePanacheCommandRepository<SysPermis
             PermissionListView.class,
             query.offset(),
             query.getPageSize(),
-            this::toProjection);
+            mapper::toProjection);
     return BlazeQueryDSLSupport.toPageResult(page, query);
-  }
-
-  private PermissionListProjection toProjection(PermissionListView view) {
-    return new PermissionListProjection(
-        view.getId(),
-        view.getName(),
-        view.getCode(),
-        view.getResource(),
-        view.getAction(),
-        view.getGroupCode(),
-        view.getDescription(),
-        view.getExpression());
   }
 
   @Override

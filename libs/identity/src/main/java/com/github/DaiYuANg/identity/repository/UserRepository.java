@@ -6,6 +6,7 @@ import com.github.DaiYuANg.accesscontrol.entity.QSysRole;
 import com.github.DaiYuANg.common.constant.ResultCode;
 import com.github.DaiYuANg.identity.entity.QSysUser;
 import com.github.DaiYuANg.identity.entity.SysUser;
+import com.github.DaiYuANg.identity.mapper.UserListViewMapper;
 import com.github.DaiYuANg.identity.projection.UserListProjection;
 import com.github.DaiYuANg.identity.query.UserPageQuery;
 import com.github.DaiYuANg.identity.query.UserQueryRepository;
@@ -43,6 +44,7 @@ public class UserRepository extends BasePanacheCommandRepository<SysUser>
 
   private final BlazeJPAQueryFactory blazeQueryFactory;
   private final BlazeQueryDSLSupport queryDslSupport;
+  private final UserListViewMapper mapper;
 
   public Optional<SysUser> findByUsername(String username) {
     if (username == null || username.isBlank()) {
@@ -226,20 +228,8 @@ public class UserRepository extends BasePanacheCommandRepository<SysUser>
     query.buildOrders(u).forEach(blazeQuery::orderBy);
     val page =
         queryDslSupport.executeWithEntityView(
-            blazeQuery, UserListView.class, query.offset(), query.getPageSize(), this::toProjection);
+            blazeQuery, UserListView.class, query.offset(), query.getPageSize(), mapper::toProjection);
     return BlazeQueryDSLSupport.toPageResult(page, query);
-  }
-
-  private UserListProjection toProjection(UserListView view) {
-    return new UserListProjection(
-        view.getId(),
-        view.getUsername(),
-        view.getNickname(),
-        view.getEmail(),
-        view.getMobilePhone(),
-        view.getIdentifier(),
-        view.getUserStatus() == null ? null : view.getUserStatus().name(),
-        view.getLatestSignIn());
   }
 
   @Override

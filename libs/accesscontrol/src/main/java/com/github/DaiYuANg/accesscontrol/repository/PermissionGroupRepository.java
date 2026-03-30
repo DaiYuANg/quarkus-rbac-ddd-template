@@ -5,6 +5,7 @@ import com.github.DaiYuANg.accesscontrol.entity.QSysPermissionGroup;
 import com.github.DaiYuANg.accesscontrol.entity.QSysPermissionGroupRefPermission;
 import com.github.DaiYuANg.accesscontrol.entity.SysPermissionGroup;
 import com.github.DaiYuANg.accesscontrol.entity.SysPermissionGroupRefPermission;
+import com.github.DaiYuANg.accesscontrol.mapper.PermissionGroupListViewMapper;
 import com.github.DaiYuANg.accesscontrol.projection.PermissionGroupListProjection;
 import com.github.DaiYuANg.accesscontrol.query.PermissionGroupPageQuery;
 import com.github.DaiYuANg.accesscontrol.query.PermissionGroupQueryRepository;
@@ -53,6 +54,7 @@ public class PermissionGroupRepository extends BasePanacheCommandRepository<SysP
   private final BlazeQueryDSLSupport queryDslSupport;
   private final JPAQueryFactory jpaQueryFactory;
   private final EntityManager entityManager;
+  private final PermissionGroupListViewMapper mapper;
 
   public Optional<SysPermissionGroup> findByCode(String code) {
     if (code == null || code.isBlank()) {
@@ -206,13 +208,8 @@ public class PermissionGroupRepository extends BasePanacheCommandRepository<SysP
             PermissionGroupListView.class,
             query.offset(),
             query.getPageSize(),
-            this::toProjection);
+            mapper::toProjection);
     return BlazeQueryDSLSupport.toPageResult(page, query);
-  }
-
-  private PermissionGroupListProjection toProjection(PermissionGroupListView view) {
-    return new PermissionGroupListProjection(
-        view.getId(), view.getName(), view.getDescription(), view.getCode(), view.getSort());
   }
 
   @Override

@@ -3,6 +3,7 @@ package com.github.DaiYuANg.accesscontrol.repository;
 import com.github.DaiYuANg.accesscontrol.entity.QSysPermissionGroup;
 import com.github.DaiYuANg.accesscontrol.entity.QSysRole;
 import com.github.DaiYuANg.accesscontrol.entity.SysRole;
+import com.github.DaiYuANg.accesscontrol.mapper.RoleListViewMapper;
 import com.github.DaiYuANg.accesscontrol.projection.RoleListProjection;
 import com.github.DaiYuANg.accesscontrol.query.RolePageQuery;
 import com.github.DaiYuANg.accesscontrol.query.RoleQueryRepository;
@@ -39,6 +40,7 @@ public class RoleRepository extends BasePanacheCommandRepository<SysRole>
 
   private final BlazeJPAQueryFactory blazeQueryFactory;
   private final BlazeQueryDSLSupport queryDslSupport;
+  private final RoleListViewMapper mapper;
 
   public Optional<SysRole> findByName(String name) {
     if (name == null || name.isBlank()) {
@@ -97,17 +99,8 @@ public class RoleRepository extends BasePanacheCommandRepository<SysRole>
     query.buildOrders(r).forEach(blazeQuery::orderBy);
     val page =
         queryDslSupport.executeWithEntityView(
-            blazeQuery, RoleListView.class, query.offset(), query.getPageSize(), this::toProjection);
+            blazeQuery, RoleListView.class, query.offset(), query.getPageSize(), mapper::toProjection);
     return BlazeQueryDSLSupport.toPageResult(page, query);
-  }
-
-  private RoleListProjection toProjection(RoleListView view) {
-    return new RoleListProjection(
-        view.getId(),
-        view.getName(),
-        view.getCode(),
-        view.getStatus() == null ? null : view.getStatus().name(),
-        view.getSort());
   }
 
   @Override
