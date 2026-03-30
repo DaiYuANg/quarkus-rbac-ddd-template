@@ -6,12 +6,11 @@ import lombok.experimental.UtilityClass;
 import lombok.val;
 
 /**
- * Stable synthetic primary key for {@code app.security.config-users} accounts so permission
- * snapshots can use the same Valkey layout as database users (positive ids from DB, negative ids
- * reserved here).
+ * Stable synthetic primary key for the configured super admin account so permission snapshots can
+ * follow the same Valkey layout as database users.
  */
 @UtilityClass
-public final class ConfigUserAuthorityId {
+public final class SuperAdminAuthorityId {
 
   /** Deterministic negative long derived from username; stable across JVM restarts. */
   public long forUsername(String username) {
@@ -19,7 +18,7 @@ public final class ConfigUserAuthorityId {
       throw new IllegalArgumentException("username required");
     }
     val uuid =
-        UUID.nameUUIDFromBytes(("config-user:" + username.trim()).getBytes(StandardCharsets.UTF_8));
+        UUID.nameUUIDFromBytes(("super-admin:" + username.trim()).getBytes(StandardCharsets.UTF_8));
     val msb = uuid.getMostSignificantBits();
     val lsb = uuid.getLeastSignificantBits();
     val combined = msb ^ lsb;

@@ -28,9 +28,10 @@
 
 ## 配置差异
 
-- **`app.identity.db-user-type` / `config-user-fallback-type`** — JWT 中 `userType` 与 admin 区分（模板中 `MEMBER` vs `ADMIN`）。
+- **`app.identity.db-user-type`** — DB 用户写入 JWT / 快照时的 `userType`；mobile 默认是 `MEMBER`，admin 默认是 `ADMIN`。
 - **HTTP 端口** — 默认 `8081`，admin 为 `8080`。
 - **Cookie 路径** — `/api/mobile/v1/auth`，与 admin 的 `/api/v1/auth` 隔离，避免刷新 Cookie 串进程。
+- **无内置 super-admin** — `mobile-api` 当前不配置研发后门账号；用户侧进程默认只走 DB 用户链路。
 
 ## 契约测试
 

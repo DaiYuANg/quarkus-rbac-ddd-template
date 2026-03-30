@@ -26,13 +26,13 @@ libs/
 |- identity              # 用户模型
 |- audit                 # 操作日志、登录日志
 |- cache                 # 刷新令牌、权限版本、登录尝试、目录缓存、nonce
-|- security              # 认证链、JWT 辅助、配置用户
+|- security              # 认证链、JWT 辅助、主体定义与配置
 `- rest-support          # 共享 JAX-RS：异常映射、RefreshToken Cookie
 
 modules/
 |- identity              # 认证应用服务、用户资料、端口
 |- accesscontrol         # 用户/角色/权限用例、权限目录加载
-|- security-runtime      # Quarkus 安全装配：JWT、权限增强、重放过滤
+|- security-runtime      # Quarkus 安全装配：DB/super-admin 登录、JWT、权限增强、重放过滤
 `- example-ddd           # 示例商品/订单上下文，展示命令、读模型、领域对象与适配器
 
 apps/

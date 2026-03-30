@@ -65,29 +65,11 @@ app:
   identity:
     # DB 用户（sys_user）登录后 JWT / 权限快照中的 userType；与 admin-api 的 ADMIN 区分。
     db-user-type: MEMBER
-    # 配置文件用户默认 userType；可被各账号的 principal-user-type 覆盖。
-    config-user-fallback-type: MEMBER
   security:
     access-token-ttl-seconds: 7200
     refresh-token-ttl-seconds: 604800
     login-failure-max-attempts: 5
     login-failure-lock-seconds: 900
-    config-users:
-      # 密码与 admin 默认 root 相同（bcrypt 对应 "root"），仅作本地示例。
-      mobile-member:
-        username: mobile-member
-        password-hash: $2a$10$c2V22M8f.jUtSuBz.I4r1uHTCwMWsnRabXr6fs9gKdmoRThu/j3a6
-        display-name: Demo Member
-        principal-user-type: MEMBER
-        roles: []
-        permissions: []
-      mobile-merchant:
-        username: mobile-merchant
-        password-hash: $2a$10$c2V22M8f.jUtSuBz.I4r1uHTCwMWsnRabXr6fs9gKdmoRThu/j3a6
-        display-name: Demo Merchant
-        principal-user-type: MERCHANT
-        roles: []
-        permissions: []
 
 "%dev":
   quarkus:

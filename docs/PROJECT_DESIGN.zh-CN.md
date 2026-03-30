@@ -270,8 +270,8 @@ sequenceDiagram
 | **Quarkus Security** | 与 HTTP 权限集成 |
 | **SmallRye JWT** | 校验/签发；RSA 由 `generateRsaKeys` 任务生成 |
 | **Elytron common** | 安全工具类 |
-| **自定义 Provider 链** | 配置用户 + DB 登录编排在 `libs:security` / `modules:security-runtime` |
-| **密码哈希** | BCrypt（见 `application.yaml` 中配置用户） |
+| **自定义 Provider 链** | super-admin + DB + refresh token 登录编排在 `libs:security` / `modules:security-runtime` |
+| **密码哈希** | BCrypt（见 `application.yaml` 中 `super-admin` 配置） |
 | **WildFly Elytron SASL Digest** | **2.8.3.Final**（digest 相关流程） |
 
 ### 6.5 缓存与 Redis

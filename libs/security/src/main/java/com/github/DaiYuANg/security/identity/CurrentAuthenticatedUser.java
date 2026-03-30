@@ -1,9 +1,12 @@
 package com.github.DaiYuANg.security.identity;
 
+import io.soabase.recordbuilder.core.RecordBuilder;
+
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+@RecordBuilder
 public record CurrentAuthenticatedUser(
     String username,
     String displayName,

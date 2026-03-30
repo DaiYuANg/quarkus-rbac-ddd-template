@@ -26,13 +26,13 @@ libs/
 ├── identity            # User (depends on accesscontrol for roles)
 ├── audit               # OperationLog, LoginLog
 ├── cache               # Refresh tokens, authority version, login attempts, catalog cache, replay nonces
-├── security            # Auth provider chain, JWT helpers, config users
+├── security            # Auth provider chain, JWT helpers, principal definitions, config
 └── rest-support        # Shared JAX-RS: GlobalExceptionHandler, RefreshTokenCookies
 
 modules/
 ├── identity            # Auth application service, user profile, ports (uses libs above)
 ├── accesscontrol       # User/role/permission application services, permission catalog loader
-├── security-runtime    # Quarkus wiring: DB/config login, JWT issue, permission augmentor, replay filter
+├── security-runtime    # Quarkus wiring: DB/super-admin login, JWT issue, permission augmentor, replay filter
 └── example-ddd         # Sample product/order bounded context (ports + Panache adapters)
 
 apps/

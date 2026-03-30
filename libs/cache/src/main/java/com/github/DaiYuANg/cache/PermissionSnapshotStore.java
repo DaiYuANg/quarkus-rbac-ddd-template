@@ -8,8 +8,9 @@ import java.util.Optional;
  * Facade for user permission snapshot storage. Delegates to UserAuthorityStore with hash-based
  * deduplication and reference counting.
  *
- * <p>Snapshots are keyed by a {@code userId} in Valkey. DB users use their row id; config users use
- * a stable synthetic negative id so both follow the same pipeline.
+ * <p>Snapshots are keyed by a {@code userId} in Valkey. DB users use their row id; virtual
+ * principals such as the configured super admin use a stable synthetic negative id so both follow
+ * the same pipeline.
  *
  * @author ddddd <dai_yuang@icloud.com>
  */

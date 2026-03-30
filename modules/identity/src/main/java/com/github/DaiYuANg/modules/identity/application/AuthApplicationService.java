@@ -38,7 +38,7 @@ import lombok.val;
  * <p>Coordinates:
  *
  * <ul>
- *   <li>authentication provider chain (DB users + config users)
+ *   <li>authentication provider chain (DB users + super admin)
  *   <li>refresh token rotation and revocation
  *   <li>publishing Valkey permission snapshots on login/refresh
  * </ul>
@@ -160,9 +160,17 @@ public class AuthApplicationService {
   }
 
   public String checkAuthorityVersion(@NonNull String username) {
+    val current =
+        currentUserAccess
+            .currentUser()
+            .orElseThrow(() -> new BizException(ResultCode.UNAUTHORIZED));
+    if (!username.equals(current.username())) {
+      throw new BizException(ResultCode.FORBIDDEN);
+    }
     val user = userRepository.findByUsername(username).orElse(null);
     if (user == null) {
-      return authorityVersionStore.currentVersion() + ":config";
+      return composeAuthorityVersion(
+          new LinkedHashSet<>(current.permissions()), new LinkedHashSet<>(current.roles()));
     }
     val permissions = new LinkedHashSet<>(userRepository.findPermissionCodesByUsername(username));
     val roles = new LinkedHashSet<>(userRepository.findRoleCodesByUsername(username));

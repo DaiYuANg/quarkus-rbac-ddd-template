@@ -26,7 +26,7 @@ A reusable Quarkus backend foundation with RBAC (Role-Based Access Control), JWT
 
 **JWT keys**: Run `./gradlew generateRsaKeys` before first start. Keys are generated to the project root and gitignored.
 
-**Default config user** (no DB): `root` / `root` — from `app.security.config-users`, for quick API testing.
+**Default super-admin** (no DB): `root` / `root` — from `app.security.super-admin`, for quick admin API testing.
 
 ### Run Migrations
 
@@ -50,7 +50,7 @@ Default HTTP: `http://localhost:8080` (see `apps/admin-api/src/main/resources/ap
 ./gradlew :apps:mobile-api:quarkusDev
 ```
 
-Default HTTP: `http://localhost:8081`. Uses the same database and Redis as admin unless you override config. Demo config users: `mobile-member` / `mobile-merchant` (password same as documented admin default where applicable).
+Default HTTP: `http://localhost:8081`. Uses the same database and Redis as admin unless you override config. The mobile process no longer ships with built-in config accounts.
 
 ## Project Structure
 
@@ -62,13 +62,13 @@ libs/
 ├── identity            # User (depends on accesscontrol)
 ├── audit               # OperationLog, LoginLog
 ├── cache               # Refresh token, authority version, login attempts, permission catalog, replay nonces (Redis)
-├── security            # Auth provider chain, JWT, current user, token context, config
+├── security            # Auth provider chain, JWT, current user, principal definitions, config
 └── rest-support        # Shared GlobalExceptionHandler, RefreshTokenCookies (JAX-RS)
 
 modules/
 ├── identity            # Auth application service, profile, ports
 ├── accesscontrol       # User/role/permission application services, permission catalog loader
-├── security-runtime    # Quarkus wiring: DB/config login, JWT issue, permission augmentor, replay filter
+├── security-runtime    # Quarkus wiring: DB/super-admin login, JWT issue, permission augmentor, replay filter
 └── example-ddd         # Sample product/order bounded context (ports + Panache adapters)
 
 apps/
@@ -85,7 +85,7 @@ apps/
 
 Notable keys:
 
-- **`app.identity.*`**: principal `userType` for DB and config users (differs between admin-api and mobile-api)
+- **`app.identity.*`**: principal `userType` written for DB-backed users (differs between admin-api and mobile-api)
 - **`app.replay.*`**: replay protection for endpoints annotated with `@ReplayProtected` (admin example APIs)
 
 ## Documentation
@@ -93,6 +93,7 @@ Notable keys:
 | Document | English | 中文 |
 |----------|---------|------|
 | Project design (DDD, diagrams, stack) | [PROJECT_DESIGN.md](docs/PROJECT_DESIGN.md) | [PROJECT_DESIGN.zh-CN.md](docs/PROJECT_DESIGN.zh-CN.md) |
+| Security runtime (auth chain, snapshot flow, Mermaid diagrams) | [SECURITY_RUNTIME.md](docs/SECURITY_RUNTIME.md) | [SECURITY_RUNTIME.zh-CN.md](docs/SECURITY_RUNTIME.zh-CN.md) |
 | Mobile API (dependency whitelist) | [MOBILE_API.md](docs/MOBILE_API.md) | [MOBILE_API.zh-CN.md](docs/MOBILE_API.zh-CN.md) |
 | DDD Architecture | [ARCHITECTURE_DDD.md](docs/ARCHITECTURE_DDD.md) | [ARCHITECTURE_DDD.zh-CN.md](docs/ARCHITECTURE_DDD.zh-CN.md) |
 | Authorization Flow | [AUTHORIZATION_FLOW.md](docs/AUTHORIZATION_FLOW.md) | [AUTHORIZATION_FLOW.zh-CN.md](docs/AUTHORIZATION_FLOW.zh-CN.md) |

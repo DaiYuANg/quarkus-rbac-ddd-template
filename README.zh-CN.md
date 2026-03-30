@@ -26,7 +26,7 @@
 
 **JWT 密钥**：首次启动前执行 `./gradlew generateRsaKeys`，密钥生成到项目根目录并已加入 gitignore。
 
-**默认配置用户**（不走数据库）：`root` / `root` — 来自 `app.security.config-users`，用于快速测试接口。
+**默认 super-admin**（不走数据库）：`root` / `root` — 来自 `app.security.super-admin`，用于管理端快速测试接口。
 
 ### 执行数据库迁移
 
@@ -50,7 +50,7 @@
 ./gradlew :apps:mobile-api:quarkusDev
 ```
 
-默认 HTTP：`http://localhost:8081`。与 admin 共用同一数据库与 Redis（除非改配置）。示例配置用户：`mobile-member`、`mobile-merchant`（密码与文档中 admin 默认说明一致处可用）。
+默认 HTTP：`http://localhost:8081`。与 admin 共用同一数据库与 Redis（除非改配置）。当前不再内置移动端配置账号。
 
 ## 项目结构
 
@@ -62,13 +62,13 @@ libs/
 ├── identity            # 用户（依赖 accesscontrol）
 ├── audit               # 操作日志、登录日志
 ├── cache               # 刷新令牌、权限版本、登录尝试、权限目录、重放 nonce（Redis）
-├── security            # 认证链、JWT、当前用户、配置
+├── security            # 认证链、JWT、当前用户、主体定义、配置
 └── rest-support        # 共享 GlobalExceptionHandler、RefreshTokenCookies（JAX-RS）
 
 modules/
 ├── identity            # 认证应用服务、用户资料、端口
 ├── accesscontrol       # 用户/角色/权限应用服务、权限目录加载
-├── security-runtime    # Quarkus 装配：DB/配置登录、JWT、权限增强、重放过滤
+├── security-runtime    # Quarkus 装配：DB/super-admin 登录、JWT、权限增强、重放过滤
 └── example-ddd         # 示例商品/订单限界上下文（端口 + Panache 适配器）
 
 apps/
@@ -85,7 +85,7 @@ apps/
 
 常用配置项：
 
-- **`app.identity.*`**：数据库用户与配置用户的 JWT `userType`（admin 与 mobile 可不同）
+- **`app.identity.*`**：数据库用户写入 JWT / 快照时的 `userType`（admin 与 mobile 可不同）
 - **`app.replay.*`**：对标注 `@ReplayProtected` 的接口启用防重放（admin 示例接口）
 
 ## 文档
@@ -93,6 +93,7 @@ apps/
 | 文档 | English | 中文 |
 |------|---------|------|
 | 项目设计（DDD、架构图、技术栈） | [PROJECT_DESIGN.md](docs/PROJECT_DESIGN.md) | [PROJECT_DESIGN.zh-CN.md](docs/PROJECT_DESIGN.zh-CN.md) |
+| Security 运行时（认证链、快照流、Mermaid 图） | [SECURITY_RUNTIME.md](docs/SECURITY_RUNTIME.md) | [SECURITY_RUNTIME.zh-CN.md](docs/SECURITY_RUNTIME.zh-CN.md) |
 | Mobile API（依赖白名单） | [MOBILE_API.md](docs/MOBILE_API.md) | [MOBILE_API.zh-CN.md](docs/MOBILE_API.zh-CN.md) |
 | DDD 架构说明 | [ARCHITECTURE_DDD.md](docs/ARCHITECTURE_DDD.md) | [ARCHITECTURE_DDD.zh-CN.md](docs/ARCHITECTURE_DDD.zh-CN.md) |
 | 授权流程 | [AUTHORIZATION_FLOW.md](docs/AUTHORIZATION_FLOW.md) | [AUTHORIZATION_FLOW.zh-CN.md](docs/AUTHORIZATION_FLOW.zh-CN.md) |

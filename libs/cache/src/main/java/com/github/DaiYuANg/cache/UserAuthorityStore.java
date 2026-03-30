@@ -31,8 +31,8 @@ import java.util.Set;
  * <p>Design notes:
  *
  * <ul>
- *   <li>{@code userId} is the primary key for snapshots. DB users use row ids; config users use
- *       stable synthetic negative ids.
+ *   <li>{@code userId} is the primary key for snapshots. DB users use row ids; virtual principals
+ *       such as the configured super admin use stable synthetic negative ids.
  *   <li>Role/permission sets are stored by hash and ref-counted to reduce memory footprint.
  *   <li>{@code authorityVersion} is persisted to support fast reuse / invalidation.
  * </ul>

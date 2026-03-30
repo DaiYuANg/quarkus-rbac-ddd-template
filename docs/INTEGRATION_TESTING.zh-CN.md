@@ -17,9 +17,9 @@
 | admin-api | `com.github.DaiYuANg.integration.AdminApiFullStackFlowIT` |
 | mobile-api | `com.github.DaiYuANg.mobile.integration.MobileApiFullStackFlowIT` |
 
-覆盖 **登录 → JWT → `/me`** 以及 **存活探针**（配置用户 `root` / `mobile-member`），与本地 **`quarkusDev` + 配置用户** 接近。
+`AdminApiFullStackFlowIT` 覆盖 **super-admin 登录 → JWT → `/me`** 与 **存活探针**。`MobileApiFullStackFlowIT` 现在只保留用户侧进程的基础 smoke test，不再假设存在移动端配置账号。
 
-**刷新令牌** 未包含：`AdminRefreshTokenAuthenticationProvider` 目前只从 **`UserRepository`** 加载用户，纯配置用户无法走通刷新。若需测刷新，请另写 IT 并插入 `sys_user` 等种子数据。
+**刷新令牌** 未包含：`AdminRefreshTokenAuthenticationProvider` 目前只从 **`UserRepository`** 重新加载 DB 用户；若需测刷新，请另写 IT 并插入 `sys_user` 等种子数据。
 
 执行：
 

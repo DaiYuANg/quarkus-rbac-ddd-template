@@ -39,7 +39,7 @@ class MobileIdentityRestJsonContractTest {
 
     given()
         .contentType("application/json")
-        .body("{\"username\":\"mobile-member\",\"password\":\"root\"}")
+        .body("{\"username\":\"member-1\",\"password\":\"root\"}")
         .when()
         .post("/api/mobile/v1/auth/login")
         .then()
@@ -56,10 +56,10 @@ class MobileIdentityRestJsonContractTest {
 
   @Test
   @TestSecurity(
-      user = "mobile-member",
+      user = "member-1",
       roles = {"member"})
   void mobileMeMatchesAdminMeEnvelope() {
-    when(authApplicationService.me("mobile-member"))
+    when(authApplicationService.me("member-1"))
         .thenReturn(
             new MeResponse(
                 "m1", "Member", "m@x", List.of(new MeRoleItem("1", "member")), Set.of()));

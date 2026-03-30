@@ -1,9 +1,12 @@
 package com.github.DaiYuANg.security.snapshot;
 
 import com.github.DaiYuANg.security.identity.AuthenticatedUser;
+import io.soabase.recordbuilder.core.RecordBuilder;
+
 import java.util.Map;
 import java.util.Set;
 
+@RecordBuilder
 public record PermissionSnapshot(
     String username,
     String displayName,

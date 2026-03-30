@@ -6,6 +6,7 @@ import com.github.DaiYuANg.common.exception.BizException;
 import com.github.DaiYuANg.identity.repository.UserRepository;
 import com.github.DaiYuANg.modules.identity.application.dto.response.UserDetailVo;
 import com.github.DaiYuANg.security.identity.CurrentAuthenticatedUser;
+import com.github.DaiYuANg.security.identity.SecurityPrincipalKinds;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.LinkedHashSet;
@@ -25,8 +26,6 @@ import lombok.val;
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class DbUserProfileProvider implements UserProfileProvider {
 
-  private static final String CONFIG_USER_TYPE = "CONFIG";
-
   private final UserRepository userRepository;
   private final AuthorityVersionStore authorityVersionStore;
 
@@ -37,7 +36,7 @@ public class DbUserProfileProvider implements UserProfileProvider {
 
   @Override
   public boolean supports(@NonNull CurrentAuthenticatedUser user) {
-    return !CONFIG_USER_TYPE.equalsIgnoreCase(
+    return !SecurityPrincipalKinds.UserType.SUPER_ADMIN.equalsIgnoreCase(
         user.userType() == null ? "" : user.userType().trim());
   }
 

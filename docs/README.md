@@ -5,6 +5,7 @@ This folder complements the root [README.md](../README.md) with deeper architect
 | Document | English | 中文 |
 |----------|---------|------|
 | Project design (DDD, benefits, stack, diagrams) | [PROJECT_DESIGN.md](PROJECT_DESIGN.md) | [PROJECT_DESIGN.zh-CN.md](PROJECT_DESIGN.zh-CN.md) |
+| Security runtime (auth chain, snapshot flow, Mermaid diagrams) | [SECURITY_RUNTIME.md](SECURITY_RUNTIME.md) | [SECURITY_RUNTIME.zh-CN.md](SECURITY_RUNTIME.zh-CN.md) |
 | Mobile API whitelist & cookies | [MOBILE_API.md](MOBILE_API.md) | [MOBILE_API.zh-CN.md](MOBILE_API.zh-CN.md) |
 | Integration / full-stack tests | [INTEGRATION_TESTING.md](INTEGRATION_TESTING.md) | [INTEGRATION_TESTING.zh-CN.md](INTEGRATION_TESTING.zh-CN.md) |
 | DDD Architecture | [ARCHITECTURE_DDD.md](ARCHITECTURE_DDD.md) | [ARCHITECTURE_DDD.zh-CN.md](ARCHITECTURE_DDD.zh-CN.md) |

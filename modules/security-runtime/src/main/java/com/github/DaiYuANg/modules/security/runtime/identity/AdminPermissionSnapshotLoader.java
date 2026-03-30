@@ -1,27 +1,28 @@
 package com.github.DaiYuANg.modules.security.runtime.identity;
 
 import com.github.DaiYuANg.cache.AuthorityVersionStore;
+import com.github.DaiYuANg.cache.PermissionCatalogStore;
 import com.github.DaiYuANg.identity.constant.UserStatus;
 import com.github.DaiYuANg.identity.entity.SysUser;
 import com.github.DaiYuANg.identity.repository.UserRepository;
-import com.github.DaiYuANg.security.config.ConfigUserAccountConfig;
-import com.github.DaiYuANg.security.config.ConfigUserAccounts;
-import com.github.DaiYuANg.security.config.ConfigUserAuthorityId;
-import com.github.DaiYuANg.security.identity.PrincipalAttributeKeys;
+import com.github.DaiYuANg.security.config.IdentityPrincipalConfig;
+import com.github.DaiYuANg.security.config.SuperAdminAccountConfig;
+import com.github.DaiYuANg.security.config.SuperAdminAuthorityId;
+import com.github.DaiYuANg.security.identity.SecurityPrincipalDefinition;
+import com.github.DaiYuANg.security.identity.SecurityPrincipalFactory;
+import com.github.DaiYuANg.security.identity.SecurityPrincipalKinds;
 import com.github.DaiYuANg.security.snapshot.PermissionSnapshot;
 import com.github.DaiYuANg.security.snapshot.PermissionSnapshotLoader;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 /**
  * Loads a {@link PermissionSnapshot} for a principal.
@@ -29,8 +30,9 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
  * <p>DB users: resolve roles/permissions via repository-level typed queries to avoid initializing
  * the RBAC entity graph (prevents N+1 lazy loads).
  *
- * <p>Config users: resolve from {@code app.security.config-users} and assign a stable synthetic
- * negative {@code userId} so Valkey storage shares the same layout as DB users.
+ * <p>Super admin: resolve from {@code app.security.super-admin}. It always receives the full
+ * permission catalog and a stable synthetic negative {@code userId} so Valkey storage shares the
+ * same layout as DB users.
  *
  * @author ddddd <dai_yuang@icloud.com>
  */
@@ -39,13 +41,10 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 public class AdminPermissionSnapshotLoader implements PermissionSnapshotLoader {
   private final UserRepository userRepository;
   private final AuthorityVersionStore authorityVersionStore;
-  private final ConfigUserAccountConfig configUserAccountConfig;
-
-  @ConfigProperty(name = "app.identity.db-user-type", defaultValue = "ADMIN")
-  String dbUserType;
-
-  @ConfigProperty(name = "app.identity.config-user-fallback-type", defaultValue = "CONFIG")
-  String configUserFallbackType;
+  private final PermissionCatalogStore permissionCatalogStore;
+  private final IdentityPrincipalConfig identityPrincipalConfig;
+  private final SuperAdminAccountConfig superAdminAccountConfig;
+  private final SecurityPrincipalFactory securityPrincipalFactory;
 
   @Override
   @Transactional
@@ -54,8 +53,7 @@ public class AdminPermissionSnapshotLoader implements PermissionSnapshotLoader {
     if (user != null) {
       return snapshotFromDbUser(user);
     }
-    return ConfigUserAccounts.find(configUserAccountConfig, username)
-        .map(entry -> snapshotFromConfig(entry, username));
+    return snapshotFromSuperAdmin(username);
   }
 
   @Override
@@ -78,62 +76,54 @@ public class AdminPermissionSnapshotLoader implements PermissionSnapshotLoader {
     val roles = new LinkedHashSet<>(userRepository.findRoleCodesByUsername(user.username));
     val permissions =
         new LinkedHashSet<>(userRepository.findPermissionCodesByUsername(user.username));
-    val attributes = new LinkedHashMap<String, Object>();
     val version = authorityVersionStore.versionFor(user.username);
-    attributes.put(PrincipalAttributeKeys.SOURCE, "db");
-    attributes.put(PrincipalAttributeKeys.DISPLAY_NAME, user.nickname);
-    attributes.put(PrincipalAttributeKeys.ROLES, roles);
-    attributes.put(PrincipalAttributeKeys.PERMISSIONS, permissions);
-    attributes.put(PrincipalAttributeKeys.USER_ID, user.id);
-    attributes.put(PrincipalAttributeKeys.AUTHORITY_VERSION, version);
-    return Optional.of(
-        new PermissionSnapshot(
-            user.username,
-            user.nickname == null || user.nickname.isBlank() ? user.username : user.nickname,
-            dbUserType,
-            roles,
-            permissions,
-            version,
-            attributes,
-            user.id));
+    val principal =
+        securityPrincipalFactory.authenticatedUser(
+            SecurityPrincipalDefinition.builder()
+                .username(user.username)
+                .displayName(user.nickname)
+                .userType(identityPrincipalConfig.dbUserType())
+                .source(SecurityPrincipalKinds.Source.DB)
+                .providerId(SecurityPrincipalKinds.Provider.DB_USER)
+                .roles(roles)
+                .permissions(permissions)
+                .userId(user.id)
+                .build());
+    return Optional.of(securityPrincipalFactory.snapshot(principal, version));
   }
 
-  private PermissionSnapshot snapshotFromConfig(
-      @NonNull ConfigUserAccountConfig.ConfigUser entry, @NonNull String lookupUsername) {
-    val roles =
-        new LinkedHashSet<>(
-            entry.roles().orElseGet(List::of).stream()
-                .filter(Objects::nonNull)
-                .map(String::trim)
-                .filter(s -> !s.isEmpty())
-                .toList());
+  private Optional<PermissionSnapshot> snapshotFromSuperAdmin(@NonNull String username) {
+    val configuredUsername = superAdminAccountConfig.username().map(String::trim).orElse("");
+    if (configuredUsername.isEmpty() || !configuredUsername.equalsIgnoreCase(username.trim())) {
+      return Optional.empty();
+    }
     val permissions =
-        new LinkedHashSet<>(
-            entry.permissions().orElseGet(List::of).stream()
-                .filter(Objects::nonNull)
-                .map(String::trim)
-                .filter(s -> !s.isEmpty())
-                .toList());
-    val displayName = entry.displayName().orElse(entry.username());
-    val version = authorityVersionStore.versionFor(lookupUsername);
-    val principalType = entry.principalUserType().orElse(configUserFallbackType);
-    val attributes = new LinkedHashMap<String, Object>();
-    val syntheticUserId = ConfigUserAuthorityId.forUsername(entry.username());
-    attributes.put(PrincipalAttributeKeys.SOURCE, "config");
-    attributes.put(PrincipalAttributeKeys.DISPLAY_NAME, displayName);
-    attributes.put(PrincipalAttributeKeys.ROLES, roles);
-    attributes.put(PrincipalAttributeKeys.PERMISSIONS, permissions);
-    attributes.put(PrincipalAttributeKeys.USER_ID, syntheticUserId);
-    attributes.put(PrincipalAttributeKeys.AUTHORITY_VERSION, version);
-    return new PermissionSnapshot(
-        entry.username(),
-        displayName.isBlank() ? entry.username() : displayName,
-        principalType,
-        roles,
-        permissions,
-        version,
-        attributes,
-        syntheticUserId);
+        permissionCatalogStore.getAll().stream()
+            .map(entry -> entry.code())
+            .filter(Objects::nonNull)
+            .map(String::trim)
+            .filter(code -> !code.isEmpty())
+            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+    val version = authorityVersionStore.versionFor(configuredUsername);
+    val displayName =
+        superAdminAccountConfig
+            .displayName()
+            .map(String::trim)
+            .filter(value -> !value.isEmpty())
+            .orElse(configuredUsername);
+    val principal =
+        securityPrincipalFactory.authenticatedUser(
+            SecurityPrincipalDefinition.builder()
+                .username(configuredUsername)
+                .displayName(displayName)
+                .userType(SecurityPrincipalKinds.UserType.SUPER_ADMIN)
+                .source(SecurityPrincipalKinds.Source.SUPER_ADMIN)
+                .providerId(SecurityPrincipalKinds.Provider.SUPER_ADMIN)
+                .roles(Set.of(SecurityPrincipalKinds.Role.SUPER_ADMIN))
+                .permissions(permissions)
+                .userId(SuperAdminAuthorityId.forUsername(configuredUsername))
+                .build());
+    return Optional.of(securityPrincipalFactory.snapshot(principal, version));
   }
 
   // DB permissions/roles are resolved via UserRepository queries to avoid N+1 lazy loads.

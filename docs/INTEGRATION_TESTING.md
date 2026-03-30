@@ -18,9 +18,9 @@ The template uses **`@QuarkusTest`** with:
 | admin-api | `com.github.DaiYuANg.integration.AdminApiFullStackFlowIT` |
 | mobile-api | `com.github.DaiYuANg.mobile.integration.MobileApiFullStackFlowIT` |
 
-They exercise **login → JWT → `/me`** and **liveness**, similar to running **`quarkusDev`** with **config users** (`root`, `mobile-member`).
+`AdminApiFullStackFlowIT` covers **super-admin login → JWT → `/me`** and **liveness**. `MobileApiFullStackFlowIT` is now a user-side smoke test and no longer assumes a built-in mobile config account.
 
-**Refresh tokens** are not covered here: `AdminRefreshTokenAuthenticationProvider` currently reloads the principal from **`UserRepository`** only, so config-only accounts cannot complete refresh. Add a separate IT with a seeded `sys_user` row if you need refresh coverage.
+**Refresh tokens** are not covered here: `AdminRefreshTokenAuthenticationProvider` currently reloads the principal from **`UserRepository`** only. Add a separate IT with a seeded `sys_user` row if you need refresh coverage.
 
 Run:
 

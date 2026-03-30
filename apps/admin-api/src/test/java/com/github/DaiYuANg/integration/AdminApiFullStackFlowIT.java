@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 
 /**
  * End-to-end HTTP flow: real {@code AuthApplicationService}, JWT, Redis, PostgreSQL
- * (Testcontainers). Uses the built-in <strong>config user</strong> {@code root} / {@code root} (no
+ * (Testcontainers). Uses the built-in <strong>super admin</strong> {@code root} / {@code root} (no
  * {@code sys_user} row).
  *
  * <p><strong>Refresh tokens</strong> are currently resolved only for <strong>database</strong>
@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 class AdminApiFullStackFlowIT {
 
   @Test
-  void configUserLoginAndMe() {
+  void superAdminLoginAndMe() {
     String access =
         given()
             .contentType("application/json")

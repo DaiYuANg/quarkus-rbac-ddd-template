@@ -29,7 +29,7 @@ class DbUserProfileProviderTest {
   }
 
   @Test
-  void supportsNonConfigUserTypes() {
+  void supportsNonSuperAdminUserTypes() {
     var provider =
         new DbUserProfileProvider(mock(UserRepository.class), mock(AuthorityVersionStore.class));
     assertEquals(
@@ -39,6 +39,6 @@ class DbUserProfileProviderTest {
     assertEquals(
         false,
         provider.supports(
-            new CurrentAuthenticatedUser("u", "U", "CONFIG", Set.of(), Set.of(), Map.of())));
+            new CurrentAuthenticatedUser("u", "U", "SUPER_ADMIN", Set.of(), Set.of(), Map.of())));
   }
 }

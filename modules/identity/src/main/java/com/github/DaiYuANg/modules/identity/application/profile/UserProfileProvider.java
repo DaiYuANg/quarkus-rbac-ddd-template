@@ -5,7 +5,7 @@ import com.github.DaiYuANg.security.identity.CurrentAuthenticatedUser;
 
 /**
  * Resolves {@link UserDetailVo} for the current principal. One implementation per login identity
- * source (config user, DB user, future providers).
+ * source (super admin, DB user, future providers).
  */
 public interface UserProfileProvider {
 

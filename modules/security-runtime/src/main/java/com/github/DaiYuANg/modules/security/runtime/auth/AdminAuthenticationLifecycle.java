@@ -5,7 +5,7 @@ import com.github.DaiYuANg.cache.PermissionSnapshotStore;
 import com.github.DaiYuANg.cache.RefreshTokenStore;
 import com.github.DaiYuANg.modules.identity.application.port.AuthenticationLifecyclePort;
 import com.github.DaiYuANg.security.identity.AuthenticatedUser;
-import com.github.DaiYuANg.security.identity.PrincipalAttributeKeys;
+import com.github.DaiYuANg.security.identity.SecurityPrincipalFactory;
 import com.github.DaiYuANg.security.snapshot.PermissionSnapshot;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -27,6 +27,7 @@ public class AdminAuthenticationLifecycle implements AuthenticationLifecyclePort
   private final AuthorityVersionStore authorityVersionStore;
   private final RefreshTokenStore refreshTokenStore;
   private final PermissionSnapshotStore permissionSnapshotStore;
+  private final SecurityPrincipalFactory securityPrincipalFactory;
 
   public String authorityVersion(String username) {
     return authorityVersionStore.versionFor(username);
@@ -35,26 +36,7 @@ public class AdminAuthenticationLifecycle implements AuthenticationLifecyclePort
   @Override
   public void publishSnapshot(@NonNull AuthenticatedUser user) {
     val authorityVersion = authorityVersion(user.username());
-    val snapshot =
-        new PermissionSnapshot(
-            user.username(),
-            user.displayName(),
-            user.userType(),
-            user.roles(),
-            user.permissions(),
-            authorityVersion,
-            java.util.Map.of(
-                PrincipalAttributeKeys.DISPLAY_NAME,
-                user.displayName(),
-                PrincipalAttributeKeys.USER_TYPE,
-                user.userType(),
-                PrincipalAttributeKeys.ROLES,
-                user.roles(),
-                PrincipalAttributeKeys.PERMISSIONS,
-                user.permissions(),
-                PrincipalAttributeKeys.AUTHORITY_VERSION,
-                authorityVersion),
-            user.userId());
+    val snapshot = securityPrincipalFactory.snapshot(user, authorityVersion);
     permissionSnapshotStore.save(snapshot);
   }
 

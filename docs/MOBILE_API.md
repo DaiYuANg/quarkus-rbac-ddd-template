@@ -28,9 +28,10 @@ If you need new capabilities for mobile:
 
 ## Configuration differences
 
-- **`app.identity.db-user-type` / `config-user-fallback-type`** — JWT `userType` for members vs admins (`MEMBER` vs `ADMIN` in the template).
+- **`app.identity.db-user-type`** — `userType` written for DB-backed principals; mobile defaults to `MEMBER`, admin defaults to `ADMIN`.
 - **HTTP port** — default `8081` vs admin `8080`.
 - **Cookie path** — `/api/mobile/v1/auth` so refresh cookies do not collide with admin (`/api/v1/auth`).
+- **No built-in super-admin** — `mobile-api` does not configure the engineering backdoor account.
 
 ## Contract tests
 
