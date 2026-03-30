@@ -2,6 +2,8 @@ package com.github.DaiYuANg.common.model;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import java.util.Map;
+import java.util.Optional;
 import lombok.Setter;
 import lombok.val;
 import org.toolkit4j.data.model.page.PageRequest;
@@ -134,6 +136,24 @@ public class ApiPageQuery extends PageRequest {
   /** Zero-based page index for repositories that still expect it explicitly. */
   public int pageIndex() {
     return Math.max(getPageNum() - 1, 0);
+  }
+
+  protected final Optional<String> normalizedValue(String value) {
+    if (value == null || value.isBlank()) {
+      return Optional.empty();
+    }
+    val trimmed = value.trim();
+    return trimmed.isEmpty() ? Optional.empty() : Optional.of(trimmed);
+  }
+
+  protected final Optional<String> resolvedSortBy(Map<String, String> aliases) {
+    return normalizedValue(getSortBy()).map(sortBy -> aliases.getOrDefault(sortBy, sortBy));
+  }
+
+  protected final boolean isAscending(boolean defaultAsc) {
+    return normalizedValue(getSortDirection())
+        .map(direction -> "asc".equalsIgnoreCase(direction))
+        .orElse(defaultAsc);
   }
 
   private int clampSize(int candidate) {

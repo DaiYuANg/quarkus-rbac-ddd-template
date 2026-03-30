@@ -9,7 +9,9 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.ComparableExpressionBase;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.StringPath;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 import lombok.Getter;
@@ -19,6 +21,12 @@ import lombok.val;
 @Getter
 @Setter
 public class PermissionPageQuery extends ApiPageQuery {
+  private static final Map<String, String> SORT_ALIASES =
+      new LinkedHashMap<>(
+          Map.of(
+              "createTime", BaseEntity_.CREATE_AT,
+              "updateTime", BaseEntity_.UPDATE_AT));
+
   private String name;
 
   private String code;
@@ -42,7 +50,7 @@ public class PermissionPageQuery extends ApiPageQuery {
   }
 
   public List<OrderSpecifier<?>> buildOrders(QSysPermission permission) {
-    return switch (resolvedSortBy().orElse(SysPermission_.ID)) {
+    return switch (resolvedSortBy(SORT_ALIASES).orElse(SysPermission_.ID)) {
       case SysPermission_.NAME -> List.of(order(permission.name, true), permission.id.desc());
       case SysPermission_.CODE -> List.of(order(permission.code, true), permission.id.desc());
       case SysPermission_.RESOURCE -> List.of(order(permission.resource, true), permission.id.desc());
@@ -72,37 +80,15 @@ public class PermissionPageQuery extends ApiPageQuery {
   }
 
   private Optional<BooleanExpression> eqIfPresent(StringPath path, String value) {
-    return normalized(value).map(path::eq);
+    return normalizedValue(value).map(path::eq);
   }
 
   private Optional<String> likePattern(String value) {
-    return normalized(value).map(v -> '%' + v.toLowerCase() + '%');
-  }
-
-  private Optional<String> normalized(String value) {
-    if (value == null || value.isBlank()) {
-      return Optional.empty();
-    }
-    val trimmed = value.trim();
-    return trimmed.isEmpty() ? Optional.empty() : Optional.of(trimmed);
-  }
-
-  private Optional<String> resolvedSortBy() {
-    return normalized(getSortBy())
-        .map(
-            sortBy ->
-                switch (sortBy) {
-                  case "createTime" -> BaseEntity_.CREATE_AT;
-                  case "updateTime" -> BaseEntity_.UPDATE_AT;
-                  default -> sortBy;
-                });
+    return normalizedValue(value).map(v -> '%' + v.toLowerCase() + '%');
   }
 
   private OrderSpecifier<?> order(ComparableExpressionBase<?> expression, boolean defaultAsc) {
-    val asc =
-        normalized(getSortDirection())
-            .map(direction -> "asc".equalsIgnoreCase(direction))
-            .orElse(defaultAsc);
+    val asc = isAscending(defaultAsc);
     return asc ? expression.asc() : expression.desc();
   }
 }

@@ -10,7 +10,9 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.ComparableExpressionBase;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.SimpleExpression;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 import lombok.Getter;
@@ -20,6 +22,12 @@ import lombok.val;
 @Getter
 @Setter
 public class UserPageQuery extends ApiPageQuery {
+  private static final Map<String, String> SORT_ALIASES =
+      new LinkedHashMap<>(
+          Map.of(
+              "createTime", BaseEntity_.CREATE_AT,
+              "updateTime", BaseEntity_.UPDATE_AT));
+
   private String username;
 
   private UserStatus userStatus;
@@ -34,7 +42,7 @@ public class UserPageQuery extends ApiPageQuery {
   }
 
   public List<OrderSpecifier<?>> buildOrders(QSysUser user) {
-    return switch (resolvedSortBy().orElse(SysUser_.ID)) {
+    return switch (resolvedSortBy(SORT_ALIASES).orElse(SysUser_.ID)) {
       case SysUser_.USERNAME -> List.of(order(user.username, true), user.id.desc());
       case SysUser_.NICKNAME -> List.of(order(user.nickname, true), user.id.desc());
       case SysUser_.EMAIL -> List.of(order(user.email, true), user.id.desc());
@@ -66,33 +74,11 @@ public class UserPageQuery extends ApiPageQuery {
   }
 
   private Optional<String> likePattern(String value) {
-    return normalized(value).map(v -> '%' + v.toLowerCase() + '%');
-  }
-
-  private Optional<String> normalized(String value) {
-    if (value == null || value.isBlank()) {
-      return Optional.empty();
-    }
-    val trimmed = value.trim();
-    return trimmed.isEmpty() ? Optional.empty() : Optional.of(trimmed);
-  }
-
-  private Optional<String> resolvedSortBy() {
-    return normalized(getSortBy())
-        .map(
-            sortBy ->
-                switch (sortBy) {
-                  case "createTime" -> BaseEntity_.CREATE_AT;
-                  case "updateTime" -> BaseEntity_.UPDATE_AT;
-                  default -> sortBy;
-                });
+    return normalizedValue(value).map(v -> '%' + v.toLowerCase() + '%');
   }
 
   private OrderSpecifier<?> order(ComparableExpressionBase<?> expression, boolean defaultAsc) {
-    val asc =
-        normalized(getSortDirection())
-            .map(direction -> "asc".equalsIgnoreCase(direction))
-            .orElse(defaultAsc);
+    val asc = isAscending(defaultAsc);
     return asc ? expression.asc() : expression.desc();
   }
 }
