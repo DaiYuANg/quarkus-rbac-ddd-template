@@ -57,18 +57,13 @@ public class PermissionGroupApplicationService {
   private final AuthorizationService authorizationService;
   private final PermissionGroupVOMapper permissionGroupVOMapper;
   private final PermissionVOMapper permissionVOMapper;
+  private final PermissionGroupChecker permissionGroupChecker;
 
   @Transactional
   public PermissionGroupVO createPermissionGroup(@NonNull PermissionGroupCreationForm form) {
     authorizationService.check(PermissionGroup.ADD);
-    if (repository.countByName(form.name()) > 0)
-      throw new BizException(
-          ResultCode.DATA_ALREADY_EXISTS, "permission group name already exists");
-    val group = new SysPermissionGroup();
-    group.name = form.name();
-    group.code = form.code();
-    group.sort = form.sort();
-    group.description = form.description();
+    permissionGroupChecker.ensureCreatable(form);
+    val group = permissionGroupVOMapper.toEntity(form);
     repository.persist(group);
     auditSupport.bumpGlobalVersion();
     auditSupport.record("permission-group", "create", form.name(), true, "create permission group");
@@ -88,15 +83,8 @@ public class PermissionGroupApplicationService {
         repository
             .findByIdOptional(id)
             .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
-    if (form.name() != null
-        && !form.name().equals(group.name)
-        && repository.countByName(form.name()) > 0)
-      throw new BizException(
-          ResultCode.DATA_ALREADY_EXISTS, "permission group name already exists");
-    if (form.name() != null) group.name = form.name();
-    if (form.code() != null) group.code = form.code();
-    if (form.sort() != null) group.sort = form.sort();
-    if (form.description() != null) group.description = form.description();
+    permissionGroupChecker.ensureUpdatable(group, form);
+    permissionGroupVOMapper.updateEntity(form, group);
     auditSupport.bumpGlobalVersion();
     auditSupport.record(
         "permission-group", "update", String.valueOf(id), true, "update permission group");

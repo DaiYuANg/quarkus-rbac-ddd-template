@@ -193,7 +193,7 @@ public class AuthApplicationService {
   }
 
   private @NonNull String composeAuthorityVersion(
-      java.util.Set<String> permissions, java.util.Set<String> roleCodes) {
+      @NonNull java.util.Set<String> permissions, @NonNull java.util.Set<String> roleCodes) {
     return authorityVersionStore.currentVersion()
         + ":"
         + UserDetailVo.encodeAuthorityKey(permissions, roleCodes);

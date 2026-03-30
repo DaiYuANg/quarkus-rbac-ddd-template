@@ -15,7 +15,9 @@ import com.github.DaiYuANg.common.exception.BizException;
 import com.github.DaiYuANg.modules.accesscontrol.application.mapper.PermissionGroupVOMapper;
 import com.github.DaiYuANg.modules.accesscontrol.application.mapper.PermissionVOMapper;
 import com.github.DaiYuANg.modules.accesscontrol.application.mapper.RoleVOMapper;
+import com.github.DaiYuANg.modules.accesscontrol.application.permissiongroup.PermissionGroupChecker;
 import com.github.DaiYuANg.modules.accesscontrol.application.permissiongroup.PermissionGroupApplicationService;
+import com.github.DaiYuANg.modules.accesscontrol.application.role.RoleChecker;
 import com.github.DaiYuANg.modules.accesscontrol.application.role.RoleApplicationService;
 import com.github.DaiYuANg.modules.accesscontrol.application.support.AccessControlAuditSupport;
 import com.github.DaiYuANg.security.authorization.AuthorizationService;
@@ -35,6 +37,7 @@ class AccessControlDeletionBehaviorTest {
     var roleVOMapper = mock(RoleVOMapper.class);
     var permissionGroupVOMapper = mock(PermissionGroupVOMapper.class);
     var permissionVOMapper = mock(PermissionVOMapper.class);
+    var roleChecker = mock(RoleChecker.class);
     var service =
         new RoleApplicationService(
             roleRepository,
@@ -44,7 +47,8 @@ class AccessControlDeletionBehaviorTest {
             authorizationService,
             roleVOMapper,
             permissionGroupVOMapper,
-            permissionVOMapper);
+            permissionVOMapper,
+            roleChecker);
     when(roleRepository.findByIdOptional(7L)).thenReturn(Optional.empty());
 
     var ex = assertThrows(BizException.class, () -> service.deleteRole(7L));
@@ -63,6 +67,7 @@ class AccessControlDeletionBehaviorTest {
     var authorizationService = mock(AuthorizationService.class);
     var permissionGroupVOMapper = mock(PermissionGroupVOMapper.class);
     var permissionVOMapper = mock(PermissionVOMapper.class);
+    var permissionGroupChecker = mock(PermissionGroupChecker.class);
     var service =
         new PermissionGroupApplicationService(
             repository,
@@ -71,7 +76,8 @@ class AccessControlDeletionBehaviorTest {
             auditSupport,
             authorizationService,
             permissionGroupVOMapper,
-            permissionVOMapper);
+            permissionVOMapper,
+            permissionGroupChecker);
     when(repository.findByIdOptional(9L)).thenReturn(Optional.empty());
 
     var ex = assertThrows(BizException.class, () -> service.deletePermissionGroup(9L));

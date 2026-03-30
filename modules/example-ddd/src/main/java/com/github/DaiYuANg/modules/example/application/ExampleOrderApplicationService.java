@@ -20,6 +20,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import java.util.List;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 
@@ -37,7 +38,7 @@ public class ExampleOrderApplicationService implements ExampleOrderPlacementApi 
   private final ExampleOrderViewMapper exampleOrderViewMapper;
 
   @Transactional
-  public ExampleOrderView placeOrder(PlaceExampleOrderCommand command) {
+  public ExampleOrderView placeOrder(@NonNull PlaceExampleOrderCommand command) {
     val buyer = buyerContext.requireBuyerUsername();
     userLookup.requireExistingUser(buyer);
 
@@ -67,7 +68,7 @@ public class ExampleOrderApplicationService implements ExampleOrderPlacementApi 
     return orderReadRepository.listByBuyer(buyer);
   }
 
-  private ExampleProductSnapshot requireAvailableProduct(Long productId) {
+  private ExampleProductSnapshot requireAvailableProduct(@NonNull Long productId) {
     return catalogReadRepository
         .findSnapshotById(productId)
         .filter(ExampleProductSnapshot::active)

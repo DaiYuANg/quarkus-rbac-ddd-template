@@ -20,6 +20,7 @@ import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UpdateU
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.UserVOBuilder;
 import com.github.DaiYuANg.modules.accesscontrol.application.mapper.UserVOMapper;
 import com.github.DaiYuANg.modules.accesscontrol.application.support.AccessControlAuditSupport;
+import com.github.DaiYuANg.modules.accesscontrol.application.user.UserChecker;
 import com.github.DaiYuANg.modules.accesscontrol.application.user.UserApplicationService;
 import com.github.DaiYuANg.security.access.CurrentUserAccess;
 import com.github.DaiYuANg.security.auth.PasswordHasher;
@@ -140,6 +141,7 @@ class UserApplicationServiceSessionInvalidationTest {
     var permissionSnapshotStore = mock(PermissionSnapshotStore.class);
     var refreshTokenStore = mock(RefreshTokenStore.class);
     var userVOMapper = mock(UserVOMapper.class);
+    var userChecker = mock(UserChecker.class);
 
     when(userRepository.findByIdOptional(anyLong())).thenReturn(Optional.empty());
     when(userVOMapper.toVO(org.mockito.ArgumentMatchers.any(SysUser.class)))
@@ -171,7 +173,8 @@ class UserApplicationServiceSessionInvalidationTest {
             currentUserAccess,
             permissionSnapshotStore,
             refreshTokenStore,
-            userVOMapper);
+            userVOMapper,
+            userChecker);
     return new Fixtures(
         service,
         userRepository,

@@ -48,7 +48,7 @@ public class SuperAdminProfileProvider implements UserProfileProvider {
         user, nickname, permissions, roleCodes, authorityKey, null);
   }
 
-  private LinkedHashSet<String> normalizeCodes(Set<String> values) {
+  private LinkedHashSet<String> normalizeCodes(@NonNull Set<String> values) {
     return values.stream()
         .filter(Objects::nonNull)
         .map(String::trim)

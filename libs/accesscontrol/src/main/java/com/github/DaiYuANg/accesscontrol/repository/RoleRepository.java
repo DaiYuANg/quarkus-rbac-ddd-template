@@ -58,6 +58,20 @@ public class RoleRepository extends BasePanacheCommandRepository<SysRole>
     return rows.stream().findFirst();
   }
 
+  public long countByName(String name) {
+    if (name == null || name.isBlank()) {
+      return 0L;
+    }
+    Long value =
+        blazeQueryFactory
+            .<Long>create()
+            .from(r)
+            .select(r.id.count())
+            .where(r.name.eq(name))
+            .fetchOne();
+    return value == null ? 0L : value;
+  }
+
   public long countByCode(String code) {
     if (code == null || code.isBlank()) {
       return 0L;

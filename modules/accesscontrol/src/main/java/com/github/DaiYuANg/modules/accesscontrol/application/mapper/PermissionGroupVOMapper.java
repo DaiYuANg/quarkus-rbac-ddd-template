@@ -2,12 +2,17 @@ package com.github.DaiYuANg.modules.accesscontrol.application.mapper;
 
 import com.github.DaiYuANg.accesscontrol.entity.SysPermissionGroup;
 import com.github.DaiYuANg.accesscontrol.projection.PermissionGroupListProjection;
+import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.PermissionGroupCreationForm;
+import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UpdatePermissionGroupForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.PermissionGroupVO;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.PermissionVO;
 import java.util.Set;
+import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
 
 @Mapper(
     componentModel = MappingConstants.ComponentModel.CDI,
@@ -19,6 +24,23 @@ public interface PermissionGroupVOMapper {
   PermissionGroupVO toProjectionVO(PermissionGroupListProjection group);
 
   PermissionGroupVO toVO(SysPermissionGroup group);
+
+  @Mapping(target = "id", ignore = true)
+  @Mapping(target = "permissions", ignore = true)
+  @Mapping(target = "createAt", ignore = true)
+  @Mapping(target = "updateAt", ignore = true)
+  @Mapping(target = "createBy", ignore = true)
+  @Mapping(target = "updateBy", ignore = true)
+  SysPermissionGroup toEntity(PermissionGroupCreationForm form);
+
+  @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+  @Mapping(target = "id", ignore = true)
+  @Mapping(target = "permissions", ignore = true)
+  @Mapping(target = "createAt", ignore = true)
+  @Mapping(target = "updateAt", ignore = true)
+  @Mapping(target = "createBy", ignore = true)
+  @Mapping(target = "updateBy", ignore = true)
+  void updateEntity(UpdatePermissionGroupForm form, @MappingTarget SysPermissionGroup group);
 
   @Mapping(target = "id", source = "group.id")
   @Mapping(target = "name", source = "group.name")

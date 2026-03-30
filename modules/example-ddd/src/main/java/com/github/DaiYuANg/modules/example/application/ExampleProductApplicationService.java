@@ -9,6 +9,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import java.util.List;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 @ApplicationScoped
@@ -19,7 +20,7 @@ public class ExampleProductApplicationService implements ExampleProductCatalogAp
   private final ExampleCatalogReadRepository catalogReadRepository;
 
   @Transactional
-  public ExampleProductView create(CreateExampleProductCommand command) {
+  public ExampleProductView create(@NonNull CreateExampleProductCommand command) {
     return catalogCommandRepository.create(command);
   }
 

@@ -1,6 +1,5 @@
 package com.github.DaiYuANg.modules.accesscontrol.application.role;
 
-import com.github.DaiYuANg.accesscontrol.constant.RoleStatus;
 import com.github.DaiYuANg.accesscontrol.entity.SysRole;
 import com.github.DaiYuANg.accesscontrol.query.RolePageQuery;
 import com.github.DaiYuANg.accesscontrol.repository.PermissionGroupRepository;
@@ -58,18 +57,13 @@ public class RoleApplicationService {
   private final RoleVOMapper roleVOMapper;
   private final PermissionGroupVOMapper permissionGroupVOMapper;
   private final PermissionVOMapper permissionVOMapper;
+  private final RoleChecker roleChecker;
 
   @Transactional
   public RoleVO createRole(@NonNull RoleCreationForm form) {
     authorizationService.check(Role.ADD);
-    if (roleRepository.countByCode(form.code()) > 0)
-      throw new BizException(ResultCode.DATA_ALREADY_EXISTS, "role code already exists");
-    val role = new SysRole();
-    role.code = form.code();
-    role.name = form.name();
-    role.status = form.status() == null ? RoleStatus.ENABLED : form.status();
-    role.sort = form.sort();
-    role.description = form.description();
+    roleChecker.ensureCreatable(form);
+    val role = roleVOMapper.toEntity(form);
     roleRepository.persist(role);
     auditSupport.bumpGlobalVersion();
     auditSupport.record("role", "create", form.code(), true, "create role");
@@ -93,15 +87,8 @@ public class RoleApplicationService {
         roleRepository
             .findByIdOptional(id)
             .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
-    if (form.code() != null
-        && !form.code().equals(role.code)
-        && roleRepository.countByCode(form.code()) > 0)
-      throw new BizException(ResultCode.DATA_ALREADY_EXISTS, "role code already exists");
-    if (form.code() != null) role.code = form.code();
-    if (form.name() != null) role.name = form.name();
-    if (form.status() != null) role.status = form.status();
-    if (form.sort() != null) role.sort = form.sort();
-    if (form.description() != null) role.description = form.description();
+    roleChecker.ensureUpdatable(role, form);
+    roleVOMapper.updateEntity(form, role);
     if (form.permissionGroupIds() != null) {
       role.permissionGroups.clear();
       role.permissionGroups.addAll(permissionGroupRepository

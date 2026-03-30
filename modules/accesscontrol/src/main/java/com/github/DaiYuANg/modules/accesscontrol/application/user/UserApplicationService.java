@@ -56,6 +56,7 @@ public class UserApplicationService {
   private final PermissionSnapshotStore permissionSnapshotStore;
   private final RefreshTokenStore refreshTokenStore;
   private final UserVOMapper userVOMapper;
+  private final UserChecker userChecker;
 
   public ApiPageResult<UserVO> queryUserPage(@NonNull UserPageQuery query) {
     authorizationService.check(User.VIEW);
@@ -65,23 +66,8 @@ public class UserApplicationService {
   @Transactional
   public UserVO createUser(@NonNull UserCreationForm form) {
     authorizationService.check(User.ADD);
-    if (userRepository.countByUsername(form.username()) > 0)
-      throw new BizException(ResultCode.DATA_ALREADY_EXISTS, "username already exists");
-    if (form.email() != null
-        && !form.email().isBlank()
-        && userRepository.countByEmail(form.email()) > 0)
-      throw new BizException(ResultCode.DATA_ALREADY_EXISTS, "email already exists");
-    if (form.mobilePhone() != null
-        && !form.mobilePhone().isBlank()
-        && userRepository.countByMobilePhone(form.mobilePhone()) > 0)
-      throw new BizException(ResultCode.DATA_ALREADY_EXISTS, "mobilePhone already exists");
-    val user = new SysUser();
-    user.username = form.username();
-    user.password = passwordHasher.hash(form.password());
-    user.mobilePhone = form.mobilePhone();
-    user.nickname = form.nickname();
-    user.email = form.email();
-    user.userStatus = form.userStatus() == null ? UserStatus.ENABLED : form.userStatus();
+    userChecker.ensureCreatable(form);
+    val user = userVOMapper.toEntity(form, passwordHasher);
     userRepository.persist(user);
     auditSupport.bumpGlobalVersion();
     auditSupport.record("user", "create", form.username(), true, "create user");
@@ -127,24 +113,9 @@ public class UserApplicationService {
             .findByIdOptional(id)
             .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
     val originalUsername = user.username;
-    if (form.username() != null
-        && !form.username().equals(user.username)
-        && userRepository.countByUsername(form.username()) > 0)
-      throw new BizException(ResultCode.DATA_ALREADY_EXISTS, "username already exists");
-    if (form.email() != null
-        && !form.email().equals(user.email)
-        && userRepository.countByEmail(form.email()) > 0)
-      throw new BizException(ResultCode.DATA_ALREADY_EXISTS, "email already exists");
-    if (form.mobilePhone() != null
-        && !form.mobilePhone().equals(user.mobilePhone)
-        && userRepository.countByMobilePhone(form.mobilePhone()) > 0)
-      throw new BizException(ResultCode.DATA_ALREADY_EXISTS, "mobilePhone already exists");
+    userChecker.ensureUpdatable(user, form);
     val usernameChanged = form.username() != null && !form.username().equals(user.username);
-    if (form.username() != null) user.username = form.username();
-    if (form.mobilePhone() != null) user.mobilePhone = form.mobilePhone();
-    if (form.nickname() != null) user.nickname = form.nickname();
-    if (form.email() != null) user.email = form.email();
-    if (form.status() != null) user.userStatus = form.status();
+    userVOMapper.updateEntity(form, user);
     if (form.roleIds() != null) {
       user.roles.clear();
       user.roles.addAll(roleRepository.findAllByIds(form.roleIds()));
