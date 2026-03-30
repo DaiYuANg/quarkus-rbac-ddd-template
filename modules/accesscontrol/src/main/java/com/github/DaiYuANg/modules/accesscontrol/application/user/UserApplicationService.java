@@ -65,12 +65,7 @@ public class UserApplicationService {
 
   public ApiPageResult<UserVO> queryUserPage(@NonNull UserPageQuery query) {
     authorizationService.check(User.VIEW);
-    val slice = userRepository.page(query);
-    return ApiPageResult.of(
-        slice.total(),
-        query.getPageNum(),
-        query.getPageSize(),
-        slice.content().stream().map(this::toUserVO).toList());
+    return ApiPageResult.map(userRepository.page(query), this::toUserVO);
   }
 
   @Transactional

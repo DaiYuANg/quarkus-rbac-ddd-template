@@ -71,12 +71,7 @@ public class RoleApplicationService {
 
   public ApiPageResult<RoleVO> queryRolePage(@NonNull RolePageQuery query) {
     authorizationService.check(Role.VIEW);
-    val slice = roleRepository.page(query);
-    return ApiPageResult.of(
-        slice.total(),
-        query.getPageNum(),
-        query.getPageSize(),
-        slice.content().stream().map(this::toRoleVO).toList());
+    return ApiPageResult.map(roleRepository.page(query), this::toRoleVO);
   }
 
   public Optional<RoleVO> getRoleById(@NonNull Long id) {

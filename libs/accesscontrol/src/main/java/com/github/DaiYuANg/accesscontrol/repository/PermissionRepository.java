@@ -1,26 +1,21 @@
 package com.github.DaiYuANg.accesscontrol.repository;
 
-import com.blazebit.persistence.CriteriaBuilderFactory;
-import com.blazebit.persistence.querydsl.BlazeJPAQuery;
 import com.github.DaiYuANg.accesscontrol.entity.QSysPermission;
 import com.github.DaiYuANg.accesscontrol.entity.SysPermission;
 import com.github.DaiYuANg.accesscontrol.projection.PermissionListProjection;
-import com.github.DaiYuANg.accesscontrol.query.MetamodelPermissionQueryBuilder;
 import com.github.DaiYuANg.accesscontrol.query.PermissionPageQuery;
 import com.github.DaiYuANg.accesscontrol.query.PermissionQueryRepository;
-import com.github.DaiYuANg.accesscontrol.query.sort.PermissionSortFieldMapper;
 import com.github.DaiYuANg.accesscontrol.view.PermissionListView;
 import com.github.DaiYuANg.common.constant.ResultCode;
+import com.github.DaiYuANg.persistence.query.BlazeJPAQueryFactory;
 import com.github.DaiYuANg.persistence.query.BlazeQueryDSLSupport;
-import com.github.DaiYuANg.persistence.query.PageSlice;
 import com.github.DaiYuANg.persistence.repository.BasePanacheCommandRepository;
-import com.querydsl.core.types.dsl.Expressions;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.persistence.EntityManager;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
+import org.toolkit4j.data.model.page.PageResult;
 
 /**
  * Repository for permissions.
@@ -37,22 +32,14 @@ public class PermissionRepository extends BasePanacheCommandRepository<SysPermis
 
   private static final QSysPermission p = new QSysPermission("permission");
 
-  private final EntityManager entityManager;
-  private final CriteriaBuilderFactory criteriaBuilderFactory;
+  private final BlazeJPAQueryFactory blazeQueryFactory;
   private final BlazeQueryDSLSupport queryDslSupport;
-  private final MetamodelPermissionQueryBuilder queryBuilder;
 
   public Optional<SysPermission> findByCode(String code) {
     if (code == null || code.isBlank()) {
       return Optional.empty();
     }
-    val rows =
-        new BlazeJPAQuery<SysPermission>(entityManager, criteriaBuilderFactory)
-            .from(p)
-            .select(p)
-            .where(p.code.eq(code))
-            .limit(1)
-            .fetch();
+    val rows = blazeQueryFactory.selectFrom(p).where(p.code.eq(code)).limit(1).fetch();
     return rows.stream().findFirst();
   }
 
@@ -60,13 +47,7 @@ public class PermissionRepository extends BasePanacheCommandRepository<SysPermis
     if (name == null || name.isBlank()) {
       return Optional.empty();
     }
-    val rows =
-        new BlazeJPAQuery<SysPermission>(entityManager, criteriaBuilderFactory)
-            .from(p)
-            .select(p)
-            .where(p.name.eq(name))
-            .limit(1)
-            .fetch();
+    val rows = blazeQueryFactory.selectFrom(p).where(p.name.eq(name)).limit(1).fetch();
     return rows.stream().findFirst();
   }
 
@@ -75,7 +56,8 @@ public class PermissionRepository extends BasePanacheCommandRepository<SysPermis
       return 0L;
     }
     Long value =
-        new BlazeJPAQuery<Long>(entityManager, criteriaBuilderFactory)
+        blazeQueryFactory
+            .<Long>create()
             .from(p)
             .select(p.id.count())
             .where(p.code.eq(code))
@@ -84,53 +66,18 @@ public class PermissionRepository extends BasePanacheCommandRepository<SysPermis
   }
 
   @Override
-  public PageSlice<PermissionListProjection> page(PermissionPageQuery query) {
-    val spec = queryBuilder.build(query);
-    val filter = spec.filter();
-
-    val blazeQuery =
-        new BlazeJPAQuery<SysPermission>(entityManager, criteriaBuilderFactory).from(p).select(p);
-
-    applyKeyword(blazeQuery, query.getKeyword());
-    applyLike(blazeQuery, p.name, filter.name());
-    applyLike(blazeQuery, p.code, filter.code());
-    applyEquals(blazeQuery, p.resource, filter.resource());
-    applyLike(blazeQuery, p.action, filter.action());
-    applyEquals(blazeQuery, p.groupCode, filter.groupCode());
-    BlazeQueryDSLSupport.applySorts(blazeQuery, spec.sorts(), PermissionSortFieldMapper.INSTANCE);
-
-    return queryDslSupport.executeWithEntityView(
-        blazeQuery,
-        PermissionListView.class,
-        query.offset(),
-        query.getPageSize(),
-        this::toProjection);
-  }
-
-  private void applyKeyword(BlazeJPAQuery<SysPermission> q, String keyword) {
-    val like = BlazeQueryDSLSupport.likePattern(keyword);
-    if (like == null) return;
-    q.where(
-        Expressions.anyOf(
-            p.name.lower().like(like),
-            p.code.lower().like(like),
-            p.resource.lower().like(like),
-            p.action.lower().like(like),
-            p.groupCode.lower().like(like),
-            p.description.lower().like(like)));
-  }
-
-  private void applyLike(
-      BlazeJPAQuery<SysPermission> q, com.querydsl.core.types.dsl.StringPath path, String value) {
-    val like = BlazeQueryDSLSupport.likePattern(value);
-    if (like == null) return;
-    q.where(path.lower().like(like));
-  }
-
-  private void applyEquals(
-      BlazeJPAQuery<SysPermission> q, com.querydsl.core.types.dsl.StringPath path, String value) {
-    if (value == null || value.isBlank()) return;
-    q.where(path.eq(value));
+  public PageResult<PermissionListProjection> page(PermissionPageQuery query) {
+    val blazeQuery = blazeQueryFactory.selectFrom(p);
+    query.buildCondition(p).ifPresent(blazeQuery::where);
+    query.buildOrders(p).forEach(blazeQuery::orderBy);
+    val page =
+        queryDslSupport.executeWithEntityView(
+            blazeQuery,
+            PermissionListView.class,
+            query.offset(),
+            query.getPageSize(),
+            this::toProjection);
+    return BlazeQueryDSLSupport.toPageResult(page, query);
   }
 
   private PermissionListProjection toProjection(PermissionListView view) {

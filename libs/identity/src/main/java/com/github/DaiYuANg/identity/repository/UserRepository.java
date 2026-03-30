@@ -1,33 +1,27 @@
 package com.github.DaiYuANg.identity.repository;
 
-import com.blazebit.persistence.CriteriaBuilderFactory;
-import com.blazebit.persistence.querydsl.BlazeJPAQuery;
 import com.github.DaiYuANg.accesscontrol.entity.QSysPermission;
 import com.github.DaiYuANg.accesscontrol.entity.QSysPermissionGroup;
 import com.github.DaiYuANg.accesscontrol.entity.QSysRole;
 import com.github.DaiYuANg.common.constant.ResultCode;
-import com.github.DaiYuANg.identity.constant.UserStatus;
 import com.github.DaiYuANg.identity.entity.QSysUser;
 import com.github.DaiYuANg.identity.entity.SysUser;
 import com.github.DaiYuANg.identity.projection.UserListProjection;
-import com.github.DaiYuANg.identity.query.MetamodelUserQueryBuilder;
 import com.github.DaiYuANg.identity.query.UserPageQuery;
 import com.github.DaiYuANg.identity.query.UserQueryRepository;
-import com.github.DaiYuANg.identity.query.sort.UserSortFieldMapper;
 import com.github.DaiYuANg.identity.view.UserListView;
+import com.github.DaiYuANg.persistence.query.BlazeJPAQueryFactory;
 import com.github.DaiYuANg.persistence.query.BlazeQueryDSLSupport;
-import com.github.DaiYuANg.persistence.query.PageSlice;
 import com.github.DaiYuANg.persistence.repository.BasePanacheCommandRepository;
-import com.querydsl.core.types.dsl.Expressions;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.persistence.EntityManager;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
+import org.toolkit4j.data.model.page.PageResult;
 
 /**
  * Repository for {@code SysUser}.
@@ -47,22 +41,14 @@ public class UserRepository extends BasePanacheCommandRepository<SysUser>
   private static final QSysPermissionGroup g = new QSysPermissionGroup("permissionGroup");
   private static final QSysPermission p = new QSysPermission("permission");
 
-  private final EntityManager entityManager;
-  private final CriteriaBuilderFactory criteriaBuilderFactory;
+  private final BlazeJPAQueryFactory blazeQueryFactory;
   private final BlazeQueryDSLSupport queryDslSupport;
-  private final MetamodelUserQueryBuilder queryBuilder;
 
   public Optional<SysUser> findByUsername(String username) {
     if (username == null || username.isBlank()) {
       return Optional.empty();
     }
-    val rows =
-        new BlazeJPAQuery<SysUser>(entityManager, criteriaBuilderFactory)
-            .from(u)
-            .select(u)
-            .where(u.username.eq(username))
-            .limit(1)
-            .fetch();
+    val rows = blazeQueryFactory.selectFrom(u).where(u.username.eq(username)).limit(1).fetch();
     return rows.stream().findFirst();
   }
 
@@ -72,15 +58,14 @@ public class UserRepository extends BasePanacheCommandRepository<SysUser>
       return Optional.empty();
     }
     val rows =
-        new BlazeJPAQuery<SysUser>(entityManager, criteriaBuilderFactory)
-            .from(u)
+        blazeQueryFactory
+            .selectFrom(u)
             .leftJoin(u.roles, r)
             .fetchJoin()
             .leftJoin(r.permissionGroups, g)
             .fetchJoin()
             .leftJoin(g.permissions, p)
             .fetchJoin()
-            .select(u)
             .where(u.username.eq(username))
             .distinct()
             .fetch();
@@ -93,34 +78,30 @@ public class UserRepository extends BasePanacheCommandRepository<SysUser>
       return Optional.empty();
     }
     val rows =
-        new BlazeJPAQuery<SysUser>(entityManager, criteriaBuilderFactory)
-            .from(u)
+        blazeQueryFactory
+            .selectFrom(u)
             .leftJoin(u.roles, r)
             .fetchJoin()
             .leftJoin(r.permissionGroups, g)
             .fetchJoin()
             .leftJoin(g.permissions, p)
             .fetchJoin()
-            .select(u)
             .where(u.id.eq(id))
             .distinct()
             .fetch();
     return rows.stream().findFirst();
   }
 
-  /**
-   * Loads all users with full RBAC graph (roles -> permissionGroups -> permissions) in one query.
-   */
+  /** Loads all users with full RBAC graph (roles -> permissionGroups -> permissions) in one query. */
   public List<SysUser> listAllWithRbacGraph() {
-    return new BlazeJPAQuery<SysUser>(entityManager, criteriaBuilderFactory)
-        .from(u)
+    return blazeQueryFactory
+        .selectFrom(u)
         .leftJoin(u.roles, r)
         .fetchJoin()
         .leftJoin(r.permissionGroups, g)
         .fetchJoin()
         .leftJoin(g.permissions, p)
         .fetchJoin()
-        .select(u)
         .distinct()
         .fetch();
   }
@@ -131,7 +112,8 @@ public class UserRepository extends BasePanacheCommandRepository<SysUser>
       return Set.of();
     }
     val rows =
-        new BlazeJPAQuery<String>(entityManager, criteriaBuilderFactory)
+        blazeQueryFactory
+            .<String>create()
             .from(u)
             .join(u.roles, r)
             .select(r.code)
@@ -152,7 +134,8 @@ public class UserRepository extends BasePanacheCommandRepository<SysUser>
       return Set.of();
     }
     val rows =
-        new BlazeJPAQuery<String>(entityManager, criteriaBuilderFactory)
+        blazeQueryFactory
+            .<String>create()
             .from(u)
             .join(u.roles, r)
             .join(r.permissionGroups, g)
@@ -171,7 +154,8 @@ public class UserRepository extends BasePanacheCommandRepository<SysUser>
 
   public long countUserLoginTotal() {
     Long value =
-        new BlazeJPAQuery<Long>(entityManager, criteriaBuilderFactory)
+        blazeQueryFactory
+            .<Long>create()
             .from(u)
             .select(u.id.count())
             .where(u.latestSignIn.isNotNull())
@@ -184,7 +168,8 @@ public class UserRepository extends BasePanacheCommandRepository<SysUser>
       return 0L;
     }
     Long value =
-        new BlazeJPAQuery<Long>(entityManager, criteriaBuilderFactory)
+        blazeQueryFactory
+            .<Long>create()
             .from(u)
             .select(u.id.count())
             .where(u.username.eq(username))
@@ -197,7 +182,8 @@ public class UserRepository extends BasePanacheCommandRepository<SysUser>
       return 0L;
     }
     Long value =
-        new BlazeJPAQuery<Long>(entityManager, criteriaBuilderFactory)
+        blazeQueryFactory
+            .<Long>create()
             .from(u)
             .select(u.id.count())
             .where(u.email.eq(email))
@@ -210,7 +196,8 @@ public class UserRepository extends BasePanacheCommandRepository<SysUser>
       return 0L;
     }
     Long value =
-        new BlazeJPAQuery<Long>(entityManager, criteriaBuilderFactory)
+        blazeQueryFactory
+            .<Long>create()
             .from(u)
             .select(u.id.count())
             .where(u.mobilePhone.eq(mobilePhone))
@@ -223,7 +210,8 @@ public class UserRepository extends BasePanacheCommandRepository<SysUser>
       return 0L;
     }
     Long value =
-        new BlazeJPAQuery<Long>(entityManager, criteriaBuilderFactory)
+        blazeQueryFactory
+            .<Long>create()
             .from(u)
             .select(u.id.count())
             .where(u.identifier.eq(identifier))
@@ -232,41 +220,14 @@ public class UserRepository extends BasePanacheCommandRepository<SysUser>
   }
 
   @Override
-  public PageSlice<UserListProjection> page(UserPageQuery query) {
-    val spec = queryBuilder.build(query);
-    val filter = spec.filter();
-
-    val blazeQuery =
-        new BlazeJPAQuery<SysUser>(entityManager, criteriaBuilderFactory).from(u).select(u);
-
-    applyKeyword(blazeQuery, query.getKeyword());
-    applyUsername(blazeQuery, filter.username());
-    applyStatus(blazeQuery, filter.userStatus());
-    BlazeQueryDSLSupport.applySorts(blazeQuery, spec.sorts(), UserSortFieldMapper.INSTANCE);
-
-    return queryDslSupport.executeWithEntityView(
-        blazeQuery, UserListView.class, query.offset(), query.getPageSize(), this::toProjection);
-  }
-
-  private void applyKeyword(BlazeJPAQuery<SysUser> q, String keyword) {
-    val like = BlazeQueryDSLSupport.likePattern(keyword);
-    if (like == null) return;
-    q.where(
-        Expressions.anyOf(
-            u.username.lower().like(like),
-            u.nickname.lower().like(like),
-            u.email.lower().like(like)));
-  }
-
-  private void applyUsername(BlazeJPAQuery<SysUser> q, String username) {
-    val like = BlazeQueryDSLSupport.likePattern(username);
-    if (like == null) return;
-    q.where(u.username.lower().like(like));
-  }
-
-  private void applyStatus(BlazeJPAQuery<SysUser> q, UserStatus userStatus) {
-    if (userStatus == null) return;
-    q.where(u.userStatus.eq(userStatus));
+  public PageResult<UserListProjection> page(UserPageQuery query) {
+    val blazeQuery = blazeQueryFactory.selectFrom(u);
+    query.buildCondition(u).ifPresent(blazeQuery::where);
+    query.buildOrders(u).forEach(blazeQuery::orderBy);
+    val page =
+        queryDslSupport.executeWithEntityView(
+            blazeQuery, UserListView.class, query.offset(), query.getPageSize(), this::toProjection);
+    return BlazeQueryDSLSupport.toPageResult(page, query);
   }
 
   private UserListProjection toProjection(UserListView view) {

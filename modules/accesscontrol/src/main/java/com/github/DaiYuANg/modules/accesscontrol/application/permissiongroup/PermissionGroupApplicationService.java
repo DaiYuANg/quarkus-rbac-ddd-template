@@ -115,12 +115,7 @@ public class PermissionGroupApplicationService {
   public ApiPageResult<PermissionGroupVO> queryPermissionGroupPage(
       @NonNull PermissionGroupPageQuery query) {
     authorizationService.check(PermissionGroup.VIEW);
-    val slice = repository.page(query);
-    return ApiPageResult.of(
-        slice.total(),
-        query.getPageNum(),
-        query.getPageSize(),
-        slice.content().stream().map(this::toPermissionGroupVO).toList());
+    return ApiPageResult.map(repository.page(query), this::toPermissionGroupVO);
   }
 
   public Optional<PermissionGroupVO> getPermissionGroupByName(@NonNull String name) {

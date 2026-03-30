@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Function;
 import lombok.val;
 import org.toolkit4j.data.model.page.PageResult;
 
@@ -18,6 +19,17 @@ public class ApiPageResult<T> extends PageResult<T> {
 
   public static <T> ApiPageResult<T> of(long total, int pageNum, int pageSize, List<T> records) {
     return new ApiPageResult<>(total, pageNum, pageSize, records);
+  }
+
+  public static <S, T> ApiPageResult<T> map(PageResult<S> page, Function<? super S, T> mapper) {
+    val normalized = page == null ? PageResult.<S>empty() : page.normalized();
+    val records =
+        normalized.getContent().stream().map(mapper).collect(java.util.stream.Collectors.toList());
+    return new ApiPageResult<T>(
+        normalized.getTotalElements(),
+        normalized.getPage(),
+        normalized.getSize(),
+        records);
   }
 
   @JsonProperty("total")

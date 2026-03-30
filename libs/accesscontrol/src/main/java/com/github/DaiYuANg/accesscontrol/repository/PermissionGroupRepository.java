@@ -1,23 +1,18 @@
 package com.github.DaiYuANg.accesscontrol.repository;
 
-import com.blazebit.persistence.CriteriaBuilderFactory;
-import com.blazebit.persistence.querydsl.BlazeJPAQuery;
 import com.github.DaiYuANg.accesscontrol.entity.QSysPermission;
 import com.github.DaiYuANg.accesscontrol.entity.QSysPermissionGroup;
 import com.github.DaiYuANg.accesscontrol.entity.QSysPermissionGroupRefPermission;
 import com.github.DaiYuANg.accesscontrol.entity.SysPermissionGroup;
 import com.github.DaiYuANg.accesscontrol.entity.SysPermissionGroupRefPermission;
 import com.github.DaiYuANg.accesscontrol.projection.PermissionGroupListProjection;
-import com.github.DaiYuANg.accesscontrol.query.MetamodelPermissionGroupQueryBuilder;
 import com.github.DaiYuANg.accesscontrol.query.PermissionGroupPageQuery;
 import com.github.DaiYuANg.accesscontrol.query.PermissionGroupQueryRepository;
-import com.github.DaiYuANg.accesscontrol.query.sort.PermissionGroupSortFieldMapper;
 import com.github.DaiYuANg.accesscontrol.view.PermissionGroupListView;
 import com.github.DaiYuANg.common.constant.ResultCode;
+import com.github.DaiYuANg.persistence.query.BlazeJPAQueryFactory;
 import com.github.DaiYuANg.persistence.query.BlazeQueryDSLSupport;
-import com.github.DaiYuANg.persistence.query.PageSlice;
 import com.github.DaiYuANg.persistence.repository.BasePanacheCommandRepository;
-import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -34,6 +29,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
+import org.toolkit4j.data.model.page.PageResult;
 
 /**
  * Repository for permission groups with RBAC-specific helpers.
@@ -53,23 +49,16 @@ public class PermissionGroupRepository extends BasePanacheCommandRepository<SysP
   private static final QSysPermissionGroupRefPermission gp =
       new QSysPermissionGroupRefPermission("permissionGroupRefPermission");
 
-  private final EntityManager entityManager;
-  private final CriteriaBuilderFactory criteriaBuilderFactory;
+  private final BlazeJPAQueryFactory blazeQueryFactory;
   private final BlazeQueryDSLSupport queryDslSupport;
-  private final MetamodelPermissionGroupQueryBuilder queryBuilder;
   private final JPAQueryFactory jpaQueryFactory;
+  private final EntityManager entityManager;
 
   public Optional<SysPermissionGroup> findByCode(String code) {
     if (code == null || code.isBlank()) {
       return Optional.empty();
     }
-    val rows =
-        new BlazeJPAQuery<SysPermissionGroup>(entityManager, criteriaBuilderFactory)
-            .from(g)
-            .select(g)
-            .where(g.code.eq(code))
-            .limit(1)
-            .fetch();
+    val rows = blazeQueryFactory.selectFrom(g).where(g.code.eq(code)).limit(1).fetch();
     return rows.stream().findFirst();
   }
 
@@ -77,13 +66,7 @@ public class PermissionGroupRepository extends BasePanacheCommandRepository<SysP
     if (name == null || name.isBlank()) {
       return Optional.empty();
     }
-    val rows =
-        new BlazeJPAQuery<SysPermissionGroup>(entityManager, criteriaBuilderFactory)
-            .from(g)
-            .select(g)
-            .where(g.name.eq(name))
-            .limit(1)
-            .fetch();
+    val rows = blazeQueryFactory.selectFrom(g).where(g.name.eq(name)).limit(1).fetch();
     return rows.stream().findFirst();
   }
 
@@ -92,7 +75,8 @@ public class PermissionGroupRepository extends BasePanacheCommandRepository<SysP
       return 0L;
     }
     Long value =
-        new BlazeJPAQuery<Long>(entityManager, criteriaBuilderFactory)
+        blazeQueryFactory
+            .<Long>create()
             .from(g)
             .select(g.id.count())
             .where(g.code.eq(code))
@@ -105,7 +89,8 @@ public class PermissionGroupRepository extends BasePanacheCommandRepository<SysP
       return 0L;
     }
     Long value =
-        new BlazeJPAQuery<Long>(entityManager, criteriaBuilderFactory)
+        blazeQueryFactory
+            .<Long>create()
             .from(g)
             .select(g.id.count())
             .where(g.name.eq(name))
@@ -121,11 +106,7 @@ public class PermissionGroupRepository extends BasePanacheCommandRepository<SysP
     if (normalized.isEmpty()) {
       return List.of();
     }
-    return new BlazeJPAQuery<SysPermissionGroup>(entityManager, criteriaBuilderFactory)
-        .from(g)
-        .select(g)
-        .where(g.id.in(normalized))
-        .fetch();
+    return blazeQueryFactory.selectFrom(g).where(g.id.in(normalized)).fetch();
   }
 
   /** Returns permission ids for a group (from join table, no SysPermission load). */
@@ -133,7 +114,8 @@ public class PermissionGroupRepository extends BasePanacheCommandRepository<SysP
     if (groupId == null) {
       return List.of();
     }
-    return new BlazeJPAQuery<Long>(entityManager, criteriaBuilderFactory)
+    return blazeQueryFactory
+        .<Long>create()
         .from(g)
         .join(g.permissions, p)
         .select(p.id)
@@ -152,7 +134,8 @@ public class PermissionGroupRepository extends BasePanacheCommandRepository<SysP
       return Map.of();
     }
     val rows =
-        new BlazeJPAQuery<com.querydsl.core.Tuple>(entityManager, criteriaBuilderFactory)
+        blazeQueryFactory
+            .<com.querydsl.core.Tuple>create()
             .from(g)
             .join(g.permissions, p)
             .select(g.id, p.id)
@@ -167,7 +150,8 @@ public class PermissionGroupRepository extends BasePanacheCommandRepository<SysP
             Collectors.groupingBy(
                 Map.Entry::getKey,
                 LinkedHashMap::new,
-                Collectors.mapping(Map.Entry::getValue, Collectors.toCollection(LinkedHashSet::new))));
+                Collectors.mapping(
+                    Map.Entry::getValue, Collectors.toCollection(LinkedHashSet::new))));
   }
 
   @Transactional
@@ -206,45 +190,24 @@ public class PermissionGroupRepository extends BasePanacheCommandRepository<SysP
     if (normalized.isEmpty()) {
       return;
     }
-    // Insert rows via JPA; relies on JDBC batch settings when configured.
     normalized.stream()
         .map(pid -> new SysPermissionGroupRefPermission(groupId, pid))
         .forEach(entityManager::persist);
   }
 
   @Override
-  public PageSlice<PermissionGroupListProjection> page(PermissionGroupPageQuery query) {
-    val spec = queryBuilder.build(query);
-    val filter = spec.filter();
-
-    val blazeQuery =
-        new BlazeJPAQuery<SysPermissionGroup>(entityManager, criteriaBuilderFactory)
-            .from(g)
-            .select(g);
-
-    applyKeyword(blazeQuery, query.getKeyword());
-    applyName(blazeQuery, filter.name());
-    BlazeQueryDSLSupport.applySorts(
-        blazeQuery, spec.sorts(), PermissionGroupSortFieldMapper.INSTANCE);
-
-    return queryDslSupport.executeWithEntityView(
-        blazeQuery,
-        PermissionGroupListView.class,
-        query.offset(),
-        query.getPageSize(),
-        this::toProjection);
-  }
-
-  private void applyKeyword(BlazeJPAQuery<SysPermissionGroup> q, String keyword) {
-    val like = BlazeQueryDSLSupport.likePattern(keyword);
-    if (like == null) return;
-    q.where(Expressions.anyOf(g.name.lower().like(like), g.code.lower().like(like)));
-  }
-
-  private void applyName(BlazeJPAQuery<SysPermissionGroup> q, String name) {
-    val like = BlazeQueryDSLSupport.likePattern(name);
-    if (like == null) return;
-    q.where(g.name.lower().like(like));
+  public PageResult<PermissionGroupListProjection> page(PermissionGroupPageQuery query) {
+    val blazeQuery = blazeQueryFactory.selectFrom(g);
+    query.buildCondition(g).ifPresent(blazeQuery::where);
+    query.buildOrders(g).forEach(blazeQuery::orderBy);
+    val page =
+        queryDslSupport.executeWithEntityView(
+            blazeQuery,
+            PermissionGroupListView.class,
+            query.offset(),
+            query.getPageSize(),
+            this::toProjection);
+    return BlazeQueryDSLSupport.toPageResult(page, query);
   }
 
   private PermissionGroupListProjection toProjection(PermissionGroupListView view) {
