@@ -56,7 +56,7 @@ public final class BlazeQueryDSLSupport {
       return new PagedArrayList<>(
           items, paged.getKeysetPage(), paged.getTotalSize(), paged.getFirstResult(), paged.getMaxResults());
     }
-    val items = results.stream().map(v -> mapper.apply((V) v)).toList();
+    val items = results.stream().map(mapper).toList();
     return new PagedArrayList<>(items, null, items.size(), offset, limit);
   }
 

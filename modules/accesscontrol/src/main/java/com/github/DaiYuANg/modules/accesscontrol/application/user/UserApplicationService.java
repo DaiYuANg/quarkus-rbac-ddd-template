@@ -31,7 +31,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Stream;
 import java.util.stream.Collectors;
 import lombok.NonNull;
@@ -153,7 +152,7 @@ public class UserApplicationService {
     if (form.status() != null) user.userStatus = form.status();
     if (form.roleIds() != null) {
       user.roles.clear();
-      roleRepository.findAllByIds(form.roleIds()).forEach(user.roles::add);
+      user.roles.addAll(roleRepository.findAllByIds(form.roleIds()));
     }
     permissionSnapshotStore.delete(user.id);
     if (usernameChanged) {
@@ -202,7 +201,7 @@ public class UserApplicationService {
             .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
     user.roles.clear();
     if (form.roleIds() != null) {
-      roleRepository.findAllByIds(form.roleIds()).forEach(user.roles::add);
+      user.roles.addAll(roleRepository.findAllByIds(form.roleIds()));
     }
     permissionSnapshotStore.delete(user.id);
     auditSupport.bumpGlobalVersion();

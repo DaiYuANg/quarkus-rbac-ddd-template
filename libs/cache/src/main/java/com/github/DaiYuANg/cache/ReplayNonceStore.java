@@ -35,7 +35,7 @@ public class ReplayNonceStore {
     if (nonce == null || nonce.isBlank()) {
       return false;
     }
-    int seconds = (int) Math.min(Math.max(ttl.toSeconds(), 1), Integer.MAX_VALUE);
+    int seconds = (int) Math.clamp(ttl.toSeconds(), 1, Integer.MAX_VALUE);
     String key = KEY_PREFIX + sha256Hex(nonce);
     if (!valueCommands.setnx(key, "1")) {
       return false;

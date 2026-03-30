@@ -97,9 +97,8 @@ public class RoleApplicationService {
     if (form.description() != null) role.description = form.description();
     if (form.permissionGroupIds() != null) {
       role.permissionGroups.clear();
-      permissionGroupRepository
-          .findAllByIds(form.permissionGroupIds())
-          .forEach(role.permissionGroups::add);
+      role.permissionGroups.addAll(permissionGroupRepository
+        .findAllByIds(form.permissionGroupIds()));
     }
     auditSupport.bumpGlobalVersion();
     auditSupport.record("role", "update", String.valueOf(id), true, "update role");
@@ -132,9 +131,8 @@ public class RoleApplicationService {
             .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
     role.permissionGroups.clear();
     if (form.permissionGroupIds() != null) {
-      permissionGroupRepository
-          .findAllByIds(form.permissionGroupIds())
-          .forEach(role.permissionGroups::add);
+      role.permissionGroups.addAll(permissionGroupRepository
+        .findAllByIds(form.permissionGroupIds()));
     }
     auditSupport.bumpGlobalVersion();
     auditSupport.record(

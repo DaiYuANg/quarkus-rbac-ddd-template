@@ -55,13 +55,13 @@ class ExampleOrderOutboxIntegrationTest {
             .createQuery("select o from OutboxMessageEntity o", OutboxMessageEntity.class)
             .getResultList();
     assertEquals(1, outboxEntries.size());
-    assertEquals("ExampleOrder", outboxEntries.get(0).aggregateType);
-    assertEquals("example.order.created", outboxEntries.get(0).eventType);
-    assertEquals(OutboxStatus.PENDING, outboxEntries.get(0).status);
+    assertEquals("ExampleOrder", outboxEntries.getFirst().aggregateType);
+    assertEquals("example.order.created", outboxEntries.getFirst().eventType);
+    assertEquals(OutboxStatus.PENDING, outboxEntries.getFirst().status);
 
     var myOrders = orderPlacementApi.myOrders();
     assertEquals(1, myOrders.size());
-    assertFalse(myOrders.get(0).lines().isEmpty());
+    assertFalse(myOrders.getFirst().lines().isEmpty());
   }
 
   private void persistBuyer(String username) {

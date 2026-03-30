@@ -10,6 +10,8 @@ import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.Test;
 
 class PermissionResourceBehaviorTest {
@@ -17,7 +19,7 @@ class PermissionResourceBehaviorTest {
   @Test
   void permissionResourceExposesReadOnlyEndpoints() {
     var resourceMethods =
-        List.of(PermissionResource.class.getDeclaredMethods()).stream()
+        Stream.of(PermissionResource.class.getDeclaredMethods())
             .filter(this::isHttpEndpoint)
             .toList();
 

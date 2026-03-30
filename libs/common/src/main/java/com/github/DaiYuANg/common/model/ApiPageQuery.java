@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Optional;
 import lombok.Setter;
 import lombok.val;
+import org.jspecify.annotations.NonNull;
 import org.toolkit4j.data.model.page.PageRequest;
 
 /**
@@ -125,7 +126,7 @@ public class ApiPageQuery extends PageRequest {
   }
 
   @Override
-  public Integer getOffset() {
+  public @NonNull Integer getOffset() {
     return (getPageNum() - 1) * getPageSize();
   }
 
@@ -152,7 +153,7 @@ public class ApiPageQuery extends PageRequest {
 
   protected final boolean isAscending(boolean defaultAsc) {
     return normalizedValue(getSortDirection())
-        .map(direction -> "asc".equalsIgnoreCase(direction))
+        .map("asc"::equalsIgnoreCase)
         .orElse(defaultAsc);
   }
 

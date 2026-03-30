@@ -41,7 +41,7 @@ public class RefreshTokenStore {
   public Optional<String> getUsername(String refreshToken) {
     return getOwner(refreshToken)
         .map(RefreshTokenOwner::username)
-        .filter(username -> username != null && !username.isBlank());
+        .filter(username -> !username.isBlank());
   }
 
   public Optional<RefreshTokenOwner> getOwner(String refreshToken) {

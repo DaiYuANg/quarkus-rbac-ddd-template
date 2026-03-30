@@ -1,6 +1,7 @@
 package com.github.DaiYuANg.modules.security.runtime.identity;
 
 import com.github.DaiYuANg.cache.AuthorityVersionStore;
+import com.github.DaiYuANg.cache.PermissionCatalogEntry;
 import com.github.DaiYuANg.cache.PermissionCatalogStore;
 import com.github.DaiYuANg.identity.constant.UserStatus;
 import com.github.DaiYuANg.identity.entity.SysUser;
@@ -99,7 +100,7 @@ public class AdminPermissionSnapshotLoader implements PermissionSnapshotLoader {
     }
     val permissions =
         permissionCatalogStore.getAll().stream()
-            .map(entry -> entry.code())
+            .map(PermissionCatalogEntry::code)
             .filter(Objects::nonNull)
             .map(String::trim)
             .filter(code -> !code.isEmpty())

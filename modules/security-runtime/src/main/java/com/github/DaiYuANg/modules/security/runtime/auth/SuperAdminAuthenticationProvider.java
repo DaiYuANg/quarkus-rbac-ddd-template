@@ -1,5 +1,6 @@
 package com.github.DaiYuANg.modules.security.runtime.auth;
 
+import com.github.DaiYuANg.cache.PermissionCatalogEntry;
 import com.github.DaiYuANg.cache.PermissionCatalogStore;
 import com.github.DaiYuANg.common.constant.ResultCode;
 import com.github.DaiYuANg.security.auth.AuthenticationProviderResult;
@@ -88,7 +89,7 @@ public class SuperAdminAuthenticationProvider
 
   private Set<String> allPermissionCodes() {
     return permissionCatalogStore.getAll().stream()
-        .map(entry -> entry.code())
+        .map(PermissionCatalogEntry::code)
         .filter(java.util.Objects::nonNull)
         .map(String::trim)
         .filter(value -> !value.isEmpty())

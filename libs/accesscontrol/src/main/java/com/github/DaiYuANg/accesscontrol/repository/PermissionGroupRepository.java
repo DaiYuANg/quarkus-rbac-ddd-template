@@ -146,7 +146,7 @@ public class PermissionGroupRepository extends BasePanacheCommandRepository<SysP
             .fetch();
     return rows.stream()
         .filter(Objects::nonNull)
-        .map(row -> Map.entry(row.get(g.id), row.get(p.id)))
+        .map(row -> Map.entry(Objects.requireNonNull(row.get(g.id)), Objects.requireNonNull(row.get(p.id))))
         .filter(entry -> entry.getKey() != null && entry.getValue() != null)
         .collect(
             Collectors.groupingBy(

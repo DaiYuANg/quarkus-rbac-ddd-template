@@ -94,11 +94,6 @@ class AdminPermissionSecurityIdentityAugmentorTest {
   }
 
   private AuthenticationRequestContext immediateContext() {
-    return new AuthenticationRequestContext() {
-      @Override
-      public Uni<SecurityIdentity> runBlocking(Supplier<SecurityIdentity> function) {
-        return Uni.createFrom().item(function.get());
-      }
-    };
+    return function -> Uni.createFrom().item(function.get());
   }
 }

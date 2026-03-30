@@ -25,11 +25,11 @@ public class ApiPageResult<T> extends PageResult<T> {
     val normalized = page == null ? PageResult.<S>empty() : page.normalized();
     val records =
         normalized.getContent().stream().map(mapper).collect(java.util.stream.Collectors.toList());
-    return new ApiPageResult<T>(
-        normalized.getTotalElements(),
-        normalized.getPage(),
-        normalized.getSize(),
-        records);
+    return new ApiPageResult<>(
+      normalized.getTotalElements(),
+      normalized.getPage(),
+      normalized.getSize(),
+      records);
   }
 
   @JsonProperty("total")
