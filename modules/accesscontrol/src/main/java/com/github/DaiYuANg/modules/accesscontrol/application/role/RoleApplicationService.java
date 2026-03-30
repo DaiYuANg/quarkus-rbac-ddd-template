@@ -5,15 +5,18 @@ import com.github.DaiYuANg.accesscontrol.entity.SysRole;
 import com.github.DaiYuANg.accesscontrol.query.RolePageQuery;
 import com.github.DaiYuANg.accesscontrol.repository.PermissionGroupRepository;
 import com.github.DaiYuANg.accesscontrol.repository.RoleRepository;
+import com.github.DaiYuANg.cache.PermissionCatalogStore;
 import com.github.DaiYuANg.common.constant.ResultCode;
 import com.github.DaiYuANg.common.exception.BizException;
 import com.github.DaiYuANg.common.model.ApiPageResult;
+import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.PermissionGroupVO;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.RoleCreationForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.RoleRefPermissionGroupForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UpdateRoleForm;
+import com.github.DaiYuANg.modules.accesscontrol.application.mapper.PermissionGroupVOMapper;
+import com.github.DaiYuANg.modules.accesscontrol.application.mapper.PermissionVOMapper;
+import com.github.DaiYuANg.modules.accesscontrol.application.mapper.RoleVOMapper;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.RoleVO;
-import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.RoleVOBuilder;
-import com.github.DaiYuANg.modules.accesscontrol.application.permissiongroup.PermissionGroupApplicationService;
 import com.github.DaiYuANg.modules.accesscontrol.application.support.AccessControlAuditSupport;
 import com.github.DaiYuANg.security.authorization.AuthorizationService;
 import com.github.DaiYuANg.security.authorization.RbacPermissionCodes.Role;
@@ -49,9 +52,12 @@ import lombok.val;
 public class RoleApplicationService {
   private final RoleRepository roleRepository;
   private final PermissionGroupRepository permissionGroupRepository;
-  private final PermissionGroupApplicationService permissionGroupApplicationService;
+  private final PermissionCatalogStore permissionCatalogStore;
   private final AccessControlAuditSupport auditSupport;
   private final AuthorizationService authorizationService;
+  private final RoleVOMapper roleVOMapper;
+  private final PermissionGroupVOMapper permissionGroupVOMapper;
+  private final PermissionVOMapper permissionVOMapper;
 
   @Transactional
   public RoleVO createRole(@NonNull RoleCreationForm form) {
@@ -72,7 +78,7 @@ public class RoleApplicationService {
 
   public ApiPageResult<RoleVO> queryRolePage(@NonNull RolePageQuery query) {
     authorizationService.check(Role.VIEW);
-    return ApiPageResult.map(roleRepository.page(query), this::toRoleVO);
+    return ApiPageResult.map(roleRepository.page(query), roleVOMapper::toProjectionVO);
   }
 
   public Optional<RoleVO> getRoleById(@NonNull Long id) {
@@ -180,20 +186,6 @@ public class RoleApplicationService {
     return roleRepository.count();
   }
 
-  private RoleVO toRoleVO(
-      @NonNull com.github.DaiYuANg.accesscontrol.projection.RoleListProjection role) {
-    return RoleVOBuilder.builder()
-        .id(role.id())
-        .name(role.name())
-        .code(role.code())
-        .status(parseRoleStatus(role.status()))
-        .sort(role.sort())
-        .createAt(null)
-        .updateAt(null)
-        .permissionGroups(new LinkedHashSet<>())
-        .build();
-  }
-
   private RoleVO toRoleVOWithCatalog(@NonNull SysRole role) {
     val groupIds =
         streamPermissionGroups(role)
@@ -211,26 +203,15 @@ public class RoleApplicationService {
         streamPermissionGroups(role)
             .map(
                 group ->
-                    permissionGroupApplicationService.toPermissionGroupVOWithCatalog(
-                        group, permissionIdsByGroupId.getOrDefault(group.id, java.util.Set.of()).stream().toList()))
+                    permissionGroupVOMapper.toVOWithPermissions(
+                        group,
+                        permissionIdsByGroupId.getOrDefault(group.id, java.util.Set.of()).stream()
+                            .map(permissionCatalogStore::getById)
+                            .flatMap(Optional::stream)
+                            .map(permissionVOMapper::toCatalogVO)
+                            .collect(Collectors.toCollection(LinkedHashSet::new))))
             .collect(Collectors.toCollection(LinkedHashSet::new));
-    return RoleVOBuilder.builder()
-        .id(role.id)
-        .name(role.name)
-        .code(role.code)
-        .status(parseRoleStatus(role.status != null ? role.status.name() : null))
-        .sort(role.sort)
-        .createAt(role.createAt)
-        .updateAt(role.updateAt)
-        .permissionGroups(permissionGroups)
-        .build();
-  }
-
-  private RoleStatus parseRoleStatus(String value) {
-    if (value == null || value.isBlank()) {
-      return RoleStatus.ENABLED;
-    }
-    return RoleStatus.valueOf(value);
+    return roleVOMapper.toVOWithPermissionGroups(role, permissionGroups);
   }
 
   private Stream<com.github.DaiYuANg.accesscontrol.entity.SysPermissionGroup> streamPermissionGroups(

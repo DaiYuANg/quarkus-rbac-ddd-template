@@ -3,8 +3,8 @@ package com.github.DaiYuANg.modules.example.infrastructure.persistence;
 import com.blazebit.persistence.CriteriaBuilderFactory;
 import com.blazebit.persistence.querydsl.BlazeJPAQuery;
 import com.github.DaiYuANg.modules.example.application.port.driven.ExampleOrderReadRepository;
-import com.github.DaiYuANg.modules.example.application.readmodel.ExampleOrderLineView;
 import com.github.DaiYuANg.modules.example.application.readmodel.ExampleOrderView;
+import com.github.DaiYuANg.modules.example.infrastructure.persistence.mapper.ExampleOrderReadMapper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -27,6 +27,7 @@ public class PanacheExampleOrderReadRepository implements ExampleOrderReadReposi
 
   private final EntityManager entityManager;
   private final CriteriaBuilderFactory criteriaBuilderFactory;
+  private final ExampleOrderReadMapper exampleOrderReadMapper;
 
   @Override
   public List<ExampleOrderView> listByBuyer(String buyerUsername) {
@@ -40,17 +41,6 @@ public class PanacheExampleOrderReadRepository implements ExampleOrderReadReposi
             .orderBy(ORDER.createAt.desc())
             .distinct()
             .fetch();
-    return orders.stream().map(this::toView).toList();
-  }
-
-  private ExampleOrderView toView(ExampleOrderEntity entity) {
-    val lineViews =
-        entity.lines.stream()
-            .map(
-                line ->
-                    new ExampleOrderLineView(line.productId, line.quantity, line.unitPriceMinor))
-            .toList();
-    return new ExampleOrderView(
-        entity.id, entity.buyerUsername, entity.status.name(), entity.totalMinor, lineViews);
+    return orders.stream().map(exampleOrderReadMapper::toView).toList();
   }
 }

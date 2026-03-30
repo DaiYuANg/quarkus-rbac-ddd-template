@@ -7,10 +7,9 @@ import com.github.DaiYuANg.cache.LoginAttemptStore;
 import com.github.DaiYuANg.common.constant.ResultCode;
 import com.github.DaiYuANg.common.exception.BizException;
 import com.github.DaiYuANg.identity.repository.UserRepository;
+import com.github.DaiYuANg.modules.identity.application.mapper.MeResponseMapper;
 import com.github.DaiYuANg.modules.identity.application.dto.request.LoginRequest;
 import com.github.DaiYuANg.modules.identity.application.dto.response.MeResponse;
-import com.github.DaiYuANg.modules.identity.application.dto.response.MeResponseBuilder;
-import com.github.DaiYuANg.modules.identity.application.dto.response.MeRoleItem;
 import com.github.DaiYuANg.modules.identity.application.dto.response.SystemAuthenticationToken;
 import com.github.DaiYuANg.modules.identity.application.dto.response.UserDetailVo;
 import com.github.DaiYuANg.modules.identity.application.port.AdminTokenIssuerPort;
@@ -64,6 +63,7 @@ public class AuthApplicationService {
   private final AuthenticationLifecyclePort authenticationLifecycle;
   private final CurrentUserAccess currentUserAccess;
   private final UserProfileResolutionService userProfileResolutionService;
+  private final MeResponseMapper meResponseMapper;
 
   @Transactional
   public SystemAuthenticationToken login(@NonNull LoginRequest req) {
@@ -132,27 +132,10 @@ public class AuthApplicationService {
 
     val user = userRepository.findByUsernameWithRbacGraph(username).orElse(null);
     if (user != null) {
-      val roles =
-          user.roles.stream()
-              .map(role -> new MeRoleItem(String.valueOf(role.id), role.name))
-              .toList();
-      return MeResponseBuilder.builder()
-          .id(String.valueOf(user.id))
-          .name(current.displayName())
-          .email(user.email)
-          .roles(roles)
-          .permissions(current.permissions())
-          .build();
+      return meResponseMapper.fromDbUser(user, current.displayName(), current.permissions());
     }
 
-    val configRoles = current.roles().stream().map(role -> new MeRoleItem(role, role)).toList();
-    return MeResponseBuilder.builder()
-        .id(current.username())
-        .name(current.displayName())
-        .email(null)
-        .roles(configRoles)
-        .permissions(current.permissions())
-        .build();
+    return meResponseMapper.fromCurrentUser(current, current.displayName(), current.permissions());
   }
 
   public void logout(@NonNull String refreshToken) {

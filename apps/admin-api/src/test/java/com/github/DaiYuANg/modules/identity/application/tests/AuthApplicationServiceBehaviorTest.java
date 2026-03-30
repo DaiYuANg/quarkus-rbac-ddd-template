@@ -16,6 +16,7 @@ import com.github.DaiYuANg.common.exception.BizException;
 import com.github.DaiYuANg.identity.repository.UserRepository;
 import com.github.DaiYuANg.modules.identity.application.AuthApplicationService;
 import com.github.DaiYuANg.modules.identity.application.LoginAuditEvent;
+import com.github.DaiYuANg.modules.identity.application.mapper.MeResponseMapper;
 import com.github.DaiYuANg.modules.identity.application.dto.response.SystemAuthenticationToken;
 import com.github.DaiYuANg.modules.identity.application.dto.response.SystemAuthenticationTokenBuilder;
 import com.github.DaiYuANg.modules.identity.application.dto.response.UserDetailVo;
@@ -69,6 +70,7 @@ class AuthApplicationServiceBehaviorTest {
     var lifecycle = mock(AdminAuthenticationLifecycle.class);
     var currentUserAccess = mock(CurrentUserAccess.class);
     var userProfileResolutionService = mock(UserProfileResolutionService.class);
+    var meResponseMapper = mock(MeResponseMapper.class);
 
     when(authenticationManager.authenticate(any())).thenReturn(authResult);
     when(tokenIssuer.issue(user)).thenReturn(issued);
@@ -85,7 +87,8 @@ class AuthApplicationServiceBehaviorTest {
             authSecurityConfig,
             lifecycle,
             currentUserAccess,
-            userProfileResolutionService);
+            userProfileResolutionService,
+            meResponseMapper);
 
     var actual = service.refreshToken("refresh-old");
 
@@ -126,7 +129,8 @@ class AuthApplicationServiceBehaviorTest {
             mock(AuthSecurityConfig.class),
             mock(AdminAuthenticationLifecycle.class),
             currentUserAccess,
-            userProfileResolutionService);
+            userProfileResolutionService,
+            mock(MeResponseMapper.class));
 
     assertSame(expected, service.profile("alice"));
   }
@@ -149,7 +153,8 @@ class AuthApplicationServiceBehaviorTest {
             mock(AuthSecurityConfig.class),
             mock(AdminAuthenticationLifecycle.class),
             currentUserAccess,
-            mock(UserProfileResolutionService.class));
+            mock(UserProfileResolutionService.class),
+            mock(MeResponseMapper.class));
 
     var ex = assertThrows(BizException.class, () -> service.profile("bob"));
     assertEquals(ResultCode.FORBIDDEN, ex.getResultCode());
@@ -172,7 +177,8 @@ class AuthApplicationServiceBehaviorTest {
             mock(AuthSecurityConfig.class),
             mock(AdminAuthenticationLifecycle.class),
             currentUserAccess,
-            mock(UserProfileResolutionService.class));
+            mock(UserProfileResolutionService.class),
+            mock(MeResponseMapper.class));
 
     var ex = assertThrows(BizException.class, () -> service.profile("any"));
     assertEquals(ResultCode.UNAUTHORIZED, ex.getResultCode());

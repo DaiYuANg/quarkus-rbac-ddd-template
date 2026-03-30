@@ -10,17 +10,11 @@ import com.github.DaiYuANg.identity.constant.UserStatus;
 import com.github.DaiYuANg.identity.entity.SysUser;
 import com.github.DaiYuANg.identity.query.UserPageQuery;
 import com.github.DaiYuANg.identity.repository.UserRepository;
+import com.github.DaiYuANg.modules.accesscontrol.application.mapper.UserVOMapper;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UpdateUserForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UserCreationForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UserRefRoleForm;
-import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.PermissionGroupVO;
-import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.PermissionGroupVOBuilder;
-import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.PermissionVO;
-import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.PermissionVOBuilder;
-import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.RoleVO;
-import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.RoleVOBuilder;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.UserVO;
-import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.UserVOBuilder;
 import com.github.DaiYuANg.modules.accesscontrol.application.support.AccessControlAuditSupport;
 import com.github.DaiYuANg.security.access.CurrentUserAccess;
 import com.github.DaiYuANg.security.auth.PasswordHasher;
@@ -31,12 +25,8 @@ import com.github.DaiYuANg.security.identity.CurrentAuthenticatedUser;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Stream;
-import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -65,10 +55,11 @@ public class UserApplicationService {
   private final CurrentUserAccess currentUserAccess;
   private final PermissionSnapshotStore permissionSnapshotStore;
   private final RefreshTokenStore refreshTokenStore;
+  private final UserVOMapper userVOMapper;
 
   public ApiPageResult<UserVO> queryUserPage(@NonNull UserPageQuery query) {
     authorizationService.check(User.VIEW);
-    return ApiPageResult.map(userRepository.page(query), this::toUserVO);
+    return ApiPageResult.map(userRepository.page(query), userVOMapper::toProjectionVO);
   }
 
   @Transactional
@@ -94,7 +85,7 @@ public class UserApplicationService {
     userRepository.persist(user);
     auditSupport.bumpGlobalVersion();
     auditSupport.record("user", "create", form.username(), true, "create user");
-    return toUserVO(user);
+    return userVOMapper.toVO(user);
   }
 
   @Transactional
@@ -120,12 +111,12 @@ public class UserApplicationService {
 
   public Optional<UserVO> getUserById(@NonNull Long id) {
     authorizationService.check(User.VIEW);
-    return userRepository.findByIdWithRbacGraph(id).map(this::toUserVO);
+    return userRepository.findByIdWithRbacGraph(id).map(userVOMapper::toVO);
   }
 
   public List<UserVO> getAllUsers() {
     authorizationService.check(User.VIEW);
-    return userRepository.listAllWithRbacGraph().stream().map(this::toUserVO).toList();
+    return userRepository.listAllWithRbacGraph().stream().map(userVOMapper::toVO).toList();
   }
 
   @Transactional
@@ -172,7 +163,7 @@ public class UserApplicationService {
     // Avoid N+1 lazy loads when mapping nested RBAC graph in UserVO.
     return userRepository
         .findByIdWithRbacGraph(user.id)
-        .map(this::toUserVO)
+        .map(userVOMapper::toVO)
         .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
   }
 
@@ -193,7 +184,7 @@ public class UserApplicationService {
 
   public Optional<UserVO> getUserByUsername(@NonNull String username) {
     authorizationService.check(User.VIEW);
-    return userRepository.findByUsernameWithRbacGraph(username).map(this::toUserVO);
+    return userRepository.findByUsernameWithRbacGraph(username).map(userVOMapper::toVO);
   }
 
   @Transactional
@@ -258,117 +249,5 @@ public class UserApplicationService {
   public long countUserLoginTotal() {
     authorizationService.check(User.VIEW);
     return userRepository.countUserLoginTotal();
-  }
-
-  private UserVO toUserVO(
-      @NonNull com.github.DaiYuANg.identity.projection.UserListProjection user) {
-    return UserVOBuilder.builder()
-        .id(user.id())
-        .username(user.username())
-        .identifier(user.identifier())
-        .mobilePhone(user.mobilePhone())
-        .nickname(user.nickname())
-        .email(user.email())
-        .latestSignIn(user.latestSignIn())
-        .createAt(null)
-        .updateAt(null)
-        .userStatus(parseUserStatus(user.userStatus()))
-        .roles(new LinkedHashSet<>())
-        .build();
-  }
-
-  private UserVO toUserVO(@NonNull SysUser user) {
-    val roles =
-        streamRoles(user)
-            .map(this::toRoleVO)
-            .collect(Collectors.toCollection(LinkedHashSet::new));
-    return UserVOBuilder.builder()
-        .id(user.id)
-        .username(user.username)
-        .identifier(user.identifier)
-        .mobilePhone(user.mobilePhone)
-        .nickname(user.nickname)
-        .email(user.email)
-        .latestSignIn(user.latestSignIn)
-        .createAt(user.createAt)
-        .updateAt(user.updateAt)
-        .userStatus(user.userStatus)
-        .roles(roles)
-        .build();
-  }
-
-  private RoleVO toRoleVO(@NonNull com.github.DaiYuANg.accesscontrol.entity.SysRole role) {
-    val groups =
-        streamPermissionGroups(role)
-            .map(this::toPermissionGroupVO)
-            .collect(Collectors.toCollection(LinkedHashSet::new));
-    return RoleVOBuilder.builder()
-        .id(role.id)
-        .name(role.name)
-        .code(role.code)
-        .status(role.status)
-        .sort(role.sort)
-        .createAt(role.createAt)
-        .updateAt(role.updateAt)
-        .permissionGroups(groups)
-        .build();
-  }
-
-  private PermissionGroupVO toPermissionGroupVO(
-      @NonNull com.github.DaiYuANg.accesscontrol.entity.SysPermissionGroup group) {
-    val permissions =
-        streamPermissions(group)
-            .map(this::toPermissionVO)
-            .collect(Collectors.toCollection(LinkedHashSet::new));
-    return PermissionGroupVOBuilder.builder()
-        .id(group.id)
-        .name(group.name)
-        .description(group.description)
-        .code(group.code)
-        .sort(group.sort)
-        .createAt(group.createAt)
-        .updateAt(group.updateAt)
-        .permissions(permissions)
-        .build();
-  }
-
-  private PermissionVO toPermissionVO(
-      @NonNull com.github.DaiYuANg.accesscontrol.entity.SysPermission permission) {
-    return PermissionVOBuilder.builder()
-        .id(permission.id)
-        .name(permission.name)
-        .code(permission.code)
-        .resource(permission.resource)
-        .action(permission.action)
-        .groupCode(permission.groupCode)
-        .description(permission.description)
-        .expression(permission.expression)
-        .build();
-  }
-
-  private UserStatus parseUserStatus(String value) {
-    if (value == null || value.isBlank()) {
-      return UserStatus.ENABLED;
-    }
-    return UserStatus.valueOf(value);
-  }
-
-  private Stream<com.github.DaiYuANg.accesscontrol.entity.SysRole> streamRoles(
-      @NonNull SysUser user) {
-    return user.roles == null ? Stream.empty() : user.roles.stream().filter(Objects::nonNull);
-  }
-
-  private Stream<com.github.DaiYuANg.accesscontrol.entity.SysPermissionGroup> streamPermissionGroups(
-      @NonNull com.github.DaiYuANg.accesscontrol.entity.SysRole role) {
-    return role.permissionGroups == null
-        ? Stream.empty()
-        : role.permissionGroups.stream().filter(Objects::nonNull);
-  }
-
-  private Stream<com.github.DaiYuANg.accesscontrol.entity.SysPermission> streamPermissions(
-      @NonNull com.github.DaiYuANg.accesscontrol.entity.SysPermissionGroup group) {
-    return group.permissions == null
-        ? Stream.empty()
-        : group.permissions.stream().filter(Objects::nonNull);
   }
 }

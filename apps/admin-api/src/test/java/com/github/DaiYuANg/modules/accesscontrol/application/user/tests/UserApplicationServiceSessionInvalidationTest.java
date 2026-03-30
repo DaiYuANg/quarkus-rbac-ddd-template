@@ -17,6 +17,8 @@ import com.github.DaiYuANg.identity.constant.UserStatus;
 import com.github.DaiYuANg.identity.entity.SysUser;
 import com.github.DaiYuANg.identity.repository.UserRepository;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UpdateUserForm;
+import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.UserVOBuilder;
+import com.github.DaiYuANg.modules.accesscontrol.application.mapper.UserVOMapper;
 import com.github.DaiYuANg.modules.accesscontrol.application.support.AccessControlAuditSupport;
 import com.github.DaiYuANg.modules.accesscontrol.application.user.UserApplicationService;
 import com.github.DaiYuANg.security.access.CurrentUserAccess;
@@ -137,8 +139,27 @@ class UserApplicationServiceSessionInvalidationTest {
     var currentUserAccess = mock(CurrentUserAccess.class);
     var permissionSnapshotStore = mock(PermissionSnapshotStore.class);
     var refreshTokenStore = mock(RefreshTokenStore.class);
+    var userVOMapper = mock(UserVOMapper.class);
 
     when(userRepository.findByIdOptional(anyLong())).thenReturn(Optional.empty());
+    when(userVOMapper.toVO(org.mockito.ArgumentMatchers.any(SysUser.class)))
+        .thenAnswer(
+            invocation -> {
+              var user = invocation.getArgument(0, SysUser.class);
+              return UserVOBuilder.builder()
+                  .id(user.id)
+                  .username(user.username)
+                  .identifier(user.identifier)
+                  .mobilePhone(user.mobilePhone)
+                  .nickname(user.nickname)
+                  .email(user.email)
+                  .latestSignIn(user.latestSignIn)
+                  .createAt(user.createAt)
+                  .updateAt(user.updateAt)
+                  .userStatus(user.userStatus)
+                  .roles(java.util.Set.of())
+                  .build();
+            });
 
     var service =
         new UserApplicationService(
@@ -149,7 +170,8 @@ class UserApplicationServiceSessionInvalidationTest {
             authorizationService,
             currentUserAccess,
             permissionSnapshotStore,
-            refreshTokenStore);
+            refreshTokenStore,
+            userVOMapper);
     return new Fixtures(
         service,
         userRepository,

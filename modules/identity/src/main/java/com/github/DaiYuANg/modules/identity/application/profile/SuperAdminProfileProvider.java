@@ -1,8 +1,8 @@
 package com.github.DaiYuANg.modules.identity.application.profile;
 
 import com.github.DaiYuANg.cache.AuthorityVersionStore;
+import com.github.DaiYuANg.modules.identity.application.mapper.UserDetailVoMapper;
 import com.github.DaiYuANg.modules.identity.application.dto.response.UserDetailVo;
-import com.github.DaiYuANg.modules.identity.application.dto.response.UserDetailVoBuilder;
 import com.github.DaiYuANg.security.identity.CurrentAuthenticatedUser;
 import com.github.DaiYuANg.security.identity.SecurityPrincipalKinds;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -19,6 +19,7 @@ import lombok.val;
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class SuperAdminProfileProvider implements UserProfileProvider {
   private final AuthorityVersionStore authorityVersionStore;
+  private final UserDetailVoMapper userDetailVoMapper;
 
   @Override
   public int order() {
@@ -43,14 +44,8 @@ public class SuperAdminProfileProvider implements UserProfileProvider {
         authorityVersionStore.currentVersion()
             + ":"
             + UserDetailVo.encodeAuthorityKey(permissions, roleCodes);
-    return UserDetailVoBuilder.builder()
-        .userid(null)
-        .username(user.username())
-        .nickname(nickname)
-        .permissions(permissions)
-        .roleCodes(roleCodes)
-        .authorityKey(authorityKey)
-        .build();
+    return userDetailVoMapper.fromCurrentUser(
+        user, nickname, permissions, roleCodes, authorityKey, null);
   }
 
   private LinkedHashSet<String> normalizeCodes(Set<String> values) {

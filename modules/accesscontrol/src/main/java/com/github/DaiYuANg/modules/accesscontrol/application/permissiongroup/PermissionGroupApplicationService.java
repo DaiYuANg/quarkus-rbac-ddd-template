@@ -9,13 +9,13 @@ import com.github.DaiYuANg.cache.PermissionCatalogStore;
 import com.github.DaiYuANg.common.constant.ResultCode;
 import com.github.DaiYuANg.common.exception.BizException;
 import com.github.DaiYuANg.common.model.ApiPageResult;
+import com.github.DaiYuANg.modules.accesscontrol.application.mapper.PermissionGroupVOMapper;
+import com.github.DaiYuANg.modules.accesscontrol.application.mapper.PermissionVOMapper;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.PermissionGroupCreationForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.PermissionGroupRefPermissionForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UpdatePermissionGroupForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.PermissionGroupVO;
-import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.PermissionGroupVOBuilder;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.PermissionVO;
-import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.PermissionVOBuilder;
 import com.github.DaiYuANg.modules.accesscontrol.application.support.AccessControlAuditSupport;
 import com.github.DaiYuANg.security.authorization.AuthorizationService;
 import com.github.DaiYuANg.security.authorization.RbacPermissionCodes.PermissionGroup;
@@ -55,6 +55,8 @@ public class PermissionGroupApplicationService {
   private final EntityManager entityManager;
   private final AccessControlAuditSupport auditSupport;
   private final AuthorizationService authorizationService;
+  private final PermissionGroupVOMapper permissionGroupVOMapper;
+  private final PermissionVOMapper permissionVOMapper;
 
   @Transactional
   public PermissionGroupVO createPermissionGroup(@NonNull PermissionGroupCreationForm form) {
@@ -117,7 +119,7 @@ public class PermissionGroupApplicationService {
   public ApiPageResult<PermissionGroupVO> queryPermissionGroupPage(
       @NonNull PermissionGroupPageQuery query) {
     authorizationService.check(PermissionGroup.VIEW);
-    return ApiPageResult.map(repository.page(query), this::toPermissionGroupVO);
+    return ApiPageResult.map(repository.page(query), permissionGroupVOMapper::toProjectionVO);
   }
 
   public Optional<PermissionGroupVO> getPermissionGroupByName(@NonNull String name) {
@@ -224,20 +226,6 @@ public class PermissionGroupApplicationService {
     return repository.count();
   }
 
-  private PermissionGroupVO toPermissionGroupVO(
-      com.github.DaiYuANg.accesscontrol.projection.PermissionGroupListProjection group) {
-    return PermissionGroupVOBuilder.builder()
-        .id(group.id())
-        .name(group.name())
-        .description(group.description())
-        .code(group.code())
-        .sort(group.sort())
-        .createAt(null)
-        .updateAt(null)
-        .permissions(new LinkedHashSet<>())
-        .build();
-  }
-
   public PermissionGroupVO toPermissionGroupVOWithCatalog(@NonNull SysPermissionGroup group) {
     val permissionIds = repository.findPermissionIdsByGroupId(group.id);
     return toPermissionGroupVOWithCatalog(group, permissionIds);
@@ -245,38 +233,18 @@ public class PermissionGroupApplicationService {
 
   public PermissionGroupVO toPermissionGroupVOWithCatalog(
       @NonNull SysPermissionGroup group, List<Long> permissionIds) {
-    val permissions =
-        streamPermissionIds(permissionIds)
-            .map(catalogStore::getById)
-            .flatMap(Optional::stream)
-            .map(this::toPermissionVO)
-            .collect(Collectors.toCollection(LinkedHashSet::new));
-    return PermissionGroupVOBuilder.builder()
-        .id(group.id)
-        .name(group.name)
-        .description(group.description)
-        .code(group.code)
-        .sort(group.sort)
-        .createAt(group.createAt)
-        .updateAt(group.updateAt)
-        .permissions(permissions)
-        .build();
-  }
-
-  private PermissionVO toPermissionVO(@NonNull PermissionCatalogEntry e) {
-    return PermissionVOBuilder.builder()
-        .id(e.id())
-        .name(e.name())
-        .code(e.code())
-        .resource(e.resource())
-        .action(e.action())
-        .groupCode(e.groupCode())
-        .description(e.description())
-        .expression(e.expression())
-        .build();
+    return permissionGroupVOMapper.toVOWithPermissions(group, resolvePermissions(permissionIds));
   }
 
   private Stream<Long> streamPermissionIds(List<Long> permissionIds) {
     return permissionIds == null ? Stream.empty() : permissionIds.stream().filter(Objects::nonNull);
+  }
+
+  private LinkedHashSet<PermissionVO> resolvePermissions(List<Long> permissionIds) {
+    return streamPermissionIds(permissionIds)
+        .map(catalogStore::getById)
+        .flatMap(Optional::stream)
+        .map(permissionVOMapper::toCatalogVO)
+        .collect(Collectors.toCollection(LinkedHashSet::new));
   }
 }
