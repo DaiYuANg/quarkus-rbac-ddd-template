@@ -14,7 +14,10 @@ import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Request-time permission enrichment.
@@ -48,7 +51,7 @@ public class AdminPermissionSecurityIdentityAugmentor implements SecurityIdentit
     return context.runBlocking(() -> enrichBlocking(identity));
   }
 
-  private SecurityIdentity enrichBlocking(SecurityIdentity identity) {
+  private SecurityIdentity enrichBlocking(@NonNull SecurityIdentity identity) {
     var principalName = identity.getPrincipal().getName();
     var expectedVersion = extractAuthorityVersion(identity);
     var userId = extractUserId(identity);
@@ -63,15 +66,12 @@ public class AdminPermissionSecurityIdentityAugmentor implements SecurityIdentit
     if (!isBoundToCurrentToken(loaded, principalName, userId)) {
       return shouldRejectStaleIdentity(expectedVersion, userId) ? anonymousIdentity() : identity;
     }
-    if (loaded == null) {
-      return shouldRejectStaleIdentity(expectedVersion, userId) ? anonymousIdentity() : identity;
-    }
     permissionSnapshotStore.save(loaded);
     return securityIdentityFactory.create(loaded.toAuthenticatedUser());
   }
 
-  private String extractAuthorityVersion(SecurityIdentity identity) {
-    Object direct = identity.getAttribute(PrincipalAttributeKeys.AUTHORITY_VERSION);
+  private @Nullable String extractAuthorityVersion(@NonNull SecurityIdentity identity) {
+    val direct = identity.getAttribute(PrincipalAttributeKeys.AUTHORITY_VERSION);
     if (direct != null) {
       return String.valueOf(direct);
     }
@@ -112,8 +112,8 @@ public class AdminPermissionSecurityIdentityAugmentor implements SecurityIdentit
     return userId != null || (expectedVersion != null && !expectedVersion.isBlank());
   }
 
-  private Long extractUserId(SecurityIdentity identity) {
-    Object direct = identity.getAttribute(PrincipalAttributeKeys.USER_ID);
+  private @Nullable Long extractUserId(@NonNull SecurityIdentity identity) {
+    val direct = identity.getAttribute(PrincipalAttributeKeys.USER_ID);
     if (direct != null) {
       return parseUserId(direct);
     }

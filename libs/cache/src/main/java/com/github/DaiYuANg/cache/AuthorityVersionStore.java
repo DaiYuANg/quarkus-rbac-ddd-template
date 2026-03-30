@@ -4,6 +4,8 @@ import io.quarkus.redis.datasource.RedisDataSource;
 import io.quarkus.redis.datasource.keys.KeyCommands;
 import io.quarkus.redis.datasource.value.ValueCommands;
 import jakarta.enterprise.context.ApplicationScoped;
+import org.jspecify.annotations.NonNull;
+
 import java.time.Instant;
 
 @ApplicationScoped
@@ -14,7 +16,7 @@ public class AuthorityVersionStore {
   private final ValueCommands<String, String> valueCommands;
   private final KeyCommands<String> keyCommands;
 
-  public AuthorityVersionStore(RedisDataSource ds) {
+  public AuthorityVersionStore(@NonNull RedisDataSource ds) {
     this.valueCommands = ds.value(String.class);
     this.keyCommands = ds.key();
   }

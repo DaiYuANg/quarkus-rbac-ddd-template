@@ -14,11 +14,11 @@ import java.util.Map;
 public class MetamodelUserQueryBuilder {
   private static final Map<String, MetamodelSortMapping> SORT_MAPPING =
       Map.of(
-          "id", new MetamodelSortMapping("id", SysUser_.id, SortDirection.DESC),
-          "username", new MetamodelSortMapping("username", SysUser_.username, SortDirection.ASC),
-          "nickname", new MetamodelSortMapping("nickname", SysUser_.nickname, SortDirection.ASC),
-          "email", new MetamodelSortMapping("email", SysUser_.email, SortDirection.ASC),
-          "mobilePhone",
+        SysUser_.ID, new MetamodelSortMapping("id", SysUser_.id, SortDirection.DESC),
+          SysUser_.USERNAME, new MetamodelSortMapping("username", SysUser_.username, SortDirection.ASC),
+          SysUser_.NICKNAME, new MetamodelSortMapping("nickname", SysUser_.nickname, SortDirection.ASC),
+          SysUser_.EMAIL, new MetamodelSortMapping("email", SysUser_.email, SortDirection.ASC),
+          SysUser_.MOBILE_PHONE,
               new MetamodelSortMapping("mobilePhone", SysUser_.mobilePhone, SortDirection.ASC),
           "latestSignIn",
               new MetamodelSortMapping("latestSignIn", SysUser_.latestSignIn, SortDirection.DESC),

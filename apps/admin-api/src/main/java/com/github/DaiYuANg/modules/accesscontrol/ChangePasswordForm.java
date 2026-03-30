@@ -1,4 +1,4 @@
-package com.github.DaiYuANg.modules.accesscontrol.dto;
+package com.github.DaiYuANg.modules.accesscontrol;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

@@ -2,6 +2,8 @@ package com.github.DaiYuANg.modules.identity.application.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.soabase.recordbuilder.core.RecordBuilder;
+
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
@@ -9,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@RecordBuilder
 public record UserDetailVo(
     Long userid,
     String username,

@@ -1,5 +1,8 @@
 package com.github.DaiYuANg.persistence.query;
 
+import io.soabase.recordbuilder.core.RecordBuilder;
+
+@RecordBuilder
 public record QuerySort(String property, SortDirection direction) {
   public static QuerySort asc(String property) {
     return new QuerySort(property, SortDirection.ASC);

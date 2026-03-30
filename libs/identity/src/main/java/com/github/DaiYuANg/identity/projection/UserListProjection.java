@@ -1,7 +1,10 @@
 package com.github.DaiYuANg.identity.projection;
 
+import io.soabase.recordbuilder.core.RecordBuilder;
+
 import java.time.Instant;
 
+@RecordBuilder
 public record UserListProjection(
     Long id,
     String username,

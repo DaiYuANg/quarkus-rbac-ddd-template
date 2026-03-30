@@ -1,10 +1,11 @@
 package com.github.DaiYuANg.security.config;
 
+import lombok.experimental.UtilityClass;
+
 import java.util.Optional;
 
+@UtilityClass
 public final class ConfigUserAccounts {
-
-  private ConfigUserAccounts() {}
 
   public static Optional<ConfigUserAccountConfig.ConfigUser> find(
       ConfigUserAccountConfig config, String username) {

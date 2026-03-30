@@ -1,21 +1,27 @@
 package com.github.DaiYuANg.security.authorization;
 
+import lombok.val;
+import org.jetbrains.annotations.Contract;
+import org.jspecify.annotations.NonNull;
+
 import java.util.Optional;
 
 /** Permission in resource:action format (e.g. user:view, role:edit). */
 public record PermissionDescriptor(String code, String resource, String action) {
-  public static PermissionDescriptor ofCode(String code) {
+  @Contract("null -> new")
+  public static @NonNull PermissionDescriptor ofCode(String code) {
     if (code == null || code.isBlank()) {
       return new PermissionDescriptor("", "", "");
     }
-    int colon = code.indexOf(':');
+    val colon = code.indexOf(':');
     if (colon > 0 && colon < code.length() - 1) {
       return new PermissionDescriptor(code, code.substring(0, colon), code.substring(colon + 1));
     }
     return new PermissionDescriptor(code, "", "");
   }
 
-  public static PermissionDescriptor of(String resource, String action) {
+  @Contract("_, _ -> new")
+  public static @NonNull PermissionDescriptor of(String resource, String action) {
     return new PermissionDescriptor(resource + ":" + action, resource, action);
   }
 

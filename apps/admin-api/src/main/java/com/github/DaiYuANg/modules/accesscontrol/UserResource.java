@@ -7,7 +7,7 @@ import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UserCre
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UserRefRoleForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.UserVO;
 import com.github.DaiYuANg.modules.accesscontrol.application.user.UserApplicationService;
-import com.github.DaiYuANg.modules.accesscontrol.dto.ChangePasswordForm;
+import com.github.DaiYuANg.modules.accesscontrol.ChangePasswordForm;
 import com.github.DaiYuANg.modules.accesscontrol.query.UserPageQueryParams;
 import com.github.DaiYuANg.security.authorization.RbacPermissionCodes.User;
 import io.quarkus.security.PermissionsAllowed;

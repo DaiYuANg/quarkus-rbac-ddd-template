@@ -1,5 +1,7 @@
 package com.github.DaiYuANg.security.authorization;
 
+import lombok.experimental.UtilityClass;
+
 /**
  * Canonical RBAC permission codes ({@code resource:action}) for admin APIs. Use these instead of
  * duplicating string literals in {@code @PermissionsAllowed}, {@link AuthorizationService} checks,
@@ -7,9 +9,8 @@ package com.github.DaiYuANg.security.authorization;
  *
  * @author ddddd <dai_yuang@icloud.com>
  */
+@UtilityClass
 public final class RbacPermissionCodes {
-
-  private RbacPermissionCodes() {}
 
   /** Permissions on the {@code user} resource. */
   public static final class User {

@@ -10,6 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import lombok.RequiredArgsConstructor;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.jspecify.annotations.NonNull;
 
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
@@ -20,7 +21,7 @@ public class AdminSecurityPrincipalAssembler {
 
   private final UserRepository userRepository;
 
-  public AuthenticatedUser fromDbUser(SysUser user) {
+  public AuthenticatedUser fromDbUser(@NonNull SysUser user) {
     var roles = new LinkedHashSet<>(userRepository.findRoleCodesByUsername(user.username));
     var permissions =
         new LinkedHashSet<>(userRepository.findPermissionCodesByUsername(user.username));

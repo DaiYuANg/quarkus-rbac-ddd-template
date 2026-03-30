@@ -5,7 +5,7 @@ import com.github.DaiYuANg.common.model.Results;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.PermissionVO;
 import com.github.DaiYuANg.modules.accesscontrol.application.permission.PermissionApplicationService;
 import com.github.DaiYuANg.modules.accesscontrol.application.permissiongroup.PermissionGroupApplicationService;
-import com.github.DaiYuANg.modules.accesscontrol.dto.PermissionGroupBindingForm;
+import com.github.DaiYuANg.modules.accesscontrol.PermissionGroupBindingForm;
 import com.github.DaiYuANg.modules.accesscontrol.query.PermissionPageQueryParams;
 import com.github.DaiYuANg.security.authorization.RbacPermissionCodes.Permission;
 import io.quarkus.security.PermissionsAllowed;

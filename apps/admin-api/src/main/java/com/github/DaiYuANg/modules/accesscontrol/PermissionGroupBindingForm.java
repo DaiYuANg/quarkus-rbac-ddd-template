@@ -1,3 +1,7 @@
-package com.github.DaiYuANg.modules.accesscontrol.dto;
+package com.github.DaiYuANg.modules.accesscontrol;
 
-public record PermissionGroupBindingForm(Long groupId) {}
+import io.soabase.recordbuilder.core.RecordBuilder;
+
+@RecordBuilder
+public record PermissionGroupBindingForm(Long groupId) {
+}

@@ -10,6 +10,7 @@ import com.github.DaiYuANg.security.snapshot.PermissionSnapshot;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Authentication lifecycle hooks for admin flows.
@@ -31,7 +32,7 @@ public class AdminAuthenticationLifecycle implements AuthenticationLifecyclePort
   }
 
   @Override
-  public void publishSnapshot(AuthenticatedUser user) {
+  public void publishSnapshot(@NonNull AuthenticatedUser user) {
     var snapshot =
         new PermissionSnapshot(
             user.username(),
