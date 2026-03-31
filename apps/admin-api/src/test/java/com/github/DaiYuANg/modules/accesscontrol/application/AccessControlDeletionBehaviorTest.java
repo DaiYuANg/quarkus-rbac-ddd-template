@@ -20,7 +20,8 @@ import com.github.DaiYuANg.modules.accesscontrol.application.permissiongroup.Per
 import com.github.DaiYuANg.modules.accesscontrol.application.role.RoleChecker;
 import com.github.DaiYuANg.modules.accesscontrol.application.role.RoleApplicationService;
 import com.github.DaiYuANg.modules.accesscontrol.application.support.AccessControlAuditSupport;
-import jakarta.persistence.EntityManager;
+import com.github.DaiYuANg.modules.accesscontrol.application.support.PermissionGroupPermissionSupport;
+import com.github.DaiYuANg.modules.accesscontrol.application.support.RolePermissionGroupSupport;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
@@ -32,6 +33,7 @@ class AccessControlDeletionBehaviorTest {
     var permissionGroupRepository = mock(PermissionGroupRepository.class);
     var permissionCatalogStore = mock(PermissionCatalogStore.class);
     var auditSupport = mock(AccessControlAuditSupport.class);
+    var rolePermissionGroupSupport = mock(RolePermissionGroupSupport.class);
     var roleVOMapper = mock(RoleVOMapper.class);
     var permissionGroupVOMapper = mock(PermissionGroupVOMapper.class);
     var permissionVOMapper = mock(PermissionVOMapper.class);
@@ -42,6 +44,7 @@ class AccessControlDeletionBehaviorTest {
             permissionGroupRepository,
             permissionCatalogStore,
             auditSupport,
+            rolePermissionGroupSupport,
             roleVOMapper,
             permissionGroupVOMapper,
             permissionVOMapper,
@@ -59,8 +62,8 @@ class AccessControlDeletionBehaviorTest {
   void deletePermissionGroupThrowsNotFoundWhenGroupMissing() {
     var repository = mock(PermissionGroupRepository.class);
     var catalogStore = mock(PermissionCatalogStore.class);
-    var entityManager = mock(EntityManager.class);
     var auditSupport = mock(AccessControlAuditSupport.class);
+    var permissionGroupPermissionSupport = mock(PermissionGroupPermissionSupport.class);
     var permissionGroupVOMapper = mock(PermissionGroupVOMapper.class);
     var permissionVOMapper = mock(PermissionVOMapper.class);
     var permissionGroupChecker = mock(PermissionGroupChecker.class);
@@ -68,8 +71,8 @@ class AccessControlDeletionBehaviorTest {
         new PermissionGroupApplicationService(
             repository,
             catalogStore,
-            entityManager,
             auditSupport,
+            permissionGroupPermissionSupport,
             permissionGroupVOMapper,
             permissionVOMapper,
             permissionGroupChecker);

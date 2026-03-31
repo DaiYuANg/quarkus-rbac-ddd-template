@@ -4,6 +4,7 @@ import com.github.DaiYuANg.common.constant.ResultCode;
 import com.github.DaiYuANg.common.exception.BizException;
 import com.github.DaiYuANg.identity.constant.UserStatus;
 import com.github.DaiYuANg.identity.repository.UserRepository;
+import com.github.DaiYuANg.modules.security.runtime.identity.AdminDbUserAuthoritySupport;
 import com.github.DaiYuANg.security.auth.PasswordHasher;
 import com.github.DaiYuANg.security.auth.UsernamePasswordAuthenticationRequest;
 import com.github.DaiYuANg.security.identity.QuarkusSecurityIdentityFactory;
@@ -26,7 +27,7 @@ public class DbUserAuthenticationProvider
     implements IdentityProvider<UsernamePasswordAuthenticationRequest> {
   private final UserRepository userRepository;
   private final PasswordHasher passwordHasher;
-  private final AdminSecurityPrincipalAssembler principalAssembler;
+  private final AdminDbUserAuthoritySupport userAuthoritySupport;
   private final QuarkusSecurityIdentityFactory securityIdentityFactory;
 
   @Override
@@ -61,7 +62,7 @@ public class DbUserAuthenticationProvider
               log.atDebug()
                   .addKeyValue("username", request.username())
                   .log("db-user: authenticated");
-              return securityIdentityFactory.create(principalAssembler.fromDbUser(user));
+              return securityIdentityFactory.create(userAuthoritySupport.authenticatedUser(user));
             })
         .orElseGet(
             () -> {

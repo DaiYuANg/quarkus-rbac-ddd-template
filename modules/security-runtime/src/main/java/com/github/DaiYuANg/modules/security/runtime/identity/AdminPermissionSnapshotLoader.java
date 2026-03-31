@@ -6,7 +6,6 @@ import com.github.DaiYuANg.cache.PermissionCatalogStore;
 import com.github.DaiYuANg.identity.constant.UserStatus;
 import com.github.DaiYuANg.identity.entity.SysUser;
 import com.github.DaiYuANg.identity.repository.UserRepository;
-import com.github.DaiYuANg.security.config.IdentityPrincipalConfig;
 import com.github.DaiYuANg.security.config.SuperAdminAccountConfig;
 import com.github.DaiYuANg.security.config.SuperAdminAuthorityId;
 import com.github.DaiYuANg.security.identity.SecurityPrincipalDefinition;
@@ -44,9 +43,9 @@ public class AdminPermissionSnapshotLoader implements PermissionSnapshotLoader {
   private final UserRepository userRepository;
   private final AuthorityVersionStore authorityVersionStore;
   private final PermissionCatalogStore permissionCatalogStore;
-  private final IdentityPrincipalConfig identityPrincipalConfig;
   private final SuperAdminAccountConfig superAdminAccountConfig;
   private final SecurityPrincipalFactory securityPrincipalFactory;
+  private final AdminDbUserAuthoritySupport userAuthoritySupport;
 
   @Override
   @Transactional
@@ -76,23 +75,7 @@ public class AdminPermissionSnapshotLoader implements PermissionSnapshotLoader {
     if (user.userStatus != UserStatus.ENABLED) {
       return Optional.empty();
     }
-    val roles = new LinkedHashSet<>(userRepository.findRoleCodesByUsername(user.username));
-    val permissions =
-        new LinkedHashSet<>(userRepository.findPermissionCodesByUsername(user.username));
-    val version = authorityVersionStore.versionFor(user.username);
-    val principal =
-        securityPrincipalFactory.authenticatedUser(
-            SecurityPrincipalDefinition.builder()
-                .username(user.username)
-                .displayName(user.nickname)
-                .userType(identityPrincipalConfig.dbUserType())
-                .source(SecurityPrincipalKinds.Source.DB)
-                .providerId(SecurityPrincipalKinds.Provider.DB_USER)
-                .roles(roles)
-                .permissions(permissions)
-                .userId(user.id)
-                .build());
-    return Optional.of(securityPrincipalFactory.snapshot(principal, version));
+    return Optional.of(userAuthoritySupport.permissionSnapshot(user));
   }
 
   private Optional<PermissionSnapshot> snapshotFromSuperAdmin(@NonNull String username) {

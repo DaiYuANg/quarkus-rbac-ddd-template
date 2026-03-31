@@ -1,10 +1,7 @@
 package com.github.DaiYuANg.accesscontrol.repository;
 
-import com.github.DaiYuANg.accesscontrol.entity.QSysPermission;
 import com.github.DaiYuANg.accesscontrol.entity.QSysPermissionGroup;
-import com.github.DaiYuANg.accesscontrol.entity.QSysPermissionGroupRefPermission;
 import com.github.DaiYuANg.accesscontrol.entity.SysPermissionGroup;
-import com.github.DaiYuANg.accesscontrol.entity.SysPermissionGroupRefPermission;
 import com.github.DaiYuANg.accesscontrol.mapper.PermissionGroupListViewMapper;
 import com.github.DaiYuANg.accesscontrol.projection.PermissionGroupListProjection;
 import com.github.DaiYuANg.accesscontrol.query.PermissionGroupPageQuery;
@@ -14,20 +11,14 @@ import com.github.DaiYuANg.common.constant.ResultCode;
 import com.github.DaiYuANg.persistence.query.BlazeJPAQueryFactory;
 import com.github.DaiYuANg.persistence.query.BlazeQueryDSLSupport;
 import com.github.DaiYuANg.persistence.repository.BasePanacheCommandRepository;
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.persistence.EntityManager;
-import jakarta.transaction.Transactional;
 import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import org.toolkit4j.data.model.page.PageResult;
@@ -46,15 +37,12 @@ public class PermissionGroupRepository extends BasePanacheCommandRepository<SysP
     implements PermissionGroupQueryRepository {
 
   private static final QSysPermissionGroup g = new QSysPermissionGroup("permissionGroup");
-  private static final QSysPermission p = new QSysPermission("permission");
-  private static final QSysPermissionGroupRefPermission gp =
-      new QSysPermissionGroupRefPermission("permissionGroupRefPermission");
 
   private final BlazeJPAQueryFactory blazeQueryFactory;
   private final BlazeQueryDSLSupport queryDslSupport;
-  private final JPAQueryFactory jpaQueryFactory;
-  private final EntityManager entityManager;
   private final PermissionGroupListViewMapper mapper;
+  private final PermissionGroupPermissionQuerySupport permissionQuerySupport;
+  private final PermissionGroupPermissionMutationSupport permissionMutationSupport;
 
   public Optional<SysPermissionGroup> findByCode(String code) {
     if (code == null || code.isBlank()) {
@@ -113,63 +101,16 @@ public class PermissionGroupRepository extends BasePanacheCommandRepository<SysP
 
   /** Returns permission ids for a group (from join table, no SysPermission load). */
   public List<Long> findPermissionIdsByGroupId(Long groupId) {
-    if (groupId == null) {
-      return List.of();
-    }
-    return blazeQueryFactory
-        .<Long>create()
-        .from(g)
-        .join(g.permissions, p)
-        .select(p.id)
-        .where(g.id.eq(groupId))
-        .distinct()
-        .fetch();
+    return permissionQuerySupport.findPermissionIdsByGroupId(groupId);
   }
 
   /** Returns permission ids for groups in one query. */
   public Map<Long, Set<Long>> findPermissionIdsByGroupIds(Collection<Long> groupIds) {
-    if (groupIds == null || groupIds.isEmpty()) {
-      return Map.of();
-    }
-    val normalized = groupIds.stream().filter(Objects::nonNull).distinct().toList();
-    if (normalized.isEmpty()) {
-      return Map.of();
-    }
-    val rows =
-        blazeQueryFactory
-            .<com.querydsl.core.Tuple>create()
-            .from(g)
-            .join(g.permissions, p)
-            .select(g.id, p.id)
-            .where(g.id.in(normalized))
-            .distinct()
-            .fetch();
-    return rows.stream()
-        .filter(Objects::nonNull)
-        .map(row -> Map.entry(Objects.requireNonNull(row.get(g.id)), Objects.requireNonNull(row.get(p.id))))
-        .filter(entry -> entry.getKey() != null && entry.getValue() != null)
-        .collect(
-            Collectors.groupingBy(
-                Map.Entry::getKey,
-                LinkedHashMap::new,
-                Collectors.mapping(
-                    Map.Entry::getValue, Collectors.toCollection(LinkedHashSet::new))));
+    return permissionQuerySupport.findPermissionIdsByGroupIds(groupIds);
   }
 
-  @Transactional
   public int deletePermissionRefsByPermissionIds(List<Long> permissionIds, Long excludeGroupId) {
-    if (permissionIds == null || permissionIds.isEmpty()) {
-      return 0;
-    }
-    val normalized = permissionIds.stream().filter(Objects::nonNull).distinct().toList();
-    if (normalized.isEmpty()) {
-      return 0;
-    }
-    val clause = jpaQueryFactory.delete(gp).where(gp.id.permissionId.in(normalized));
-    if (excludeGroupId != null) {
-      clause.where(gp.id.permissionGroupId.ne(excludeGroupId));
-    }
-    return (int) clause.execute();
+    return permissionMutationSupport.deletePermissionRefsByPermissionIds(permissionIds, excludeGroupId);
   }
 
   /**
@@ -178,23 +119,8 @@ public class PermissionGroupRepository extends BasePanacheCommandRepository<SysP
    * <p>Implemented as typed bulk delete + batched inserts to avoid N+1 and avoid loading the
    * existing {@code g.permissions} collection.
    */
-  @Transactional
   public void replacePermissionRefs(Long groupId, List<Long> permissionIds) {
-    if (groupId == null) {
-      return;
-    }
-    jpaQueryFactory.delete(gp).where(gp.id.permissionGroupId.eq(groupId)).execute();
-
-    if (permissionIds == null || permissionIds.isEmpty()) {
-      return;
-    }
-    val normalized = permissionIds.stream().filter(Objects::nonNull).distinct().toList();
-    if (normalized.isEmpty()) {
-      return;
-    }
-    normalized.stream()
-        .map(pid -> new SysPermissionGroupRefPermission(groupId, pid))
-        .forEach(entityManager::persist);
+    permissionMutationSupport.replacePermissionRefs(groupId, permissionIds);
   }
 
   @Override

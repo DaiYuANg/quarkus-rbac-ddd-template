@@ -6,6 +6,7 @@ import com.github.DaiYuANg.common.exception.BizException;
 import com.github.DaiYuANg.identity.constant.UserStatus;
 import com.github.DaiYuANg.identity.entity.SysUser;
 import com.github.DaiYuANg.identity.repository.UserRepository;
+import com.github.DaiYuANg.modules.security.runtime.identity.AdminDbUserAuthoritySupport;
 import com.github.DaiYuANg.security.auth.RefreshTokenAuthenticationRequest;
 import com.github.DaiYuANg.security.identity.QuarkusSecurityIdentityFactory;
 import com.github.DaiYuANg.security.snapshot.PermissionSnapshotLoader;
@@ -29,7 +30,7 @@ public class AdminRefreshTokenAuthenticationProvider
     implements IdentityProvider<RefreshTokenAuthenticationRequest> {
   private final RefreshTokenStore refreshTokenStore;
   private final UserRepository userRepository;
-  private final AdminSecurityPrincipalAssembler principalAssembler;
+  private final AdminDbUserAuthoritySupport userAuthoritySupport;
   private final PermissionSnapshotLoader permissionSnapshotLoader;
   private final QuarkusSecurityIdentityFactory securityIdentityFactory;
 
@@ -78,7 +79,7 @@ public class AdminRefreshTokenAuthenticationProvider
     if (user.userStatus != UserStatus.ENABLED) {
       throw new BizException(ResultCode.USER_ACCESS_BLOCKED);
     }
-    return securityIdentityFactory.create(principalAssembler.fromDbUser(user));
+    return securityIdentityFactory.create(userAuthoritySupport.authenticatedUser(user));
   }
 
   private String normalize(String value) {

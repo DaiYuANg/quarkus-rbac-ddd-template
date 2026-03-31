@@ -1,26 +1,10 @@
 package com.github.DaiYuANg.cache;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.DaiYuANg.cache.config.RBACCacheProperties;
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.google.common.base.MoreObjects;
-import io.quarkus.redis.datasource.RedisDataSource;
-import io.quarkus.redis.datasource.hash.HashCommands;
-import io.quarkus.redis.datasource.keys.KeyCommands;
-import io.quarkus.redis.datasource.set.SetCommands;
-import io.quarkus.redis.datasource.value.ValueCommands;
 import jakarta.enterprise.context.ApplicationScoped;
-import java.time.Duration;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import lombok.NonNull;
 import lombok.val;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * Stores and retrieves the permission catalog (master list of sys_permission) in Redis.
@@ -37,144 +21,32 @@ import org.apache.commons.lang3.StringUtils;
  */
 @ApplicationScoped
 public class PermissionCatalogStore {
-
-  private static final TypeReference<List<PermissionCatalogEntry>> LIST_TYPE =
-      new TypeReference<>() {};
-
-  private final HashCommands<String, String, String> hashCommands;
-  private final SetCommands<String, String> setCommands;
-  private final ValueCommands<String, String> valueCommands;
-  private final KeyCommands<String> keyCommands;
-  private final RBACCacheProperties props;
-  private final ObjectMapper objectMapper;
-  private final Cache<String, List<PermissionCatalogEntry>> localCache;
+  private final PermissionCatalogRedisStore redisStore;
+  private final PermissionCatalogLocalCache localCache;
 
   public PermissionCatalogStore(
-      @NonNull RedisDataSource ds,
-      @NonNull RBACCacheProperties props,
-      @NonNull ObjectMapper objectMapper) {
-    this.hashCommands = ds.hash(String.class);
-    this.setCommands = ds.set(String.class);
-    this.valueCommands = ds.value(String.class);
-    this.keyCommands = ds.key();
-    this.props = props;
-    this.objectMapper = objectMapper;
-    this.localCache =
-        Caffeine.newBuilder().expireAfterWrite(Duration.ofSeconds(60)).maximumSize(1).build();
+      @NonNull PermissionCatalogRedisStore redisStore,
+      @NonNull PermissionCatalogLocalCache localCache) {
+    this.redisStore = redisStore;
+    this.localCache = localCache;
   }
 
   /** Replace entire catalog with the given permissions. Call at startup. */
   public void loadAll(List<PermissionCatalogEntry> permissions) {
-    clearCatalog();
-    if (permissions == null || permissions.isEmpty()) {
-      invalidateLocalCache();
-      return;
-    }
-    val idsKey = props.permissionCatalogIdsKey();
-    val listKey = props.permissionCatalogListKey();
-    val codeKeysSet = props.permissionCatalogCodeKeysSetKey();
-    val nameKeysSet = props.permissionCatalogNameKeysSetKey();
-
-    val codeKeys = new ArrayList<String>();
-    val nameKeys = new ArrayList<String>();
-    val idStrs = new ArrayList<String>();
-
-    permissions.forEach(
-        p -> {
-          val key = props.permissionCatalogByIdKey(p.id());
-          hashCommands.hset(key, PermissionCatalogEntryMapper.toHashFields(p));
-          idStrs.add(String.valueOf(p.id()));
-          val code = normalize(p.code());
-          if (code != null) {
-            val codeKey = props.permissionCatalogByCodeKey(code);
-            valueCommands.set(codeKey, String.valueOf(p.id()));
-            codeKeys.add(codeKey);
-          }
-          val name = normalize(p.name());
-          if (name != null) {
-            val nameKey = props.permissionCatalogByNameKey(name);
-            valueCommands.set(nameKey, String.valueOf(p.id()));
-            nameKeys.add(nameKey);
-          }
-        });
-    if (!idStrs.isEmpty()) {
-      setCommands.sadd(idsKey, idStrs.toArray(new String[0]));
-    }
-    if (!codeKeys.isEmpty()) {
-      setCommands.sadd(codeKeysSet, codeKeys.toArray(new String[0]));
-    }
-    if (!nameKeys.isEmpty()) {
-      setCommands.sadd(nameKeysSet, nameKeys.toArray(new String[0]));
-    }
-    try {
-      val json = objectMapper.writeValueAsString(permissions);
-      valueCommands.set(listKey, json);
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException("Failed to serialize permission catalog", e);
-    }
-    invalidateLocalCache();
-  }
-
-  private void invalidateLocalCache() {
-    localCache.invalidate(cacheKey());
-  }
-
-  private static String cacheKey() {
-    return "permission:catalog:all";
-  }
-
-  private void clearCatalog() {
-    val ids = MoreObjects.firstNonNull(setCommands.smembers(props.permissionCatalogIdsKey()), Set.<String>of());
-    ids.stream()
-        .map(Long::parseLong)
-        .map(props::permissionCatalogByIdKey)
-        .forEach(keyCommands::del);
-    keyCommands.del(props.permissionCatalogIdsKey());
-    keyCommands.del(props.permissionCatalogListKey());
-
-    val codeKeys = setCommands.smembers(props.permissionCatalogCodeKeysSetKey());
-    if (codeKeys != null && !codeKeys.isEmpty()) {
-      keyCommands.del(codeKeys.toArray(new String[0]));
-      keyCommands.del(props.permissionCatalogCodeKeysSetKey());
-    }
-    val nameKeys = setCommands.smembers(props.permissionCatalogNameKeysSetKey());
-    if (nameKeys != null && !nameKeys.isEmpty()) {
-      keyCommands.del(nameKeys.toArray(new String[0]));
-      keyCommands.del(props.permissionCatalogNameKeysSetKey());
-    }
+    redisStore.replaceAll(permissions);
+    localCache.invalidate();
   }
 
   public Optional<PermissionCatalogEntry> getById(Long id) {
-    val key = props.permissionCatalogByIdKey(id);
-    if (!keyCommands.exists(key)) {
-      return Optional.empty();
-    }
-    val map = hashCommands.hgetall(key);
-    return Optional.of(PermissionCatalogEntryMapper.fromMap(id, map));
+    return redisStore.getById(id);
   }
 
   public Optional<PermissionCatalogEntry> getByCode(String code) {
-    val normalizedCode = normalize(code);
-    if (normalizedCode == null) {
-      return Optional.empty();
-    }
-    val idStr = normalize(valueCommands.get(props.permissionCatalogByCodeKey(normalizedCode)));
-    if (idStr == null) {
-      return Optional.empty();
-    }
-    return getById(Long.parseLong(idStr));
+    return redisStore.resolveIdByCode(code).flatMap(this::getById);
   }
 
   public Optional<PermissionCatalogEntry> getByName(String name) {
-    val normalizedName = normalize(name);
-    if (normalizedName == null) {
-      return Optional.empty();
-    }
-    val idStr = normalize(valueCommands.get(props.permissionCatalogByNameKey(normalizedName)));
-    if (idStr == null) {
-      return Optional.empty();
-    }
-    return getById(Long.parseLong(idStr));
+    return redisStore.resolveIdByName(name).flatMap(this::getById);
   }
 
   /**
@@ -182,25 +54,13 @@ public class PermissionCatalogStore {
    * for 60s.
    */
   public List<PermissionCatalogEntry> getAll() {
-    val cached = localCache.getIfPresent(cacheKey());
-    if (cached != null) {
-      return cached;
+    val cached = localCache.getAll();
+    if (cached.isPresent()) {
+      return cached.get();
     }
-    val list = getAllFromRedis();
-    localCache.put(cacheKey(), list);
+    val list = redisStore.getAll();
+    localCache.putAll(list);
     return list;
-  }
-
-  private List<PermissionCatalogEntry> getAllFromRedis() {
-    val json = normalize(valueCommands.get(props.permissionCatalogListKey()));
-    if (json == null) {
-      return List.of();
-    }
-    try {
-      return objectMapper.readValue(json, LIST_TYPE);
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException("Failed to deserialize permission catalog", e);
-    }
   }
 
   /** Filter, sort and paginate in memory. Matches PermissionRepository.page() semantics. */
@@ -221,10 +81,6 @@ public class PermissionCatalogStore {
 
   /** Returns true if catalog has any entries (for empty-catalog fallback check). */
   public boolean isEmpty() {
-    return setCommands.smembers(props.permissionCatalogIdsKey()).isEmpty();
-  }
-
-  private String normalize(String value) {
-    return StringUtils.trimToNull(value);
+    return redisStore.isEmpty();
   }
 }

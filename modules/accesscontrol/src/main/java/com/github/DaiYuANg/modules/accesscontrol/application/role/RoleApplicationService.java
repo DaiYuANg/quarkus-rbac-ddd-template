@@ -16,8 +16,8 @@ import com.github.DaiYuANg.modules.accesscontrol.application.mapper.PermissionGr
 import com.github.DaiYuANg.modules.accesscontrol.application.mapper.PermissionVOMapper;
 import com.github.DaiYuANg.modules.accesscontrol.application.mapper.RoleVOMapper;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.RoleVO;
-import com.github.DaiYuANg.modules.accesscontrol.application.support.AccessControlAuditCommandBuilder;
 import com.github.DaiYuANg.modules.accesscontrol.application.support.AccessControlAuditSupport;
+import com.github.DaiYuANg.modules.accesscontrol.application.support.RolePermissionGroupSupport;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -52,6 +52,7 @@ public class RoleApplicationService {
   private final PermissionGroupRepository permissionGroupRepository;
   private final PermissionCatalogStore permissionCatalogStore;
   private final AccessControlAuditSupport auditSupport;
+  private final RolePermissionGroupSupport rolePermissionGroupSupport;
   private final RoleVOMapper roleVOMapper;
   private final PermissionGroupVOMapper permissionGroupVOMapper;
   private final PermissionVOMapper permissionVOMapper;
@@ -62,15 +63,7 @@ public class RoleApplicationService {
     roleChecker.ensureCreatable(form);
     val role = roleVOMapper.toEntity(form);
     roleRepository.persist(role);
-    auditSupport.bumpGlobalVersion();
-    auditSupport.record(
-        AccessControlAuditCommandBuilder.builder()
-            .module("role")
-            .action("create")
-            .target(form.code())
-            .success(true)
-            .detail("create role")
-            .build());
+    auditSupport.recordSuccess("role", "create", form.code(), "create role");
     return toRoleVOWithCatalog(role);
   }
 
@@ -91,19 +84,9 @@ public class RoleApplicationService {
     roleChecker.ensureUpdatable(role, form);
     roleVOMapper.updateEntity(form, role);
     if (form.permissionGroupIds() != null) {
-      role.permissionGroups.clear();
-      role.permissionGroups.addAll(permissionGroupRepository
-        .findAllByIds(form.permissionGroupIds()));
+      rolePermissionGroupSupport.assignPermissionGroups(role, form.permissionGroupIds());
     }
-    auditSupport.bumpGlobalVersion();
-    auditSupport.record(
-        AccessControlAuditCommandBuilder.builder()
-            .module("role")
-            .action("update")
-            .target(String.valueOf(id))
-            .success(true)
-            .detail("update role")
-            .build());
+    auditSupport.recordSuccess("role", "update", String.valueOf(id), "update role");
     return toRoleVOWithCatalog(role);
   }
 
@@ -114,15 +97,7 @@ public class RoleApplicationService {
             .findByIdOptional(id)
             .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
     roleRepository.delete(role);
-    auditSupport.bumpGlobalVersion();
-    auditSupport.record(
-        AccessControlAuditCommandBuilder.builder()
-            .module("role")
-            .action("delete")
-            .target(String.valueOf(id))
-            .success(true)
-            .detail("delete role")
-            .build());
+    auditSupport.recordSuccess("role", "delete", String.valueOf(id), "delete role");
   }
 
   public Optional<RoleVO> getRoleByName(@NonNull String name) {
@@ -135,20 +110,9 @@ public class RoleApplicationService {
         roleRepository
             .findByIdOptional(form.roleId())
             .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
-    role.permissionGroups.clear();
-    if (form.permissionGroupIds() != null) {
-      role.permissionGroups.addAll(permissionGroupRepository
-        .findAllByIds(form.permissionGroupIds()));
-    }
-    auditSupport.bumpGlobalVersion();
-    auditSupport.record(
-        AccessControlAuditCommandBuilder.builder()
-            .module("role")
-            .action("assign-permission-group")
-            .target(String.valueOf(form.roleId()))
-            .success(true)
-            .detail("assign permission groups")
-            .build());
+    rolePermissionGroupSupport.assignPermissionGroups(role, form.permissionGroupIds());
+    auditSupport.recordSuccess(
+        "role", "assign-permission-group", String.valueOf(form.roleId()), "assign permission groups");
   }
 
   public List<RoleVO> getAllRoles() {

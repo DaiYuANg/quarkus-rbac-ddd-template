@@ -22,6 +22,22 @@ public class AccessControlAuditSupport {
     return authorityVersionStore.bumpGlobalVersion();
   }
 
+  public void recordSuccess(
+      @NonNull String module,
+      @NonNull String action,
+      @NonNull String target,
+      @NonNull String detail) {
+    bumpGlobalVersion();
+    record(
+        AccessControlAuditCommandBuilder.builder()
+            .module(module)
+            .action(action)
+            .target(target)
+            .success(true)
+            .detail(detail)
+            .build());
+  }
+
   public void record(@NonNull AccessControlAuditCommand command) {
     val snapshot = auditSnapshotProvider.snapshot();
     val log = new SysOperationLog();

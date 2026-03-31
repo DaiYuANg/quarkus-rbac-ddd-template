@@ -5,7 +5,7 @@
     <suppress>
         <notes><![CDATA[False positive for ...]]></notes>
         <packageUrl regex="true">^pkg:maven/.*$</packageUrl>
-        <cve>CVE-XXXX-XXXXX</cve>
+        <cve>CVE-2024-12345</cve>
     </suppress>
     -->
 </suppressions>

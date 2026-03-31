@@ -1,8 +1,5 @@
 package com.github.DaiYuANg.modules.accesscontrol.application.user;
 
-import com.github.DaiYuANg.accesscontrol.repository.RoleRepository;
-import com.github.DaiYuANg.cache.PermissionSnapshotStore;
-import com.github.DaiYuANg.cache.RefreshTokenStore;
 import com.github.DaiYuANg.common.constant.ResultCode;
 import com.github.DaiYuANg.common.exception.BizException;
 import com.github.DaiYuANg.common.model.ApiPageResult;
@@ -15,8 +12,8 @@ import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UpdateU
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UserCreationForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UserRefRoleForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.UserVO;
-import com.github.DaiYuANg.modules.accesscontrol.application.support.AccessControlAuditCommandBuilder;
 import com.github.DaiYuANg.modules.accesscontrol.application.support.AccessControlAuditSupport;
+import com.github.DaiYuANg.modules.accesscontrol.application.support.UserLifecycleSupport;
 import com.github.DaiYuANg.security.auth.PasswordHasher;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -44,11 +41,9 @@ import lombok.val;
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class UserApplicationService {
   private final UserRepository userRepository;
-  private final RoleRepository roleRepository;
   private final PasswordHasher passwordHasher;
   private final AccessControlAuditSupport auditSupport;
-  private final PermissionSnapshotStore permissionSnapshotStore;
-  private final RefreshTokenStore refreshTokenStore;
+  private final UserLifecycleSupport userLifecycleSupport;
   private final UserVOMapper userVOMapper;
   private final UserChecker userChecker;
 
@@ -61,15 +56,7 @@ public class UserApplicationService {
     userChecker.ensureCreatable(form);
     val user = userVOMapper.toEntity(form, passwordHasher);
     userRepository.persist(user);
-    auditSupport.bumpGlobalVersion();
-    auditSupport.record(
-        AccessControlAuditCommandBuilder.builder()
-            .module("user")
-            .action("create")
-            .target(form.username())
-            .success(true)
-            .detail("create user")
-            .build());
+    auditSupport.recordSuccess("user", "create", form.username(), "create user");
     return userVOMapper.toVO(user);
   }
 
@@ -80,18 +67,8 @@ public class UserApplicationService {
             .findByIdOptional(id)
             .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
     user.password = passwordHasher.hash(newPassword);
-    permissionSnapshotStore.delete(user.id);
-    refreshTokenStore.deleteByUserId(user.id);
-    refreshTokenStore.deleteByUsername(user.username);
-    auditSupport.bumpGlobalVersion();
-    auditSupport.record(
-        AccessControlAuditCommandBuilder.builder()
-            .module("user")
-            .action("change-password")
-            .target(String.valueOf(id))
-            .success(true)
-            .detail("change password")
-            .build());
+    userLifecycleSupport.onPasswordChanged(user);
+    auditSupport.recordSuccess("user", "change-password", String.valueOf(id), "change password");
   }
 
   public Optional<UserVO> getUserById(@NonNull Long id) {
@@ -113,27 +90,10 @@ public class UserApplicationService {
     val usernameChanged = form.username() != null && !form.username().equals(user.username);
     userVOMapper.updateEntity(form, user);
     if (form.roleIds() != null) {
-      user.roles.clear();
-      user.roles.addAll(roleRepository.findAllByIds(form.roleIds()));
+      userLifecycleSupport.assignRoles(user, form.roleIds());
     }
-    permissionSnapshotStore.delete(user.id);
-    if (usernameChanged) {
-      refreshTokenStore.deleteByUserId(user.id);
-      refreshTokenStore.deleteByUsername(originalUsername);
-    }
-    if (user.userStatus == UserStatus.DISABLED) {
-      refreshTokenStore.deleteByUserId(user.id);
-      refreshTokenStore.deleteByUsername(user.username);
-    }
-    auditSupport.bumpGlobalVersion();
-    auditSupport.record(
-        AccessControlAuditCommandBuilder.builder()
-            .module("user")
-            .action("update")
-            .target(user.username)
-            .success(true)
-            .detail("update user")
-            .build());
+    userLifecycleSupport.onUserUpdated(user, originalUsername, usernameChanged);
+    auditSupport.recordSuccess("user", "update", user.username, "update user");
     // Avoid N+1 lazy loads when mapping nested RBAC graph in UserVO.
     return userRepository
         .findByIdWithRbacGraph(user.id)
@@ -147,19 +107,9 @@ public class UserApplicationService {
         userRepository
             .findByIdOptional(id)
             .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
-    refreshTokenStore.deleteByUserId(user.id);
-    refreshTokenStore.deleteByUsername(user.username);
-    permissionSnapshotStore.delete(id);
+    userLifecycleSupport.onUserDeleted(user);
     userRepository.deleteById(id);
-    auditSupport.bumpGlobalVersion();
-    auditSupport.record(
-        AccessControlAuditCommandBuilder.builder()
-            .module("user")
-            .action("delete")
-            .target(String.valueOf(id))
-            .success(true)
-            .detail("delete user")
-            .build());
+    auditSupport.recordSuccess("user", "delete", String.valueOf(id), "delete user");
   }
 
   public Optional<UserVO> getUserByUsername(@NonNull String username) {
@@ -172,20 +122,9 @@ public class UserApplicationService {
         userRepository
             .findByIdOptional(form.userId())
             .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
-    user.roles.clear();
-    if (form.roleIds() != null) {
-      user.roles.addAll(roleRepository.findAllByIds(form.roleIds()));
-    }
-    permissionSnapshotStore.delete(user.id);
-    auditSupport.bumpGlobalVersion();
-    auditSupport.record(
-        AccessControlAuditCommandBuilder.builder()
-            .module("user")
-            .action("assign-role")
-            .target(String.valueOf(form.userId()))
-            .success(true)
-            .detail("assign user roles")
-            .build());
+    userLifecycleSupport.assignRoles(user, form.roleIds());
+    userLifecycleSupport.onRolesAssigned(user);
+    auditSupport.recordSuccess("user", "assign-role", String.valueOf(form.userId()), "assign user roles");
   }
 
   @Transactional
@@ -195,20 +134,8 @@ public class UserApplicationService {
             .findByIdOptional(id)
             .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
     user.userStatus = (status != null && status == 1) ? UserStatus.ENABLED : UserStatus.DISABLED;
-    permissionSnapshotStore.delete(user.id);
-    if (user.userStatus == UserStatus.DISABLED) {
-      refreshTokenStore.deleteByUserId(user.id);
-      refreshTokenStore.deleteByUsername(user.username);
-    }
-    auditSupport.bumpGlobalVersion();
-    auditSupport.record(
-        AccessControlAuditCommandBuilder.builder()
-            .module("user")
-            .action("status")
-            .target(String.valueOf(id))
-            .success(true)
-            .detail("update user status")
-            .build());
+    userLifecycleSupport.onStatusUpdated(user);
+    auditSupport.recordSuccess("user", "status", String.valueOf(id), "update user status");
   }
 
   public long countEmail(String email) {

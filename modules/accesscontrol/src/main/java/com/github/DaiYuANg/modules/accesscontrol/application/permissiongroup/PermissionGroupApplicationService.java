@@ -1,10 +1,8 @@
 package com.github.DaiYuANg.modules.accesscontrol.application.permissiongroup;
 
-import com.github.DaiYuANg.accesscontrol.entity.SysPermission;
 import com.github.DaiYuANg.accesscontrol.entity.SysPermissionGroup;
 import com.github.DaiYuANg.accesscontrol.query.PermissionGroupPageQuery;
 import com.github.DaiYuANg.accesscontrol.repository.PermissionGroupRepository;
-import com.github.DaiYuANg.cache.PermissionCatalogEntry;
 import com.github.DaiYuANg.cache.PermissionCatalogStore;
 import com.github.DaiYuANg.common.constant.ResultCode;
 import com.github.DaiYuANg.common.exception.BizException;
@@ -16,11 +14,10 @@ import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.Permiss
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UpdatePermissionGroupForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.PermissionGroupVO;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.PermissionVO;
-import com.github.DaiYuANg.modules.accesscontrol.application.support.AccessControlAuditCommandBuilder;
 import com.github.DaiYuANg.modules.accesscontrol.application.support.AccessControlAuditSupport;
+import com.github.DaiYuANg.modules.accesscontrol.application.support.PermissionGroupPermissionSupport;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -51,8 +48,8 @@ import lombok.val;
 public class PermissionGroupApplicationService {
   private final PermissionGroupRepository repository;
   private final PermissionCatalogStore catalogStore;
-  private final EntityManager entityManager;
   private final AccessControlAuditSupport auditSupport;
+  private final PermissionGroupPermissionSupport permissionGroupPermissionSupport;
   private final PermissionGroupVOMapper permissionGroupVOMapper;
   private final PermissionVOMapper permissionVOMapper;
   private final PermissionGroupChecker permissionGroupChecker;
@@ -62,15 +59,8 @@ public class PermissionGroupApplicationService {
     permissionGroupChecker.ensureCreatable(form);
     val group = permissionGroupVOMapper.toEntity(form);
     repository.persist(group);
-    auditSupport.bumpGlobalVersion();
-    auditSupport.record(
-        AccessControlAuditCommandBuilder.builder()
-            .module("permission-group")
-            .action("create")
-            .target(form.name())
-            .success(true)
-            .detail("create permission group")
-            .build());
+    auditSupport.recordSuccess(
+        "permission-group", "create", form.name(), "create permission group");
     return toPermissionGroupVOWithCatalog(group);
   }
 
@@ -87,15 +77,8 @@ public class PermissionGroupApplicationService {
             .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
     permissionGroupChecker.ensureUpdatable(group, form);
     permissionGroupVOMapper.updateEntity(form, group);
-    auditSupport.bumpGlobalVersion();
-    auditSupport.record(
-        AccessControlAuditCommandBuilder.builder()
-            .module("permission-group")
-            .action("update")
-            .target(String.valueOf(id))
-            .success(true)
-            .detail("update permission group")
-            .build());
+    auditSupport.recordSuccess(
+        "permission-group", "update", String.valueOf(id), "update permission group");
     return toPermissionGroupVOWithCatalog(group);
   }
 
@@ -106,15 +89,8 @@ public class PermissionGroupApplicationService {
             .findByIdOptional(id)
             .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
     repository.delete(group);
-    auditSupport.bumpGlobalVersion();
-    auditSupport.record(
-        AccessControlAuditCommandBuilder.builder()
-            .module("permission-group")
-            .action("delete")
-            .target(String.valueOf(id))
-            .success(true)
-            .detail("delete permission group")
-            .build());
+    auditSupport.recordSuccess(
+        "permission-group", "delete", String.valueOf(id), "delete permission group");
   }
 
   public ApiPageResult<PermissionGroupVO> queryPermissionGroupPage(
@@ -132,24 +108,12 @@ public class PermissionGroupApplicationService {
         repository
             .findByIdOptional(form.permissionGroupId())
             .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
-    val ids =
-        form.permissionIds() == null
-            ? List.<Long>of()
-            : form.permissionIds().stream()
-                .filter(Objects::nonNull)
-                .filter(id -> catalogStore.getById(id).isPresent())
-                .distinct()
-                .toList();
-    repository.replacePermissionRefs(group.id, ids);
-    auditSupport.bumpGlobalVersion();
-    auditSupport.record(
-        AccessControlAuditCommandBuilder.builder()
-            .module("permission-group")
-            .action("assign-permission")
-            .target(String.valueOf(form.permissionGroupId()))
-            .success(true)
-            .detail("assign permissions")
-            .build());
+    permissionGroupPermissionSupport.replacePermissions(group.id, form.permissionIds());
+    auditSupport.recordSuccess(
+        "permission-group",
+        "assign-permission",
+        String.valueOf(form.permissionGroupId()),
+        "assign permissions");
   }
 
   public List<PermissionGroupVO> getAllPermissionGroups() {
@@ -171,49 +135,12 @@ public class PermissionGroupApplicationService {
 
   @Transactional
   public void bindPermissionsToGroup(Long targetGroupId, List<Long> permissionIds) {
-    if (permissionIds == null || permissionIds.isEmpty()) {
-      return;
-    }
-    val normalizedIds =
-        permissionIds.stream()
-            .filter(Objects::nonNull)
-            .collect(Collectors.toCollection(LinkedHashSet::new));
-    if (normalizedIds.isEmpty()) {
-      return;
-    }
-
-    SysPermissionGroup target = null;
-    if (targetGroupId != null) {
-      target =
-          repository
-              .findByIdOptional(targetGroupId)
-              .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
-    }
-
-    val refs =
-        normalizedIds.stream()
-            .filter(id -> catalogStore.getById(id).isPresent())
-            .map(id -> entityManager.getReference(SysPermission.class, id))
-            .collect(Collectors.toCollection(LinkedHashSet::new));
-    if (refs.isEmpty()) {
-      return;
-    }
-
-    // Avoid N+1 lazy loads on group.permissions by deleting join rows in bulk.
-    repository.deletePermissionRefsByPermissionIds(
-        normalizedIds.stream().toList(), target == null ? null : target.id);
-    if (target != null) {
-      target.permissions.addAll(refs);
-    }
-    auditSupport.bumpGlobalVersion();
-    auditSupport.record(
-        AccessControlAuditCommandBuilder.builder()
-            .module("permission-group")
-            .action(targetGroupId == null ? "unbind-permission" : "bind-permission")
-            .target(String.valueOf(targetGroupId))
-            .success(true)
-            .detail("bind permissions by groupId")
-            .build());
+    permissionGroupPermissionSupport.bindPermissionsToGroup(targetGroupId, permissionIds);
+    auditSupport.recordSuccess(
+        "permission-group",
+        targetGroupId == null ? "unbind-permission" : "bind-permission",
+        String.valueOf(targetGroupId),
+        "bind permissions by groupId");
   }
 
   public long countName(String name) {
