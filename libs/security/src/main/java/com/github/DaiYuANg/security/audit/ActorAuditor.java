@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
-@Unremovable
 public class ActorAuditor {
   private final CurrentUserAccess currentUserAccess;
 

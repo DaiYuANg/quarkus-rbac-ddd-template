@@ -114,7 +114,7 @@ guava = { group = "com.google.guava", name = "guava", version = "33.5.0-jre" }
 wildfly-elytron-sasl-digest = { group = "org.wildfly.security", name = "wildfly-elytron-sasl-digest", version.ref = "wildfly-elytron" }
 slf4j-api = { group = "org.slf4j", name = "slf4j-api", version = "2.0.17" }
 commons-codec = { group = "commons-codec", name = "commons-codec", version = "1.21.0" }
-commons-lang3 = { group = "org.apache.commons", name = "commons-lang3", version = "3.18.0" }
+commons-lang3 = { group = "org.apache.commons", name = "commons-lang3", version = "3.20.0" }
 
 [bundles]
 quarkus-application = [

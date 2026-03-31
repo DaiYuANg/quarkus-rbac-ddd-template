@@ -1,9 +1,11 @@
 package com.github.DaiYuANg.security.config;
 
+import io.quarkus.runtime.annotations.StaticInitSafe;
 import io.smallrye.config.ConfigMapping;
 import io.smallrye.config.WithDefault;
 import io.smallrye.config.WithName;
 
+@StaticInitSafe
 @ConfigMapping(prefix = "app.replay")
 public interface ReplayProtectionConfig {
   @WithDefault("true")
