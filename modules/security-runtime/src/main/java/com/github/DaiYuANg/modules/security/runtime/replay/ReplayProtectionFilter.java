@@ -15,6 +15,8 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.Provider;
 import java.time.Duration;
 import java.time.Instant;
+import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Settings use {@code app.replay.*} (see {@code application.yaml}); Redis uses existing {@code
@@ -37,14 +39,14 @@ public class ReplayProtectionFilter implements ContainerRequestFilter {
       return;
     }
 
-    String tsRaw = requestContext.getHeaderString(replayProtectionConfig.timestampHeader());
-    String nonce = requestContext.getHeaderString(replayProtectionConfig.nonceHeader());
+    val tsRaw = normalizeHeader(requestContext.getHeaderString(replayProtectionConfig.timestampHeader()));
+    val nonce = normalizeHeader(requestContext.getHeaderString(replayProtectionConfig.nonceHeader()));
 
-    if (tsRaw == null || tsRaw.isBlank()) {
+    if (tsRaw == null) {
       abort(requestContext, "missing timestamp header");
       return;
     }
-    if (nonce == null || nonce.isBlank()) {
+    if (nonce == null) {
       abort(requestContext, "missing nonce header");
       return;
     }
@@ -76,6 +78,10 @@ public class ReplayProtectionFilter implements ContainerRequestFilter {
     if (!replayNonceStore.tryConsumeOnce(nonce, nonceTtl)) {
       abort(requestContext, "duplicate or invalid nonce");
     }
+  }
+
+  private static String normalizeHeader(String value) {
+    return StringUtils.trimToNull(value);
   }
 
   private static void abort(ContainerRequestContext ctx, String message) {

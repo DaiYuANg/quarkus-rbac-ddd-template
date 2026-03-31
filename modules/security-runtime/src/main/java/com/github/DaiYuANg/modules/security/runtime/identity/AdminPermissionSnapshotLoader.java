@@ -24,6 +24,7 @@ import java.util.Set;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Loads a {@link PermissionSnapshot} for a principal.
@@ -63,10 +64,11 @@ public class AdminPermissionSnapshotLoader implements PermissionSnapshotLoader {
     if (userId != null && userId > 0) {
       return userRepository.findByIdOptional(userId).flatMap(this::snapshotFromDbUser);
     }
-    if (usernameHint == null || usernameHint.isBlank()) {
+    val normalizedUsername = normalize(usernameHint);
+    if (normalizedUsername == null) {
       return Optional.empty();
     }
-    return load(usernameHint)
+    return load(normalizedUsername)
         .filter(snapshot -> userId == null || Objects.equals(userId, snapshot.userId()));
   }
 
@@ -94,8 +96,11 @@ public class AdminPermissionSnapshotLoader implements PermissionSnapshotLoader {
   }
 
   private Optional<PermissionSnapshot> snapshotFromSuperAdmin(@NonNull String username) {
-    val configuredUsername = superAdminAccountConfig.username().map(String::trim).orElse("");
-    if (configuredUsername.isEmpty() || !configuredUsername.equalsIgnoreCase(username.trim())) {
+    val configuredUsername = normalize(superAdminAccountConfig.username().orElse(null));
+    val normalizedUsername = normalize(username);
+    if (configuredUsername == null
+        || normalizedUsername == null
+        || !configuredUsername.equalsIgnoreCase(normalizedUsername)) {
       return Optional.empty();
     }
     val permissions =
@@ -128,4 +133,8 @@ public class AdminPermissionSnapshotLoader implements PermissionSnapshotLoader {
   }
 
   // DB permissions/roles are resolved via UserRepository queries to avoid N+1 lazy loads.
+
+  private String normalize(String value) {
+    return StringUtils.trimToNull(value);
+  }
 }

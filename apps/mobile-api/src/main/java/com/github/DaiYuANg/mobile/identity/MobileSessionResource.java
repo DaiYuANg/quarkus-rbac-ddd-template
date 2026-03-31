@@ -2,6 +2,7 @@ package com.github.DaiYuANg.mobile.identity;
 
 import com.github.DaiYuANg.common.model.Results;
 import com.github.DaiYuANg.security.identity.PrincipalAttributeKeys;
+import com.google.common.base.Strings;
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
@@ -35,6 +36,6 @@ public class MobileSessionResource {
             : List.<String>of();
     return Results.ok(
         new MobilePrincipalView(
-            jwt.getName(), userType == null ? "" : String.valueOf(userType), List.copyOf(roles)));
+            jwt.getName(), Strings.nullToEmpty(Objects.toString(userType, null)), List.copyOf(roles)));
   }
 }

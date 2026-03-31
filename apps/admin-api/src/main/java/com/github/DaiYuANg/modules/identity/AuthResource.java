@@ -4,6 +4,8 @@ import com.github.DaiYuANg.cache.RefreshTokenStore;
 import com.github.DaiYuANg.common.constant.ResultCode;
 import com.github.DaiYuANg.common.exception.BizException;
 import com.github.DaiYuANg.common.model.Results;
+import com.google.common.base.Objects;
+import com.google.common.base.Strings;
 import com.github.DaiYuANg.modules.identity.application.AuthApplicationService;
 import com.github.DaiYuANg.modules.identity.application.dto.request.LoginRequest;
 import com.github.DaiYuANg.modules.identity.application.dto.response.MeResponse;
@@ -22,6 +24,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.apache.commons.lang3.StringUtils;
 import org.toolkit4j.data.model.envelope.Result;
 
 @Path("/api/v1/auth")
@@ -83,7 +86,7 @@ public class AuthResource {
         refreshTokenStore
             .getUsername(refreshToken)
             .orElseThrow(() -> new BizException(ResultCode.REFRESH_TOKEN_INVALID));
-    if (!owner.equals(jwt.getName())) {
+    if (!Objects.equal(owner, jwt.getName())) {
       throw new BizException(ResultCode.FORBIDDEN);
     }
     authApplicationService.logout(refreshToken);
@@ -136,18 +139,19 @@ public class AuthResource {
   }
 
   private String resolveRefreshToken(String headerToken, String cookieToken) {
-    if (headerToken != null && !headerToken.isBlank()) {
-      return headerToken;
+    val normalizedHeader = normalizeToken(headerToken);
+    if (normalizedHeader != null) {
+      return normalizedHeader;
     }
-    if (cookieToken != null && !cookieToken.isBlank()) {
-      return cookieToken;
-    }
-    return null;
+    return normalizeToken(cookieToken);
+  }
+
+  private String normalizeToken(String token) {
+    return StringUtils.trimToNull(token);
   }
 
   private boolean isSecureRequest(UriInfo uriInfo) {
-    return uriInfo != null
-        && uriInfo.getRequestUri() != null
-        && "https".equalsIgnoreCase(uriInfo.getRequestUri().getScheme());
+    val requestUri = uriInfo == null ? null : uriInfo.getRequestUri();
+    return requestUri != null && "https".equalsIgnoreCase(Strings.nullToEmpty(requestUri.getScheme()));
   }
 }

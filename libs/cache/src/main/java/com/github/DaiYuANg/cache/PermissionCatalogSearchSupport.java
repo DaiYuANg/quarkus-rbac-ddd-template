@@ -1,8 +1,11 @@
 package com.github.DaiYuANg.cache;
 
+import com.google.common.base.Strings;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
+import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 
 final class PermissionCatalogSearchSupport {
 
@@ -20,7 +23,7 @@ final class PermissionCatalogSearchSupport {
       String sortDirection,
       int offset,
       int limit) {
-    var filtered =
+    val filtered =
         all.stream()
             .filter(p -> matchesKeyword(p, keyword))
             .filter(p -> matchesLike(p.name(), name))
@@ -29,38 +32,40 @@ final class PermissionCatalogSearchSupport {
             .filter(p -> matchesLike(p.action(), action))
             .filter(p -> matchesEq(p.groupCode(), groupCode))
             .toList();
-    var total = filtered.size();
-    var cmp = sortComparator(sortBy, sortDirection);
-    var sorted = filtered.stream().sorted(cmp).toList();
-    var content = sorted.stream().skip(offset).limit(Math.max(1, limit)).toList();
+    val total = filtered.size();
+    val cmp = sortComparator(sortBy, sortDirection);
+    val sorted = filtered.stream().sorted(cmp).toList();
+    val content = sorted.stream().skip(offset).limit(Math.max(1, limit)).toList();
     return new PermissionCatalogPage(content, total);
   }
 
   private static boolean matchesKeyword(PermissionCatalogEntry p, String keyword) {
-    if (keyword == null || keyword.isBlank()) {
+    val normalizedKeyword = normalize(keyword);
+    if (normalizedKeyword == null) {
       return true;
     }
-    var k = keyword.toLowerCase();
-    return containsIgnoreCase(p.name(), k)
-        || containsIgnoreCase(p.code(), k)
-        || containsIgnoreCase(p.resource(), k)
-        || containsIgnoreCase(p.action(), k)
-        || containsIgnoreCase(p.groupCode(), k)
-        || containsIgnoreCase(p.description(), k);
+    return containsIgnoreCase(p.name(), normalizedKeyword)
+        || containsIgnoreCase(p.code(), normalizedKeyword)
+        || containsIgnoreCase(p.resource(), normalizedKeyword)
+        || containsIgnoreCase(p.action(), normalizedKeyword)
+        || containsIgnoreCase(p.groupCode(), normalizedKeyword)
+        || containsIgnoreCase(p.description(), normalizedKeyword);
   }
 
   private static boolean matchesLike(String field, String pattern) {
-    if (pattern == null || pattern.isBlank()) {
+    val normalizedPattern = normalize(pattern);
+    if (normalizedPattern == null) {
       return true;
     }
-    return containsIgnoreCase(field, pattern.toLowerCase());
+    return containsIgnoreCase(field, normalizedPattern);
   }
 
   private static boolean matchesEq(String field, String value) {
-    if (value == null || value.isBlank()) {
+    val normalizedValue = normalize(value);
+    if (normalizedValue == null) {
       return true;
     }
-    return value.equalsIgnoreCase(field != null ? field : "");
+    return normalizedValue.equalsIgnoreCase(Strings.nullToEmpty(field));
   }
 
   private static boolean containsIgnoreCase(String s, String sub) {
@@ -71,24 +76,26 @@ final class PermissionCatalogSearchSupport {
   }
 
   private static Comparator<PermissionCatalogEntry> sortComparator(String sortBy, String sortDir) {
-    var asc = sortDir == null || !"desc".equalsIgnoreCase(sortDir.trim());
+    val asc = !"desc".equalsIgnoreCase(Strings.nullToEmpty(sortDir).trim());
     Comparator<PermissionCatalogEntry> cmp =
-        switch (sortBy != null ? sortBy.trim().toLowerCase() : "id") {
+        switch (Strings.nullToEmpty(sortBy).trim().toLowerCase().isEmpty()
+            ? "id"
+            : Strings.nullToEmpty(sortBy).trim().toLowerCase()) {
           case "name" ->
               Comparator.comparing(
-                  p -> (p.name() != null ? p.name() : ""), String.CASE_INSENSITIVE_ORDER);
+                  p -> Strings.nullToEmpty(p.name()), String.CASE_INSENSITIVE_ORDER);
           case "code" ->
               Comparator.comparing(
-                  p -> (p.code() != null ? p.code() : ""), String.CASE_INSENSITIVE_ORDER);
+                  p -> Strings.nullToEmpty(p.code()), String.CASE_INSENSITIVE_ORDER);
           case "resource" ->
               Comparator.comparing(
-                  p -> (p.resource() != null ? p.resource() : ""), String.CASE_INSENSITIVE_ORDER);
+                  p -> Strings.nullToEmpty(p.resource()), String.CASE_INSENSITIVE_ORDER);
           case "action" ->
               Comparator.comparing(
-                  p -> (p.action() != null ? p.action() : ""), String.CASE_INSENSITIVE_ORDER);
+                  p -> Strings.nullToEmpty(p.action()), String.CASE_INSENSITIVE_ORDER);
           case "groupcode" ->
               Comparator.comparing(
-                  p -> (p.groupCode() != null ? p.groupCode() : ""), String.CASE_INSENSITIVE_ORDER);
+                  p -> Strings.nullToEmpty(p.groupCode()), String.CASE_INSENSITIVE_ORDER);
           case "createtime" ->
               Comparator.comparing(p -> p.createAt() != null ? p.createAt() : Instant.EPOCH);
           case "updatetime" ->
@@ -96,5 +103,10 @@ final class PermissionCatalogSearchSupport {
           default -> Comparator.comparing(PermissionCatalogEntry::id);
         };
     return asc ? cmp : cmp.reversed();
+  }
+
+  private static String normalize(String value) {
+    val normalized = StringUtils.trimToNull(value);
+    return normalized == null ? null : normalized.toLowerCase();
   }
 }

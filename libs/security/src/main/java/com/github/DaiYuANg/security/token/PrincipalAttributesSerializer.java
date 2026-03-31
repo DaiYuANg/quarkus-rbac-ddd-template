@@ -1,7 +1,9 @@
 package com.github.DaiYuANg.security.token;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.primitives.Longs;
 import com.github.DaiYuANg.security.identity.AuthenticatedUser;
 import com.github.DaiYuANg.security.identity.AuthenticatedUserBuilder;
 import com.github.DaiYuANg.security.identity.CurrentAuthenticatedUser;
@@ -17,6 +19,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 
 @ApplicationScoped
 public class PrincipalAttributesSerializer {
@@ -37,12 +40,12 @@ public class PrincipalAttributesSerializer {
   }
 
   public Map<String, Object> deserialize(Map<String, Object> attributes) {
-    return attributes == null ? Map.of() : ImmutableMap.copyOf(attributes);
+    return MoreObjects.firstNonNull(attributes, Map.<String, Object>of());
   }
 
   public CurrentAuthenticatedUser toCurrentUser(
       Map<String, Object> attributes, @NonNull String principalName) {
-    val values = attributes == null ? Map.<String, Object>of() : attributes;
+    val values = MoreObjects.firstNonNull(attributes, Map.<String, Object>of());
     return CurrentAuthenticatedUserBuilder
         .builder()
         .username(stringValue(values.get(PrincipalAttributeKeys.USERNAME), principalName))
@@ -59,7 +62,7 @@ public class PrincipalAttributesSerializer {
 
   public AuthenticatedUser toAuthenticatedUser(
       Map<String, Object> attributes, @NonNull String principalName) {
-    val values = attributes == null ? Map.<String, Object>of() : attributes;
+    val values = MoreObjects.firstNonNull(attributes, Map.<String, Object>of());
     val username = stringValue(values.get(PrincipalAttributeKeys.USERNAME), principalName);
     val displayName = stringValue(values.get(PrincipalAttributeKeys.DISPLAY_NAME), username);
     val userType = stringValue(values.get(PrincipalAttributeKeys.USER_TYPE), "UNKNOWN");
@@ -97,8 +100,8 @@ public class PrincipalAttributesSerializer {
   }
 
   private String stringValue(Object value, @NonNull String defaultValue) {
-    val text = value == null ? null : String.valueOf(value);
-    return text == null || text.isBlank() ? defaultValue : text;
+    val text = StringUtils.trimToNull(value == null ? null : String.valueOf(value));
+    return MoreObjects.firstNonNull(text, defaultValue);
   }
 
   private Long asLong(Object value) {
@@ -108,10 +111,6 @@ public class PrincipalAttributesSerializer {
     if (value == null) {
       return null;
     }
-    try {
-      return Long.parseLong(String.valueOf(value).trim());
-    } catch (NumberFormatException ignored) {
-      return null;
-    }
+    return Longs.tryParse(String.valueOf(value).trim());
   }
 }

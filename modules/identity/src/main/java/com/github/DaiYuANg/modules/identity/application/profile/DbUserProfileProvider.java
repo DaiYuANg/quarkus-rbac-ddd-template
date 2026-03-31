@@ -8,6 +8,7 @@ import com.github.DaiYuANg.modules.identity.application.mapper.UserDetailVoMappe
 import com.github.DaiYuANg.modules.identity.application.dto.response.UserDetailVo;
 import com.github.DaiYuANg.security.identity.CurrentAuthenticatedUser;
 import com.github.DaiYuANg.security.identity.SecurityPrincipalKinds;
+import com.google.common.base.Strings;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.LinkedHashSet;
@@ -39,7 +40,7 @@ public class DbUserProfileProvider implements UserProfileProvider {
   @Override
   public boolean supports(@NonNull CurrentAuthenticatedUser user) {
     return !SecurityPrincipalKinds.UserType.SUPER_ADMIN.equalsIgnoreCase(
-        user.userType() == null ? "" : user.userType().trim());
+        Strings.nullToEmpty(user.userType()).trim());
   }
 
   @Override

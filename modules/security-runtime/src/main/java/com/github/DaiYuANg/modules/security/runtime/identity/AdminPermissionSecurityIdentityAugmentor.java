@@ -6,6 +6,7 @@ import com.github.DaiYuANg.security.identity.QuarkusSecurityIdentityFactory;
 import com.github.DaiYuANg.security.snapshot.PermissionSnapshot;
 import com.github.DaiYuANg.security.snapshot.PermissionSnapshotLoader;
 import com.github.DaiYuANg.security.snapshot.PermissionSnapshotRefreshPolicy;
+import com.google.common.base.Objects;
 import io.quarkus.security.identity.AuthenticationRequestContext;
 import io.quarkus.security.identity.SecurityIdentity;
 import io.quarkus.security.identity.SecurityIdentityAugmentor;
@@ -17,6 +18,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Request-time permission enrichment.
@@ -99,16 +101,15 @@ public class AdminPermissionSecurityIdentityAugmentor implements SecurityIdentit
     if (snapshot == null) {
       return false;
     }
-    if (userId != null && !userId.equals(snapshot.userId())) {
+    if (userId != null && !Objects.equal(userId, snapshot.userId())) {
       return false;
     }
-    return principalName == null
-        || principalName.isBlank()
-        || principalName.equals(snapshot.username());
+    val normalizedPrincipalName = normalize(principalName);
+    return normalizedPrincipalName == null || Objects.equal(normalizedPrincipalName, snapshot.username());
   }
 
   private boolean shouldRejectStaleIdentity(String expectedVersion, Long userId) {
-    return userId != null || (expectedVersion != null && !expectedVersion.isBlank());
+    return userId != null || normalize(expectedVersion) != null;
   }
 
   private Long extractUserId(@NonNull SecurityIdentity identity) {
@@ -138,5 +139,9 @@ public class AdminPermissionSecurityIdentityAugmentor implements SecurityIdentit
 
   private SecurityIdentity anonymousIdentity() {
     return QuarkusSecurityIdentity.builder().setPrincipal(() -> "").setAnonymous(true).build();
+  }
+
+  private String normalize(String value) {
+    return StringUtils.trimToNull(value);
   }
 }

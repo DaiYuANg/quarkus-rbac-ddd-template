@@ -1,6 +1,7 @@
 package com.github.DaiYuANg.cache;
 
 import com.github.DaiYuANg.cache.config.AuthCacheKeyConfig;
+import com.google.common.base.Strings;
 import io.quarkus.redis.datasource.RedisDataSource;
 import io.quarkus.redis.datasource.keys.KeyCommands;
 import io.quarkus.redis.datasource.set.SetCommands;
@@ -8,10 +9,12 @@ import io.quarkus.redis.datasource.value.ValueCommands;
 import jakarta.enterprise.context.ApplicationScoped;
 import java.time.Duration;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import lombok.NonNull;
 import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 
 @ApplicationScoped
 public class RefreshTokenStore {
@@ -31,40 +34,41 @@ public class RefreshTokenStore {
     this.authCacheKeyConfig = authCacheKeyConfig;
   }
 
-  public void save(String refreshToken, Long userId, String username, @NonNull Duration ttl) {
+  public void save(@NonNull String refreshToken, Long userId, String username, @NonNull Duration ttl) {
     valueCommands.setex(key(refreshToken), (int) ttl.toSeconds(), encodeOwner(userId, username));
     if (userId != null) {
       setCommands.sadd(userIdKey(userId), refreshToken);
     }
-    if (username != null && !username.isBlank()) {
-      setCommands.sadd(userKey(username), refreshToken);
+    val normalizedUsername = normalize(username);
+    if (normalizedUsername != null) {
+      setCommands.sadd(userKey(normalizedUsername), refreshToken);
     }
   }
 
-  public Optional<String> getUsername(String refreshToken) {
-    return getOwner(refreshToken)
-        .map(RefreshTokenOwner::username)
-        .filter(username -> !username.isBlank());
+  public Optional<String> getUsername(@NonNull String refreshToken) {
+    return getOwner(refreshToken).map(RefreshTokenOwner::username).map(this::normalize);
   }
 
-  public Optional<RefreshTokenOwner> getOwner(String refreshToken) {
+  public Optional<RefreshTokenOwner> getOwner(@NonNull String refreshToken) {
     return parseOwner(valueCommands.get(key(refreshToken)));
   }
 
-  public void delete(String refreshToken) {
+  public void delete(@NonNull String refreshToken) {
     val owner = getOwner(refreshToken).orElse(null);
     keyCommands.del(key(refreshToken));
     cleanupMembership(owner, refreshToken);
   }
 
   public void deleteByUsername(String username) {
-    if (username == null || username.isBlank()) {
+    val normalizedUsername = normalize(username);
+    if (normalizedUsername == null) {
       return;
     }
-    copyTokens(setCommands.smembers(userKey(username))).stream()
-        .filter(token -> token != null && !token.isBlank())
+    copyTokens(setCommands.smembers(userKey(normalizedUsername))).stream()
+        .map(this::normalize)
+        .filter(Objects::nonNull)
         .forEach(this::delete);
-    keyCommands.del(userKey(username));
+    keyCommands.del(userKey(normalizedUsername));
   }
 
   public void deleteByUserId(Long userId) {
@@ -72,36 +76,38 @@ public class RefreshTokenStore {
       return;
     }
     copyTokens(setCommands.smembers(userIdKey(userId))).stream()
-        .filter(token -> token != null && !token.isBlank())
+        .map(this::normalize)
+        .filter(Objects::nonNull)
         .forEach(this::delete);
     keyCommands.del(userIdKey(userId));
   }
 
-  private String key(String refreshToken) {
+  private String key(@NonNull String refreshToken) {
     return authCacheKeyConfig.refreshTokenKey(refreshToken);
   }
 
-  private String userKey(String username) {
+  private String userKey(@NonNull String username) {
     return authCacheKeyConfig.refreshUserKey(username);
   }
 
-  private String userIdKey(Long userId) {
+  private String userIdKey(@NonNull Long userId) {
     return authCacheKeyConfig.refreshUserIdKey(userId);
   }
 
-  private void cleanupMembership(RefreshTokenOwner owner, String refreshToken) {
+  private void cleanupMembership(RefreshTokenOwner owner, @NonNull String refreshToken) {
     if (owner == null) {
       return;
     }
     if (owner.userId() != null) {
       removeTokenFromSet(userIdKey(owner.userId()), refreshToken);
     }
-    if (owner.username() != null && !owner.username().isBlank()) {
-      removeTokenFromSet(userKey(owner.username()), refreshToken);
+    val normalizedUsername = normalize(owner.username());
+    if (normalizedUsername != null) {
+      removeTokenFromSet(userKey(normalizedUsername), refreshToken);
     }
   }
 
-  private void removeTokenFromSet(String membershipKey, String refreshToken) {
+  private void removeTokenFromSet(@NonNull String membershipKey, @NonNull String refreshToken) {
     setCommands.srem(membershipKey, refreshToken);
     val remainingTokens = setCommands.smembers(membershipKey);
     if (remainingTokens == null || remainingTokens.isEmpty()) {
@@ -114,21 +120,22 @@ public class RefreshTokenStore {
   }
 
   private String encodeOwner(Long userId, String username) {
-    return (userId == null ? "" : String.valueOf(userId))
+    return Strings.nullToEmpty(Objects.toString(userId, null))
         + OWNER_SEPARATOR
-        + (username == null ? "" : username);
+        + Strings.nullToEmpty(normalize(username));
   }
 
   private Optional<RefreshTokenOwner> parseOwner(String rawValue) {
-    if (rawValue == null || rawValue.isBlank()) {
+    val normalizedValue = normalize(rawValue);
+    if (normalizedValue == null) {
       return Optional.empty();
     }
-    if (!rawValue.contains(OWNER_SEPARATOR)) {
-      return Optional.of(new RefreshTokenOwner(null, rawValue));
+    if (!normalizedValue.contains(OWNER_SEPARATOR)) {
+      return Optional.of(new RefreshTokenOwner(null, normalizedValue));
     }
-    val parts = rawValue.split(OWNER_SEPARATOR, 2);
+    val parts = normalizedValue.split(OWNER_SEPARATOR, 2);
     val userId = parseUserId(parts[0]);
-    val username = parts.length < 2 || parts[1].isBlank() ? null : parts[1];
+    val username = parts.length < 2 ? null : normalize(parts[1]);
     if (userId == null && username == null) {
       return Optional.empty();
     }
@@ -136,13 +143,18 @@ public class RefreshTokenStore {
   }
 
   private Long parseUserId(String rawValue) {
-    if (rawValue == null || rawValue.isBlank()) {
+    val normalizedValue = normalize(rawValue);
+    if (normalizedValue == null) {
       return null;
     }
     try {
-      return Long.parseLong(rawValue.trim());
+      return Long.parseLong(normalizedValue);
     } catch (NumberFormatException ignored) {
       return null;
     }
+  }
+
+  private String normalize(String value) {
+    return StringUtils.trimToNull(value);
   }
 }

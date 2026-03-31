@@ -9,6 +9,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 import lombok.NonNull;
+import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 
 @ApplicationScoped
 public class LoginAttemptStore {
@@ -24,13 +26,13 @@ public class LoginAttemptStore {
   }
 
   public boolean isLocked(String username) {
-    var until = lockedUntil(username);
+    val until = lockedUntil(username);
     return until.filter(Instant.now()::isBefore).isPresent();
   }
 
   public Optional<Instant> lockedUntil(String username) {
-    var value = valueCommands.get(lockKey(username));
-    if (value == null || value.isBlank()) {
+    val value = normalize(valueCommands.get(lockKey(username)));
+    if (value == null) {
       return Optional.empty();
     }
     try {
@@ -41,9 +43,9 @@ public class LoginAttemptStore {
   }
 
   public long incrementFailure(String username, Duration ttl) {
-    var key = failureKey(username);
-    var value = valueCommands.get(key);
-    long next = value == null || value.isBlank() ? 1 : Long.parseLong(value) + 1;
+    val key = failureKey(username);
+    val value = normalize(valueCommands.get(key));
+    val next = value == null ? 1L : Long.parseLong(value) + 1;
     valueCommands.setex(key, (int) ttl.toSeconds(), Long.toString(next));
     return next;
   }
@@ -64,5 +66,9 @@ public class LoginAttemptStore {
 
   private String lockKey(String username) {
     return authCacheKeyConfig.loginLockKey(username);
+  }
+
+  private String normalize(String value) {
+    return StringUtils.trimToNull(value);
   }
 }

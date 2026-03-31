@@ -83,6 +83,7 @@ subprojects {
     compileOnly(rootLibs.jetbrains.annotations)
     implementation(rootLibs.mapstruct)
     implementation(rootLibs.guava)
+    implementation(rootLibs.commons.lang3)
     implementation(rootLibs.record.builder.core)
     annotationProcessor(rootLibs.mapstruct.processor)
     annotationProcessor(rootLibs.record.builder.processor)

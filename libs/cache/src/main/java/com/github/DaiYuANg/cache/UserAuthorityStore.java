@@ -4,6 +4,7 @@ import com.github.DaiYuANg.cache.calculator.AuthorityHashCalculator;
 import com.github.DaiYuANg.cache.config.RBACCacheProperties;
 import com.github.DaiYuANg.security.identity.PrincipalAttributeKeys;
 import com.github.DaiYuANg.security.snapshot.PermissionSnapshot;
+import com.google.common.base.MoreObjects;
 import io.quarkus.redis.datasource.RedisDataSource;
 import io.quarkus.redis.datasource.hash.HashCommands;
 import io.quarkus.redis.datasource.keys.KeyCommands;
@@ -13,6 +14,9 @@ import jakarta.enterprise.context.ApplicationScoped;
 import java.util.LinkedHashMap;
 import java.util.Optional;
 import java.util.Set;
+import lombok.NonNull;
+import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * User authority store with hash-based deduplication and reference counting.
@@ -51,10 +55,10 @@ public class UserAuthorityStore {
   private final UserAuthorityRefCounter refCounter;
 
   public UserAuthorityStore(
-      RedisDataSource ds,
-      AuthorityHashCalculator hashCalculator,
-      RBACCacheProperties props,
-      UserAuthorityRefCounter refCounter) {
+      @NonNull RedisDataSource ds,
+      @NonNull AuthorityHashCalculator hashCalculator,
+      @NonNull RBACCacheProperties props,
+      @NonNull UserAuthorityRefCounter refCounter) {
     this.valueCommands = ds.value(String.class);
     this.hashCommands = ds.hash(String.class);
     this.setCommands = ds.set(String.class);
@@ -65,21 +69,21 @@ public class UserAuthorityStore {
   }
 
   /** Save user authority. Uses refcounting for shared role/permission sets. */
-  public void save(Long userId, PermissionSnapshot snapshot) {
-    var username = snapshot.username();
-    var roles = snapshot.roles() == null ? Set.<String>of() : snapshot.roles();
-    var permissions = snapshot.permissions() == null ? Set.<String>of() : snapshot.permissions();
-    var displayName = snapshot.displayName() == null ? username : snapshot.displayName();
-    var userType = snapshot.userType() == null ? "ADMIN" : snapshot.userType();
+  public void save(@NonNull Long userId, @NonNull PermissionSnapshot snapshot) {
+    val username = snapshot.username();
+    val roles = MoreObjects.firstNonNull(snapshot.roles(), Set.<String>of());
+    val permissions = MoreObjects.firstNonNull(snapshot.permissions(), Set.<String>of());
+    val displayName = MoreObjects.firstNonNull(normalize(snapshot.displayName()), username);
+    val userType = MoreObjects.firstNonNull(normalize(snapshot.userType()), "ADMIN");
 
-    var roleHash = hashCalculator.generateRoleHash(roles);
-    var permissionHash = hashCalculator.generatePermissionHash(permissions);
-    var authorityHash = hashCalculator.generateAuthorityKey(roles, permissions);
+    val roleHash = hashCalculator.generateRoleHash(roles);
+    val permissionHash = hashCalculator.generatePermissionHash(permissions);
+    val authorityHash = hashCalculator.generateAuthorityKey(roles, permissions);
 
-    var authorityHashKey = props.authorityHashKey(userId);
+    val authorityHashKey = props.authorityHashKey(userId);
 
-    var existingRoleHash = hashCommands.hget(authorityHashKey, props.authorityHashRefRoleKey());
-    var existingPermissionHash =
+    val existingRoleHash = hashCommands.hget(authorityHashKey, props.authorityHashRefRoleKey());
+    val existingPermissionHash =
         hashCommands.hget(authorityHashKey, props.authorityHashRefPermissionKey());
     if (existingRoleHash != null) {
       refCounter.releaseRoleSet(existingRoleHash);
@@ -103,39 +107,42 @@ public class UserAuthorityStore {
     valueCommands.set(props.usernameToUserIdKey(username), String.valueOf(userId));
   }
 
-  public Optional<PermissionSnapshot> get(Long userId) {
-    var authorityKey = props.authorityKey(userId);
+  public Optional<PermissionSnapshot> get(@NonNull Long userId) {
+    val authorityKey = props.authorityKey(userId);
     if (!keyCommands.exists(authorityKey)) {
       return Optional.empty();
     }
 
-    var authorityHashKey = props.authorityHashKey(userId);
-    var roleHash = hashCommands.hget(authorityHashKey, props.authorityHashRefRoleKey());
-    var permissionHash = hashCommands.hget(authorityHashKey, props.authorityHashRefPermissionKey());
-    var username = hashCommands.hget(authorityHashKey, PrincipalAttributeKeys.USERNAME);
-    var displayName = hashCommands.hget(authorityHashKey, PrincipalAttributeKeys.DISPLAY_NAME);
-    var userType = hashCommands.hget(authorityHashKey, PrincipalAttributeKeys.USER_TYPE);
-    var authorityVersion =
+    val authorityHashKey = props.authorityHashKey(userId);
+    val roleHash = normalize(hashCommands.hget(authorityHashKey, props.authorityHashRefRoleKey()));
+    val permissionHash =
+        normalize(hashCommands.hget(authorityHashKey, props.authorityHashRefPermissionKey()));
+    val username = hashCommands.hget(authorityHashKey, PrincipalAttributeKeys.USERNAME);
+    val displayName = normalize(hashCommands.hget(authorityHashKey, PrincipalAttributeKeys.DISPLAY_NAME));
+    val userType = normalize(hashCommands.hget(authorityHashKey, PrincipalAttributeKeys.USER_TYPE));
+    val authorityVersion =
         hashCommands.hget(authorityHashKey, PrincipalAttributeKeys.AUTHORITY_VERSION);
 
     if (username == null) {
       return Optional.empty();
     }
 
-    var roleCodes =
-        roleHash != null && !roleHash.isBlank()
-            ? setCommands.smembers(props.roleHashKey(roleHash))
-            : Set.<String>of();
-    var permissionCodes =
-        permissionHash != null && !permissionHash.isBlank()
-            ? setCommands.smembers(props.permissionHashKey(permissionHash))
-            : Set.<String>of();
+    val roleCodes =
+        roleHash == null
+            ? Set.<String>of()
+            : MoreObjects.firstNonNull(
+                setCommands.smembers(props.roleHashKey(roleHash)), Set.<String>of());
+    val permissionCodes =
+        permissionHash == null
+            ? Set.<String>of()
+            : MoreObjects.firstNonNull(
+                setCommands.smembers(props.permissionHashKey(permissionHash)), Set.<String>of());
 
-    var versionForReuse = authorityVersion != null ? authorityVersion : "";
-    var attributes = new LinkedHashMap<String, Object>();
+    val versionForReuse = StringUtils.defaultString(authorityVersion);
+    val attributes = new LinkedHashMap<String, Object>();
     attributes.put(
-        PrincipalAttributeKeys.DISPLAY_NAME, displayName != null ? displayName : username);
-    attributes.put(PrincipalAttributeKeys.USER_TYPE, userType != null ? userType : "ADMIN");
+        PrincipalAttributeKeys.DISPLAY_NAME, MoreObjects.firstNonNull(displayName, username));
+    attributes.put(PrincipalAttributeKeys.USER_TYPE, MoreObjects.firstNonNull(userType, "ADMIN"));
     attributes.put(PrincipalAttributeKeys.ROLES, roleCodes);
     attributes.put(PrincipalAttributeKeys.PERMISSIONS, permissionCodes);
     attributes.put(PrincipalAttributeKeys.AUTHORITY_VERSION, versionForReuse);
@@ -143,8 +150,8 @@ public class UserAuthorityStore {
     return Optional.of(
         new PermissionSnapshot(
             username,
-            displayName != null ? displayName : username,
-            userType != null ? userType : "ADMIN",
+            MoreObjects.firstNonNull(displayName, username),
+            MoreObjects.firstNonNull(userType, "ADMIN"),
             roleCodes,
             permissionCodes,
             versionForReuse,
@@ -152,31 +159,35 @@ public class UserAuthorityStore {
             userId));
   }
 
-  public Optional<Long> resolveUserId(String username) {
-    var raw = valueCommands.get(props.usernameToUserIdKey(username));
-    if (raw == null || raw.isBlank()) {
+  public Optional<Long> resolveUserId(@NonNull String username) {
+    val raw = normalize(valueCommands.get(props.usernameToUserIdKey(username)));
+    if (raw == null) {
       return Optional.empty();
     }
     try {
-      return Optional.of(Long.parseLong(raw.trim()));
+      return Optional.of(Long.parseLong(raw));
     } catch (NumberFormatException e) {
       return Optional.empty();
     }
   }
 
-  public void delete(Long userId) {
-    var authorityHashKey = props.authorityHashKey(userId);
-    var roleHash = hashCommands.hget(authorityHashKey, props.authorityHashRefRoleKey());
-    var permissionHash = hashCommands.hget(authorityHashKey, props.authorityHashRefPermissionKey());
-    var username = hashCommands.hget(authorityHashKey, PrincipalAttributeKeys.USERNAME);
+  public void delete(@NonNull Long userId) {
+    val authorityHashKey = props.authorityHashKey(userId);
+    val roleHash = hashCommands.hget(authorityHashKey, props.authorityHashRefRoleKey());
+    val permissionHash = hashCommands.hget(authorityHashKey, props.authorityHashRefPermissionKey());
+    val username = normalize(hashCommands.hget(authorityHashKey, PrincipalAttributeKeys.USERNAME));
 
     keyCommands.del(props.authorityKey(userId));
     keyCommands.del(authorityHashKey);
-    if (username != null && !username.isBlank()) {
+    if (username != null) {
       keyCommands.del(props.usernameToUserIdKey(username));
     }
 
     refCounter.releaseRoleSet(roleHash);
     refCounter.releasePermissionSet(permissionHash);
+  }
+
+  private String normalize(String value) {
+    return StringUtils.trimToNull(value);
   }
 }

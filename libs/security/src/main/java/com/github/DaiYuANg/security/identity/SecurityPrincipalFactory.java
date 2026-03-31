@@ -2,16 +2,16 @@ package com.github.DaiYuANg.security.identity;
 
 import com.github.DaiYuANg.security.snapshot.PermissionSnapshot;
 import com.github.DaiYuANg.security.snapshot.PermissionSnapshotBuilder;
+import com.google.common.base.MoreObjects;
 import jakarta.enterprise.context.ApplicationScoped;
-
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-
 import lombok.NonNull;
 import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 
 @ApplicationScoped
 public class SecurityPrincipalFactory {
@@ -20,13 +20,9 @@ public class SecurityPrincipalFactory {
   public AuthenticatedUser authenticatedUser(@NonNull SecurityPrincipalDefinition definition) {
     val normalizedUsername = definition.username().trim();
     val normalizedDisplayName =
-      definition.displayName() == null || definition.displayName().isBlank()
-        ? normalizedUsername
-        : definition.displayName().trim();
+        MoreObjects.firstNonNull(normalize(definition.displayName()), normalizedUsername);
     val normalizedUserType =
-      definition.userType() == null || definition.userType().isBlank()
-        ? DEFAULT_USER_TYPE
-        : definition.userType().trim();
+        MoreObjects.firstNonNull(normalize(definition.userType()), DEFAULT_USER_TYPE);
     val normalizedRoles = immutableCodes(definition.roles());
     val normalizedPermissions = immutableCodes(definition.permissions());
     val attributes = baseAttributes(normalizedUsername, normalizedDisplayName, normalizedUserType);
@@ -35,11 +31,13 @@ public class SecurityPrincipalFactory {
     if (definition.userId() != null) {
       attributes.put(PrincipalAttributeKeys.USER_ID, definition.userId());
     }
-    if (definition.source() != null && !definition.source().isBlank()) {
-      attributes.put(PrincipalAttributeKeys.SOURCE, definition.source().trim());
+    val source = normalize(definition.source());
+    if (source != null) {
+      attributes.put(PrincipalAttributeKeys.SOURCE, source);
     }
-    if (definition.providerId() != null && !definition.providerId().isBlank()) {
-      attributes.put(PrincipalAttributeKeys.PROVIDER_ID, definition.providerId().trim());
+    val providerId = normalize(definition.providerId());
+    if (providerId != null) {
+      attributes.put(PrincipalAttributeKeys.PROVIDER_ID, providerId);
     }
     return AuthenticatedUserBuilder.builder()
       .username(normalizedUsername)
@@ -94,5 +92,9 @@ public class SecurityPrincipalFactory {
       .map(String::trim)
       .filter(value -> !value.isEmpty())
       .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new)));
+  }
+
+  private String normalize(String value) {
+    return StringUtils.trimToNull(value);
   }
 }

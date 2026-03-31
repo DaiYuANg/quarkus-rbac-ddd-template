@@ -8,14 +8,15 @@ import static org.mockito.Mockito.when;
 import com.github.DaiYuANg.modules.accesscontrol.application.user.UserApplicationService;
 import com.github.DaiYuANg.security.identity.PrincipalAttributeKeys;
 import io.quarkus.security.identity.SecurityIdentity;
+import lombok.val;
 import org.junit.jupiter.api.Test;
 
 class UserResourcePermissionCheckerTest {
 
   @Test
   void selfPasswordPermissionMatchesCurrentUserId() {
-    var resource = new UserResource(mock(UserApplicationService.class));
-    var identity = mock(SecurityIdentity.class);
+    val resource = new UserResource(mock(UserApplicationService.class));
+    val identity = mock(SecurityIdentity.class);
     when(identity.getAttribute(PrincipalAttributeKeys.USER_ID)).thenReturn(42L);
 
     assertTrue(resource.canChangeOwnPassword(identity, 42L));
@@ -24,8 +25,8 @@ class UserResourcePermissionCheckerTest {
 
   @Test
   void selfPasswordPermissionParsesStringUserId() {
-    var resource = new UserResource(mock(UserApplicationService.class));
-    var identity = mock(SecurityIdentity.class);
+    val resource = new UserResource(mock(UserApplicationService.class));
+    val identity = mock(SecurityIdentity.class);
     when(identity.getAttribute(PrincipalAttributeKeys.USER_ID)).thenReturn("99");
 
     assertTrue(resource.canChangeOwnPassword(identity, 99L));

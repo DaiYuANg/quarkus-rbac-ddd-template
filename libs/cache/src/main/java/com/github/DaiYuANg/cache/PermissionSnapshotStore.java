@@ -3,6 +3,8 @@ package com.github.DaiYuANg.cache;
 import com.github.DaiYuANg.security.snapshot.PermissionSnapshot;
 import jakarta.enterprise.context.ApplicationScoped;
 import java.util.Optional;
+import lombok.NonNull;
+import lombok.val;
 
 /**
  * Facade for user permission snapshot storage. Delegates to UserAuthorityStore with hash-based
@@ -19,7 +21,7 @@ public class PermissionSnapshotStore {
 
   private final UserAuthorityStore userAuthorityStore;
 
-  public PermissionSnapshotStore(UserAuthorityStore userAuthorityStore) {
+  public PermissionSnapshotStore(@NonNull UserAuthorityStore userAuthorityStore) {
     this.userAuthorityStore = userAuthorityStore;
   }
 
@@ -27,8 +29,8 @@ public class PermissionSnapshotStore {
    * Save snapshot to Valkey. Skips only when {@code userId} is null. DB users use row ids; config
    * users use stable synthetic negative ids.
    */
-  public void save(PermissionSnapshot snapshot) {
-    var userId = snapshot.userId();
+  public void save(@NonNull PermissionSnapshot snapshot) {
+    val userId = snapshot.userId();
     if (userId == null) {
       return;
     }
@@ -36,7 +38,7 @@ public class PermissionSnapshotStore {
   }
 
   /** Get snapshot by username. Resolves username -> userId then loads. */
-  public Optional<PermissionSnapshot> get(String username) {
+  public Optional<PermissionSnapshot> get(@NonNull String username) {
     return userAuthorityStore.resolveUserId(username).flatMap(userAuthorityStore::get);
   }
 
@@ -49,7 +51,7 @@ public class PermissionSnapshotStore {
   }
 
   /** Delete snapshot by userId. */
-  public void delete(Long userId) {
+  public void delete(@NonNull Long userId) {
     userAuthorityStore.delete(userId);
   }
 }

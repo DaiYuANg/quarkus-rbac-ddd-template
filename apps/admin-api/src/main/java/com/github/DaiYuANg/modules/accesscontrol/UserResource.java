@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 import org.toolkit4j.data.model.envelope.Result;
 
 @Path("/api/v1/user")
@@ -160,10 +162,10 @@ public class UserResource {
     if (identity == null) {
       return null;
     }
-    var value = identity.<Object>getAttribute(PrincipalAttributeKeys.USER_ID);
+    val value = identity.getAttribute(PrincipalAttributeKeys.USER_ID);
     if (value instanceof Number number) {
       return number.longValue();
     }
-    return value == null ? null : Longs.tryParse(String.valueOf(value).trim());
+    return Longs.tryParse(StringUtils.trimToEmpty(Objects.toString(value, null)));
   }
 }

@@ -9,6 +9,7 @@ import com.github.DaiYuANg.identity.repository.UserRepository;
 import com.github.DaiYuANg.security.auth.RefreshTokenAuthenticationRequest;
 import com.github.DaiYuANg.security.identity.QuarkusSecurityIdentityFactory;
 import com.github.DaiYuANg.security.snapshot.PermissionSnapshotLoader;
+import com.google.common.base.Strings;
 import io.quarkus.security.identity.AuthenticationRequestContext;
 import io.quarkus.security.identity.IdentityProvider;
 import io.quarkus.security.identity.SecurityIdentity;
@@ -19,6 +20,7 @@ import jakarta.inject.Inject;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 
 @ApplicationScoped
 @Priority(300)
@@ -45,7 +47,7 @@ public class AdminRefreshTokenAuthenticationProvider
   private SecurityIdentity authenticateBlocking(@NonNull RefreshTokenAuthenticationRequest request) {
     val owner = refreshTokenStore.getOwner(request.refreshToken()).orElse(null);
     if (owner == null
-        || (owner.userId() == null && (owner.username() == null || owner.username().isBlank()))) {
+        || (owner.userId() == null && Strings.isNullOrEmpty(normalize(owner.username())))) {
       throw new BizException(ResultCode.REFRESH_TOKEN_INVALID);
     }
 
@@ -56,8 +58,8 @@ public class AdminRefreshTokenAuthenticationProvider
           .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
     }
 
-    val username = owner.username();
-    if (username == null || username.isBlank()) {
+    val username = normalize(owner.username());
+    if (username == null) {
       throw new BizException(ResultCode.DATA_NOT_FOUND);
     }
 
@@ -77,5 +79,9 @@ public class AdminRefreshTokenAuthenticationProvider
       throw new BizException(ResultCode.USER_ACCESS_BLOCKED);
     }
     return securityIdentityFactory.create(principalAssembler.fromDbUser(user));
+  }
+
+  private String normalize(String value) {
+    return StringUtils.trimToNull(value);
   }
 }

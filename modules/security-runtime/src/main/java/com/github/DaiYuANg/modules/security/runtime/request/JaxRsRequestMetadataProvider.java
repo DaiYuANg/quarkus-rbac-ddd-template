@@ -10,6 +10,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 import lombok.NonNull;
+import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 
 @RequestScoped
 public class JaxRsRequestMetadataProvider implements RequestMetadataProvider {
@@ -20,15 +22,16 @@ public class JaxRsRequestMetadataProvider implements RequestMetadataProvider {
     if (headers == null) {
       return Optional.empty();
     }
-    String remoteIp =
+    val remoteIpHeader =
         firstHeader("X-Forwarded-For", "X-Real-IP", "CF-Connecting-IP", "True-Client-IP");
-    if (remoteIp != null && remoteIp.contains(",")) {
-      remoteIp = remoteIp.split(",")[0].trim();
-    }
-    String userAgent = firstHeader("User-Agent");
-    String requestId = firstHeader("X-Request-Id", "X-Correlation-Id");
+    val remoteIp =
+        remoteIpHeader != null && remoteIpHeader.contains(",")
+            ? blankToNull(remoteIpHeader.split(",")[0])
+            : blankToNull(remoteIpHeader);
+    val userAgent = blankToNull(firstHeader("User-Agent"));
+    val requestId = blankToNull(firstHeader("X-Request-Id", "X-Correlation-Id"));
     return Optional.of(
-        new RequestMetadata(blankToNull(remoteIp), blankToNull(userAgent), blankToNull(requestId)));
+        new RequestMetadata(remoteIp, userAgent, requestId));
   }
 
   private String firstHeader(@NonNull String... names) {
@@ -45,6 +48,6 @@ public class JaxRsRequestMetadataProvider implements RequestMetadataProvider {
   }
 
   private String blankToNull(String value) {
-    return value == null || value.isBlank() ? null : value;
+    return StringUtils.trimToNull(value);
   }
 }

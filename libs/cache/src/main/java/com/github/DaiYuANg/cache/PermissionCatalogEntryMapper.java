@@ -2,6 +2,8 @@ package com.github.DaiYuANg.cache;
 
 import java.time.Instant;
 import java.util.Map;
+import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 
 final class PermissionCatalogEntryMapper {
 
@@ -33,8 +35,8 @@ final class PermissionCatalogEntryMapper {
   }
 
   static PermissionCatalogEntry fromMap(Long id, Map<String, String> map) {
-    var createAt = parseInstant(map.get(HASH_CREATE_AT));
-    var updateAt = parseInstant(map.get(HASH_UPDATE_AT));
+    val createAt = parseInstant(map.get(HASH_CREATE_AT));
+    val updateAt = parseInstant(map.get(HASH_UPDATE_AT));
     return PermissionCatalogEntryBuilder.builder()
         .id(id)
         .name(map.getOrDefault(HASH_NAME, ""))
@@ -50,17 +52,18 @@ final class PermissionCatalogEntryMapper {
   }
 
   private static Instant parseInstant(String s) {
-    if (s == null || s.isBlank()) {
+    val normalized = StringUtils.trimToNull(s);
+    if (normalized == null) {
       return Instant.EPOCH;
     }
     try {
-      return Instant.ofEpochMilli(Long.parseLong(s.trim()));
+      return Instant.ofEpochMilli(Long.parseLong(normalized));
     } catch (NumberFormatException e) {
       return Instant.EPOCH;
     }
   }
 
   private static String nullOrEmpty(String s) {
-    return (s == null || s.isBlank()) ? null : s;
+    return StringUtils.trimToNull(s);
   }
 }

@@ -21,6 +21,9 @@ import com.github.DaiYuANg.security.auth.UsernamePasswordAuthenticationRequest;
 import com.github.DaiYuANg.security.config.AuthSecurityConfig;
 import com.github.DaiYuANg.security.identity.AuthenticatedUser;
 import com.github.DaiYuANg.security.token.PrincipalAttributesSerializer;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Objects;
+import com.google.common.base.Strings;
 import io.quarkus.security.AuthenticationFailedException;
 import io.quarkus.security.identity.IdentityProviderManager;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -29,7 +32,6 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import java.time.Duration;
 import java.util.LinkedHashSet;
-import java.util.Objects;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -72,7 +74,7 @@ public class AuthApplicationService {
 
   @Transactional
   public SystemAuthenticationToken login(@NonNull LoginRequest req) {
-    val username = req.username() == null ? "" : req.username().trim();
+    val username = Strings.nullToEmpty(req.username()).trim();
     log.atDebug().addKeyValue("username", username).log("login attempt");
     val snapshot = auditSnapshotProvider.snapshot();
     if (loginAttemptStore.isLocked(username)) {
@@ -84,8 +86,8 @@ public class AuthApplicationService {
           LoginAuditEvent.failure(
               username,
               ResultCode.ACCOUNT_TEMPORARILY_LOCKED.message(),
-              Objects.requireNonNullElse(snapshot.remoteIp(), ""),
-              Objects.requireNonNullElse(snapshot.userAgent(), "")));
+              MoreObjects.firstNonNull(snapshot.remoteIp(), ""),
+              MoreObjects.firstNonNull(snapshot.userAgent(), "")));
       throw new BizException(ResultCode.ACCOUNT_TEMPORARILY_LOCKED);
     }
     try {
@@ -101,8 +103,8 @@ public class AuthApplicationService {
       loginAuditEvent.fireAsync(
           LoginAuditEvent.success(
               username,
-              Objects.requireNonNullElse(snapshot.remoteIp(), ""),
-              Objects.requireNonNullElse(snapshot.userAgent(), "")));
+              MoreObjects.firstNonNull(snapshot.remoteIp(), ""),
+              MoreObjects.firstNonNull(snapshot.userAgent(), "")));
       return tokenIssuer.issue(result);
     } catch (BizException ex) {
       log.atDebug()
@@ -119,7 +121,7 @@ public class AuthApplicationService {
         currentUserAccess
             .currentUser()
             .orElseThrow(() -> new BizException(ResultCode.UNAUTHORIZED));
-    if (!username.equals(current.username())) {
+    if (!Objects.equal(username, current.username())) {
       throw new BizException(ResultCode.FORBIDDEN);
     }
     return userProfileResolutionService.resolve(current);
@@ -131,7 +133,7 @@ public class AuthApplicationService {
         currentUserAccess
             .currentUser()
             .orElseThrow(() -> new BizException(ResultCode.UNAUTHORIZED));
-    if (!username.equals(current.username())) {
+    if (!Objects.equal(username, current.username())) {
       throw new BizException(ResultCode.FORBIDDEN);
     }
 
@@ -164,7 +166,7 @@ public class AuthApplicationService {
         currentUserAccess
             .currentUser()
             .orElseThrow(() -> new BizException(ResultCode.UNAUTHORIZED));
-    if (!username.equals(current.username())) {
+    if (!Objects.equal(username, current.username())) {
       throw new BizException(ResultCode.FORBIDDEN);
     }
     val user = userRepository.findByUsername(username).orElse(null);
@@ -194,8 +196,8 @@ public class AuthApplicationService {
         LoginAuditEvent.failure(
             username,
             reason,
-            Objects.requireNonNullElse(snapshot.remoteIp(), ""),
-            Objects.requireNonNullElse(snapshot.userAgent(), "")));
+            MoreObjects.firstNonNull(snapshot.remoteIp(), ""),
+            MoreObjects.firstNonNull(snapshot.userAgent(), "")));
   }
 
   private @NonNull String composeAuthorityVersion(

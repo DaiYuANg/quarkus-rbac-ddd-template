@@ -2,6 +2,7 @@ package com.github.DaiYuANg.cache;
 
 import io.soabase.recordbuilder.core.RecordBuilder;
 import java.time.Instant;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * In-memory representation of a permission for the catalog cache. Used when loading from DB and
@@ -20,6 +21,6 @@ public record PermissionCatalogEntry(
     Instant createAt,
     Instant updateAt) {
   public static String empty(String s) {
-    return s == null || s.isBlank() ? "" : s;
+    return StringUtils.trimToEmpty(s);
   }
 }

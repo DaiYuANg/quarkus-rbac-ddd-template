@@ -7,7 +7,9 @@ import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.time.Instant;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 /**
  * Stores serialized domain events in the same transaction as the write-side aggregate change.
@@ -21,8 +23,9 @@ public class DomainOutboxStore implements PanacheRepository<OutboxMessageEntity>
 
   private final ObjectMapper objectMapper;
 
-  public void append(String aggregateType, Object aggregateId, DomainEvent event) {
-    var entity = new OutboxMessageEntity();
+  public void append(
+      @NonNull String aggregateType, @NonNull Object aggregateId, @NonNull DomainEvent event) {
+    val entity = new OutboxMessageEntity();
     entity.aggregateType = aggregateType;
     entity.aggregateId = String.valueOf(aggregateId);
     entity.eventType = event.eventType();

@@ -11,6 +11,7 @@ import com.github.DaiYuANg.security.token.TokenIssuer;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
@@ -22,9 +23,9 @@ public class JwtAdminTokenIssuer
 
   @Override
   public SystemAuthenticationToken issue(AuthenticatedUser user) {
-    var authorityVersion = authorityVersionStore.versionFor(user.username());
-    var accessToken = jwtTokenService.generate(user, authorityVersion);
-    var refreshToken = jwtTokenService.generateRefreshToken();
+    val authorityVersion = authorityVersionStore.versionFor(user.username());
+    val accessToken = jwtTokenService.generate(user, authorityVersion);
+    val refreshToken = jwtTokenService.generateRefreshToken();
     refreshTokenStore.save(
         refreshToken, user.userId(), user.username(), jwtTokenService.refreshTokenTtl());
     return SystemAuthenticationTokenBuilder.builder()

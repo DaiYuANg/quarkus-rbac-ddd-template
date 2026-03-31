@@ -3,6 +3,8 @@ package com.github.DaiYuANg.security.token;
 import io.quarkus.security.identity.SecurityIdentity;
 import java.util.Map;
 import java.util.Set;
+import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 
 public record TokenContextSnapshot(
     String subject,
@@ -14,6 +16,7 @@ public record TokenContextSnapshot(
     SecurityIdentity securityIdentity)
     implements java.io.Serializable {
   public String actorKey() {
-    return userType == null || userType.isBlank() ? subject : userType + ":" + subject;
+    val normalizedUserType = StringUtils.trimToNull(userType);
+    return normalizedUserType == null ? subject : normalizedUserType + ":" + subject;
   }
 }

@@ -8,6 +8,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import java.time.Instant;
 import lombok.NonNull;
 import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 
 @ApplicationScoped
 public class AuthorityVersionStore {
@@ -24,12 +25,13 @@ public class AuthorityVersionStore {
 
   public String currentVersion() {
     val current = valueCommands.get(authCacheKeyConfig.authorityVersionKey());
-    var version = current;
-    if (version == null || version.isBlank()) {
-      version = Instant.now().toString();
-      valueCommands.set(authCacheKeyConfig.authorityVersionKey(), version);
+    val version = StringUtils.trimToNull(current);
+    if (version != null) {
+      return version;
     }
-    return version;
+    val newVersion = Instant.now().toString();
+    valueCommands.set(authCacheKeyConfig.authorityVersionKey(), newVersion);
+    return newVersion;
   }
 
   public String bumpGlobalVersion() {

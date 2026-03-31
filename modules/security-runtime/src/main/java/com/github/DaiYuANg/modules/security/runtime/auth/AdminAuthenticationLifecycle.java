@@ -11,6 +11,7 @@ import jakarta.inject.Inject;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Authentication lifecycle hooks for admin flows.
@@ -41,8 +42,9 @@ public class AdminAuthenticationLifecycle implements AuthenticationLifecyclePort
 
   @Override
   public void revokeRefreshToken(String refreshToken) {
-    if (refreshToken != null && !refreshToken.isBlank()) {
-      refreshTokenStore.delete(refreshToken);
+    val normalizedRefreshToken = StringUtils.trimToNull(refreshToken);
+    if (normalizedRefreshToken != null) {
+      refreshTokenStore.delete(normalizedRefreshToken);
     }
   }
 }

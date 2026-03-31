@@ -1,6 +1,7 @@
 package com.github.DaiYuANg.cache.calculator;
 
 import java.util.Set;
+import lombok.val;
 
 /** Computes deterministic hashes for role/permission sets for deduplication. */
 public interface AuthorityHashCalculator {
@@ -13,11 +14,11 @@ public interface AuthorityHashCalculator {
 
   /** Concatenate role codes and permission codes in sorted order for hashing. */
   static String concatForHash(Set<String> roleCodes, Set<String> permissions) {
-    var roles =
+    val roles =
         roleCodes == null || roleCodes.isEmpty()
             ? ""
             : roleCodes.stream().sorted().reduce((a, b) -> a + "|" + b).orElse("");
-    var perms =
+    val perms =
         permissions == null || permissions.isEmpty()
             ? ""
             : permissions.stream().sorted().reduce((a, b) -> a + "|" + b).orElse("");

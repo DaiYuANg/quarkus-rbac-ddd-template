@@ -12,6 +12,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 @Provider
@@ -27,7 +28,7 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
       case BizException biz ->
           json(biz.getResultCode().status(), Results.fail(biz.getResultCode(), biz.getMessage()));
       case ConstraintViolationException violation -> {
-        var message =
+        val message =
             violation.getConstraintViolations().stream()
                 .map(ConstraintViolation::getMessage)
                 .findFirst()

@@ -7,6 +7,8 @@ import io.quarkus.arc.DefaultBean;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.time.Duration;
+import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 
 @ApplicationScoped
 @DefaultBean
@@ -26,14 +28,15 @@ public class AdminPermissionSnapshotRefreshPolicy implements PermissionSnapshotR
       return false;
     }
     // Reuse only if JWT version matches cached version AND cache is not stale (global bump)
-    var cachedVersion = cachedSnapshot.authorityVersion();
-    if (cachedVersion == null || cachedVersion.isBlank()) {
+    val cachedVersion = normalize(cachedSnapshot.authorityVersion());
+    if (cachedVersion == null) {
       return false;
     }
-    if (expectedAuthorityVersion == null || expectedAuthorityVersion.isBlank()) {
+    val expectedVersion = normalize(expectedAuthorityVersion);
+    if (expectedVersion == null) {
       return true;
     }
-    if (!expectedAuthorityVersion.equals(cachedVersion)) {
+    if (!expectedVersion.equals(cachedVersion)) {
       return false;
     }
     // Cached snapshot must match current global version (invalidated when admin bumps)
@@ -48,5 +51,9 @@ public class AdminPermissionSnapshotRefreshPolicy implements PermissionSnapshotR
   @Override
   public String source() {
     return "valkey-snapshot";
+  }
+
+  private String normalize(String value) {
+    return StringUtils.trimToNull(value);
   }
 }
