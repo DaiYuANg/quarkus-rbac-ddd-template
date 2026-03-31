@@ -1,7 +1,10 @@
 package com.github.DaiYuANg.modules.accesscontrol;
 
+import com.github.DaiYuANg.security.authorization.RbacPermissionCodes.Auth;
 import com.github.DaiYuANg.common.model.ApiPageResult;
 import com.github.DaiYuANg.common.model.Results;
+import com.github.DaiYuANg.security.identity.PrincipalAttributeKeys;
+import com.google.common.primitives.Longs;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UpdateUserForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UserCreationForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UserRefRoleForm;
@@ -9,13 +12,16 @@ import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.UserVO
 import com.github.DaiYuANg.modules.accesscontrol.application.user.UserApplicationService;
 import com.github.DaiYuANg.modules.accesscontrol.ChangePasswordForm;
 import com.github.DaiYuANg.modules.accesscontrol.query.UserPageQueryParams;
+import io.quarkus.security.PermissionChecker;
 import com.github.DaiYuANg.security.authorization.RbacPermissionCodes.User;
 import io.quarkus.security.PermissionsAllowed;
+import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.toolkit4j.data.model.envelope.Result;
@@ -42,7 +48,7 @@ public class UserResource {
 
   @PUT
   @Path("/{id}/password")
-  @PermissionsAllowed(User.EDIT)
+  @PermissionsAllowed({Auth.CHANGE_PASSWORD, User.RESET_PASSWORD, User.EDIT})
   public Result<String, Void> updateUserPassword(
       @PathParam("id") Long id, @Valid ChangePasswordForm form) {
     userApplicationService.updateUserPassword(id, form.newPassword());
@@ -88,7 +94,7 @@ public class UserResource {
 
   @POST
   @Path("/assign/role")
-  @PermissionsAllowed(User.EDIT)
+  @PermissionsAllowed({User.EDIT, User.ASSIGN_ROLE})
   public Result<String, Void> assignRole(@Valid UserRefRoleForm form) {
     userApplicationService.assignRole(form);
     return Results.ok();
@@ -143,5 +149,21 @@ public class UserResource {
   @PermissionsAllowed(User.VIEW)
   public Result<String, Long> countUserLoginTotal() {
     return Results.ok(userApplicationService.countUserLoginTotal());
+  }
+
+  @PermissionChecker(Auth.CHANGE_PASSWORD)
+  boolean canChangeOwnPassword(SecurityIdentity identity, Long id) {
+    return Objects.equals(currentUserId(identity), id);
+  }
+
+  private Long currentUserId(SecurityIdentity identity) {
+    if (identity == null) {
+      return null;
+    }
+    var value = identity.<Object>getAttribute(PrincipalAttributeKeys.USER_ID);
+    if (value instanceof Number number) {
+      return number.longValue();
+    }
+    return value == null ? null : Longs.tryParse(String.valueOf(value).trim());
   }
 }

@@ -20,7 +20,6 @@ import com.github.DaiYuANg.modules.accesscontrol.application.permissiongroup.Per
 import com.github.DaiYuANg.modules.accesscontrol.application.role.RoleChecker;
 import com.github.DaiYuANg.modules.accesscontrol.application.role.RoleApplicationService;
 import com.github.DaiYuANg.modules.accesscontrol.application.support.AccessControlAuditSupport;
-import com.github.DaiYuANg.security.authorization.AuthorizationService;
 import jakarta.persistence.EntityManager;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -33,7 +32,6 @@ class AccessControlDeletionBehaviorTest {
     var permissionGroupRepository = mock(PermissionGroupRepository.class);
     var permissionCatalogStore = mock(PermissionCatalogStore.class);
     var auditSupport = mock(AccessControlAuditSupport.class);
-    var authorizationService = mock(AuthorizationService.class);
     var roleVOMapper = mock(RoleVOMapper.class);
     var permissionGroupVOMapper = mock(PermissionGroupVOMapper.class);
     var permissionVOMapper = mock(PermissionVOMapper.class);
@@ -44,7 +42,6 @@ class AccessControlDeletionBehaviorTest {
             permissionGroupRepository,
             permissionCatalogStore,
             auditSupport,
-            authorizationService,
             roleVOMapper,
             permissionGroupVOMapper,
             permissionVOMapper,
@@ -64,7 +61,6 @@ class AccessControlDeletionBehaviorTest {
     var catalogStore = mock(PermissionCatalogStore.class);
     var entityManager = mock(EntityManager.class);
     var auditSupport = mock(AccessControlAuditSupport.class);
-    var authorizationService = mock(AuthorizationService.class);
     var permissionGroupVOMapper = mock(PermissionGroupVOMapper.class);
     var permissionVOMapper = mock(PermissionVOMapper.class);
     var permissionGroupChecker = mock(PermissionGroupChecker.class);
@@ -74,7 +70,6 @@ class AccessControlDeletionBehaviorTest {
             catalogStore,
             entityManager,
             auditSupport,
-            authorizationService,
             permissionGroupVOMapper,
             permissionVOMapper,
             permissionGroupChecker);

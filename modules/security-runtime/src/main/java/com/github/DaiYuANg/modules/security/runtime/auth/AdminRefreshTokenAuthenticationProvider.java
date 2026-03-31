@@ -2,58 +2,63 @@ package com.github.DaiYuANg.modules.security.runtime.auth;
 
 import com.github.DaiYuANg.cache.RefreshTokenStore;
 import com.github.DaiYuANg.common.constant.ResultCode;
+import com.github.DaiYuANg.common.exception.BizException;
 import com.github.DaiYuANg.identity.constant.UserStatus;
 import com.github.DaiYuANg.identity.entity.SysUser;
 import com.github.DaiYuANg.identity.repository.UserRepository;
-import com.github.DaiYuANg.security.auth.AuthenticationProviderResult;
-import com.github.DaiYuANg.security.auth.AuthenticationResult;
-import com.github.DaiYuANg.security.auth.LoginAuthenticationProvider;
-import com.github.DaiYuANg.security.auth.LoginAuthenticationRequest;
 import com.github.DaiYuANg.security.auth.RefreshTokenAuthenticationRequest;
+import com.github.DaiYuANg.security.identity.QuarkusSecurityIdentityFactory;
 import com.github.DaiYuANg.security.snapshot.PermissionSnapshotLoader;
+import io.quarkus.security.identity.AuthenticationRequestContext;
+import io.quarkus.security.identity.IdentityProvider;
+import io.quarkus.security.identity.SecurityIdentity;
+import io.smallrye.mutiny.Uni;
 import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 @ApplicationScoped
 @Priority(300)
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class AdminRefreshTokenAuthenticationProvider
-    implements LoginAuthenticationProvider<RefreshTokenAuthenticationRequest> {
+    implements IdentityProvider<RefreshTokenAuthenticationRequest> {
   private final RefreshTokenStore refreshTokenStore;
   private final UserRepository userRepository;
   private final AdminSecurityPrincipalAssembler principalAssembler;
   private final PermissionSnapshotLoader permissionSnapshotLoader;
+  private final QuarkusSecurityIdentityFactory securityIdentityFactory;
 
   @Override
-  public String providerId() {
-    return "refresh-token";
+  public Class<RefreshTokenAuthenticationRequest> getRequestType() {
+    return RefreshTokenAuthenticationRequest.class;
   }
 
   @Override
-  public boolean supports(LoginAuthenticationRequest request) {
-    return request instanceof RefreshTokenAuthenticationRequest;
+  public Uni<SecurityIdentity> authenticate(
+      @NonNull RefreshTokenAuthenticationRequest request, AuthenticationRequestContext context) {
+    return context.runBlocking(() -> authenticateBlocking(request));
   }
 
-  @Override
-  public AuthenticationProviderResult authenticate(RefreshTokenAuthenticationRequest request) {
-    var owner = refreshTokenStore.getOwner(request.refreshToken()).orElse(null);
+  private SecurityIdentity authenticateBlocking(@NonNull RefreshTokenAuthenticationRequest request) {
+    val owner = refreshTokenStore.getOwner(request.refreshToken()).orElse(null);
     if (owner == null
         || (owner.userId() == null && (owner.username() == null || owner.username().isBlank()))) {
-      return AuthenticationProviderResult.failure(ResultCode.REFRESH_TOKEN_INVALID);
+      throw new BizException(ResultCode.REFRESH_TOKEN_INVALID);
     }
 
     if (owner.userId() != null && owner.userId() > 0) {
       return userRepository
           .findByIdOptional(owner.userId())
           .map(this::authenticateDbUser)
-          .orElse(AuthenticationProviderResult.failure(ResultCode.DATA_NOT_FOUND));
+          .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
     }
 
-    var username = owner.username();
+    val username = owner.username();
     if (username == null || username.isBlank()) {
-      return AuthenticationProviderResult.failure(ResultCode.DATA_NOT_FOUND);
+      throw new BizException(ResultCode.DATA_NOT_FOUND);
     }
 
     return userRepository
@@ -63,19 +68,14 @@ public class AdminRefreshTokenAuthenticationProvider
             () ->
                 permissionSnapshotLoader
                     .load(owner.userId(), username)
-                    .map(
-                        snapshot ->
-                            AuthenticationProviderResult.success(
-                                new AuthenticationResult(
-                                    snapshot.toAuthenticatedUser(), providerId())))
-                    .orElse(AuthenticationProviderResult.failure(ResultCode.DATA_NOT_FOUND)));
+                    .map(snapshot -> securityIdentityFactory.create(snapshot.toAuthenticatedUser()))
+                    .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND)));
   }
 
-  private AuthenticationProviderResult authenticateDbUser(SysUser user) {
+  private SecurityIdentity authenticateDbUser(@NonNull SysUser user) {
     if (user.userStatus != UserStatus.ENABLED) {
-      return AuthenticationProviderResult.failure(ResultCode.USER_ACCESS_BLOCKED);
+      throw new BizException(ResultCode.USER_ACCESS_BLOCKED);
     }
-    return AuthenticationProviderResult.success(
-        new AuthenticationResult(principalAssembler.fromDbUser(user), providerId()));
+    return securityIdentityFactory.create(principalAssembler.fromDbUser(user));
   }
 }

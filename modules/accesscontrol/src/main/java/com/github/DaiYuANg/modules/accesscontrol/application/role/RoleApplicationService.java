@@ -17,8 +17,6 @@ import com.github.DaiYuANg.modules.accesscontrol.application.mapper.PermissionVO
 import com.github.DaiYuANg.modules.accesscontrol.application.mapper.RoleVOMapper;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.RoleVO;
 import com.github.DaiYuANg.modules.accesscontrol.application.support.AccessControlAuditSupport;
-import com.github.DaiYuANg.security.authorization.AuthorizationService;
-import com.github.DaiYuANg.security.authorization.RbacPermissionCodes.Role;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -53,7 +51,6 @@ public class RoleApplicationService {
   private final PermissionGroupRepository permissionGroupRepository;
   private final PermissionCatalogStore permissionCatalogStore;
   private final AccessControlAuditSupport auditSupport;
-  private final AuthorizationService authorizationService;
   private final RoleVOMapper roleVOMapper;
   private final PermissionGroupVOMapper permissionGroupVOMapper;
   private final PermissionVOMapper permissionVOMapper;
@@ -61,7 +58,6 @@ public class RoleApplicationService {
 
   @Transactional
   public RoleVO createRole(@NonNull RoleCreationForm form) {
-    authorizationService.check(Role.ADD);
     roleChecker.ensureCreatable(form);
     val role = roleVOMapper.toEntity(form);
     roleRepository.persist(role);
@@ -71,18 +67,15 @@ public class RoleApplicationService {
   }
 
   public ApiPageResult<RoleVO> queryRolePage(@NonNull RolePageQuery query) {
-    authorizationService.check(Role.VIEW);
     return ApiPageResult.map(roleRepository.page(query), roleVOMapper::toProjectionVO);
   }
 
   public Optional<RoleVO> getRoleById(@NonNull Long id) {
-    authorizationService.check(Role.VIEW);
     return roleRepository.findByIdOptional(id).map(this::toRoleVOWithCatalog);
   }
 
   @Transactional
   public RoleVO updateRole(@NonNull Long id, @NonNull UpdateRoleForm form) {
-    authorizationService.check(Role.EDIT);
     val role =
         roleRepository
             .findByIdOptional(id)
@@ -101,7 +94,6 @@ public class RoleApplicationService {
 
   @Transactional
   public void deleteRole(@NonNull Long id) {
-    authorizationService.check(Role.DELETE);
     val role =
         roleRepository
             .findByIdOptional(id)
@@ -112,13 +104,11 @@ public class RoleApplicationService {
   }
 
   public Optional<RoleVO> getRoleByName(@NonNull String name) {
-    authorizationService.check(Role.VIEW);
     return roleRepository.findByName(name).map(this::toRoleVOWithCatalog);
   }
 
   @Transactional
   public void assignPermissionGroups(@NonNull RoleRefPermissionGroupForm form) {
-    authorizationService.checkAny(Role.EDIT, Role.ASSIGN_PERMISSION_GROUP);
     val role =
         roleRepository
             .findByIdOptional(form.roleId())
@@ -138,7 +128,6 @@ public class RoleApplicationService {
   }
 
   public List<RoleVO> getAllRoles() {
-    authorizationService.check(Role.VIEW);
     val roles = roleRepository.listAllWithPermissionGroups();
     if (roles == null || roles.isEmpty()) {
       return List.of();
@@ -164,12 +153,10 @@ public class RoleApplicationService {
   }
 
   public long countCode(String code) {
-    authorizationService.check(Role.VIEW);
     return roleRepository.countByCode(code);
   }
 
   public long countRole() {
-    authorizationService.check(Role.VIEW);
     return roleRepository.count();
   }
 

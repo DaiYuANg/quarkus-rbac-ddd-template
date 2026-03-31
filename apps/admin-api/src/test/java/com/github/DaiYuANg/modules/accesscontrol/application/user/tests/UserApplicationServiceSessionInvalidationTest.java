@@ -22,9 +22,7 @@ import com.github.DaiYuANg.modules.accesscontrol.application.mapper.UserVOMapper
 import com.github.DaiYuANg.modules.accesscontrol.application.support.AccessControlAuditSupport;
 import com.github.DaiYuANg.modules.accesscontrol.application.user.UserChecker;
 import com.github.DaiYuANg.modules.accesscontrol.application.user.UserApplicationService;
-import com.github.DaiYuANg.security.access.CurrentUserAccess;
 import com.github.DaiYuANg.security.auth.PasswordHasher;
-import com.github.DaiYuANg.security.authorization.AuthorizationService;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
@@ -40,7 +38,6 @@ class UserApplicationServiceSessionInvalidationTest {
 
     when(fixtures.userRepository.findByIdOptional(10L)).thenReturn(Optional.of(user));
     when(fixtures.passwordHasher.hash("new-pass")).thenReturn("hashed");
-    when(fixtures.currentUserAccess.currentUser()).thenReturn(Optional.empty());
 
     fixtures.service.updateUserPassword(10L, "new-pass");
 
@@ -136,8 +133,6 @@ class UserApplicationServiceSessionInvalidationTest {
     var roleRepository = mock(RoleRepository.class);
     var passwordHasher = mock(PasswordHasher.class);
     var auditSupport = mock(AccessControlAuditSupport.class);
-    var authorizationService = mock(AuthorizationService.class);
-    var currentUserAccess = mock(CurrentUserAccess.class);
     var permissionSnapshotStore = mock(PermissionSnapshotStore.class);
     var refreshTokenStore = mock(RefreshTokenStore.class);
     var userVOMapper = mock(UserVOMapper.class);
@@ -169,26 +164,17 @@ class UserApplicationServiceSessionInvalidationTest {
             roleRepository,
             passwordHasher,
             auditSupport,
-            authorizationService,
-            currentUserAccess,
             permissionSnapshotStore,
             refreshTokenStore,
             userVOMapper,
             userChecker);
-    return new Fixtures(
-        service,
-        userRepository,
-        passwordHasher,
-        currentUserAccess,
-        permissionSnapshotStore,
-        refreshTokenStore);
+    return new Fixtures(service, userRepository, passwordHasher, permissionSnapshotStore, refreshTokenStore);
   }
 
   private record Fixtures(
       UserApplicationService service,
       UserRepository userRepository,
       PasswordHasher passwordHasher,
-      CurrentUserAccess currentUserAccess,
       PermissionSnapshotStore permissionSnapshotStore,
       RefreshTokenStore refreshTokenStore) {}
 }

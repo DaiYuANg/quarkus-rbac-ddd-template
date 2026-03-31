@@ -17,8 +17,6 @@ import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UpdateP
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.PermissionGroupVO;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.PermissionVO;
 import com.github.DaiYuANg.modules.accesscontrol.application.support.AccessControlAuditSupport;
-import com.github.DaiYuANg.security.authorization.AuthorizationService;
-import com.github.DaiYuANg.security.authorization.RbacPermissionCodes.PermissionGroup;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -54,14 +52,12 @@ public class PermissionGroupApplicationService {
   private final PermissionCatalogStore catalogStore;
   private final EntityManager entityManager;
   private final AccessControlAuditSupport auditSupport;
-  private final AuthorizationService authorizationService;
   private final PermissionGroupVOMapper permissionGroupVOMapper;
   private final PermissionVOMapper permissionVOMapper;
   private final PermissionGroupChecker permissionGroupChecker;
 
   @Transactional
   public PermissionGroupVO createPermissionGroup(@NonNull PermissionGroupCreationForm form) {
-    authorizationService.check(PermissionGroup.ADD);
     permissionGroupChecker.ensureCreatable(form);
     val group = permissionGroupVOMapper.toEntity(form);
     repository.persist(group);
@@ -71,14 +67,12 @@ public class PermissionGroupApplicationService {
   }
 
   public Optional<PermissionGroupVO> getPermissionGroupById(@NonNull Long id) {
-    authorizationService.check(PermissionGroup.VIEW);
     return repository.findByIdOptional(id).map(this::toPermissionGroupVOWithCatalog);
   }
 
   @Transactional
   public PermissionGroupVO updatePermissionGroup(
       @NonNull Long id, @NonNull UpdatePermissionGroupForm form) {
-    authorizationService.check(PermissionGroup.EDIT);
     val group =
         repository
             .findByIdOptional(id)
@@ -93,7 +87,6 @@ public class PermissionGroupApplicationService {
 
   @Transactional
   public void deletePermissionGroup(@NonNull Long id) {
-    authorizationService.check(PermissionGroup.DELETE);
     val group =
         repository
             .findByIdOptional(id)
@@ -106,18 +99,15 @@ public class PermissionGroupApplicationService {
 
   public ApiPageResult<PermissionGroupVO> queryPermissionGroupPage(
       @NonNull PermissionGroupPageQuery query) {
-    authorizationService.check(PermissionGroup.VIEW);
     return ApiPageResult.map(repository.page(query), permissionGroupVOMapper::toProjectionVO);
   }
 
   public Optional<PermissionGroupVO> getPermissionGroupByName(@NonNull String name) {
-    authorizationService.check(PermissionGroup.VIEW);
     return repository.findByName(name).map(this::toPermissionGroupVOWithCatalog);
   }
 
   @Transactional
   public void assignPermissions(@NonNull PermissionGroupRefPermissionForm form) {
-    authorizationService.checkAny(PermissionGroup.EDIT, PermissionGroup.ASSIGN_PERMISSION);
     val group =
         repository
             .findByIdOptional(form.permissionGroupId())
@@ -141,7 +131,6 @@ public class PermissionGroupApplicationService {
   }
 
   public List<PermissionGroupVO> getAllPermissionGroups() {
-    authorizationService.check(PermissionGroup.VIEW);
     val groups = repository.listAll();
     if (groups == null || groups.isEmpty()) {
       return List.of();
@@ -160,7 +149,6 @@ public class PermissionGroupApplicationService {
 
   @Transactional
   public void bindPermissionsToGroup(Long targetGroupId, List<Long> permissionIds) {
-    authorizationService.checkAny(PermissionGroup.EDIT, PermissionGroup.ASSIGN_PERMISSION);
     if (permissionIds == null || permissionIds.isEmpty()) {
       return;
     }
@@ -205,12 +193,10 @@ public class PermissionGroupApplicationService {
   }
 
   public long countName(String name) {
-    authorizationService.check(PermissionGroup.VIEW);
     return repository.countByName(name);
   }
 
   public long count() {
-    authorizationService.check(PermissionGroup.VIEW);
     return repository.count();
   }
 

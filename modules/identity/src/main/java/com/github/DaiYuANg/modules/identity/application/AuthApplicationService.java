@@ -16,10 +16,13 @@ import com.github.DaiYuANg.modules.identity.application.port.AdminTokenIssuerPor
 import com.github.DaiYuANg.modules.identity.application.port.AuthenticationLifecyclePort;
 import com.github.DaiYuANg.modules.identity.application.profile.UserProfileResolutionService;
 import com.github.DaiYuANg.security.access.CurrentUserAccess;
-import com.github.DaiYuANg.security.auth.LoginAuthenticationManager;
 import com.github.DaiYuANg.security.auth.RefreshTokenAuthenticationRequest;
 import com.github.DaiYuANg.security.auth.UsernamePasswordAuthenticationRequest;
 import com.github.DaiYuANg.security.config.AuthSecurityConfig;
+import com.github.DaiYuANg.security.identity.AuthenticatedUser;
+import com.github.DaiYuANg.security.token.PrincipalAttributesSerializer;
+import io.quarkus.security.AuthenticationFailedException;
+import io.quarkus.security.identity.IdentityProviderManager;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Event;
 import jakarta.inject.Inject;
@@ -53,7 +56,7 @@ import lombok.val;
 @Slf4j
 public class AuthApplicationService {
   private final UserRepository userRepository;
-  private final LoginAuthenticationManager authenticationManager;
+  private final IdentityProviderManager identityProviderManager;
   private final AdminTokenIssuerPort tokenIssuer;
   private final LoginAttemptStore loginAttemptStore;
   private final AuthorityVersionStore authorityVersionStore;
@@ -64,6 +67,7 @@ public class AuthApplicationService {
   private final CurrentUserAccess currentUserAccess;
   private final UserProfileResolutionService userProfileResolutionService;
   private final MeResponseMapper meResponseMapper;
+  private final PrincipalAttributesSerializer principalAttributesSerializer;
 
   @Transactional
   public SystemAuthenticationToken login(@NonNull LoginRequest req) {
@@ -85,20 +89,20 @@ public class AuthApplicationService {
     }
     try {
       val result =
-          authenticationManager.authenticate(
-              new UsernamePasswordAuthenticationRequest(username, req.password()));
+          authenticate(
+              new UsernamePasswordAuthenticationRequest(username, req.password()),
+              ResultCode.USERNAME_OR_PASSWORD_INVALID);
       log.atDebug()
           .addKeyValue("username", username)
-          .addKeyValue("provider", result.providerId())
           .log("login success");
-      authenticationLifecycle.publishSnapshot(result.user());
+      authenticationLifecycle.publishSnapshot(result);
       loginAttemptStore.clear(username);
       loginAuditEvent.fireAsync(
           LoginAuditEvent.success(
               username,
               Objects.requireNonNullElse(snapshot.remoteIp(), ""),
               Objects.requireNonNullElse(snapshot.userAgent(), "")));
-      return tokenIssuer.issue(result.user());
+      return tokenIssuer.issue(result);
     } catch (BizException ex) {
       log.atDebug()
           .addKeyValue("username", username)
@@ -146,11 +150,12 @@ public class AuthApplicationService {
   public SystemAuthenticationToken refreshToken(@NonNull String refreshToken) {
     log.atDebug().log("refresh token attempt");
     val result =
-        authenticationManager.authenticate(new RefreshTokenAuthenticationRequest(refreshToken));
-    log.atDebug().addKeyValue("username", result.user().username()).log("refresh token success");
+        authenticate(
+            new RefreshTokenAuthenticationRequest(refreshToken), ResultCode.REFRESH_TOKEN_INVALID);
+    log.atDebug().addKeyValue("username", result.username()).log("refresh token success");
     authenticationLifecycle.revokeRefreshToken(refreshToken);
-    authenticationLifecycle.publishSnapshot(result.user());
-    return tokenIssuer.issue(result.user());
+    authenticationLifecycle.publishSnapshot(result);
+    return tokenIssuer.issue(result);
   }
 
   public String checkAuthorityVersion(@NonNull String username) {
@@ -197,6 +202,19 @@ public class AuthApplicationService {
     return authorityVersionStore.currentVersion()
         + ":"
         + UserDetailVo.encodeAuthorityKey(permissions, roleCodes);
+  }
+
+  private AuthenticatedUser authenticate(
+      @NonNull com.github.DaiYuANg.security.auth.LoginAuthenticationRequest request,
+      @NonNull ResultCode defaultFailureCode) {
+    try {
+      return principalAttributesSerializer.toAuthenticatedUser(
+          identityProviderManager.authenticateBlocking(request));
+    } catch (BizException ex) {
+      throw ex;
+    } catch (AuthenticationFailedException | IllegalArgumentException ex) {
+      throw new BizException(defaultFailureCode);
+    }
   }
 
   // DB permissions/roles are resolved via UserRepository queries to avoid N+1 lazy loads.

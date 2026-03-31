@@ -5,8 +5,6 @@ import com.github.DaiYuANg.cache.PermissionCatalogStore;
 import com.github.DaiYuANg.common.model.ApiPageResult;
 import com.github.DaiYuANg.modules.accesscontrol.application.mapper.PermissionVOMapper;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.PermissionVO;
-import com.github.DaiYuANg.security.authorization.AuthorizationService;
-import com.github.DaiYuANg.security.authorization.RbacPermissionCodes.Permission;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.List;
@@ -19,29 +17,24 @@ import lombok.val;
 public class PermissionApplicationService {
   private final PermissionCatalogStore catalogStore;
   private final PermissionCatalogLoader catalogLoader;
-  private final AuthorizationService authorizationService;
   private final PermissionVOMapper permissionVOMapper;
 
   public Optional<PermissionVO> getPermissionById(Long id) {
-    authorizationService.check(Permission.VIEW);
     ensureCatalogLoaded();
     return catalogStore.getById(id).map(permissionVOMapper::toCatalogVO);
   }
 
   public Optional<PermissionVO> getPermissionByName(String name) {
-    authorizationService.check(Permission.VIEW);
     ensureCatalogLoaded();
     return catalogStore.getByName(name).map(permissionVOMapper::toCatalogVO);
   }
 
   public List<PermissionVO> getAllPermissions() {
-    authorizationService.check(Permission.VIEW);
     ensureCatalogLoaded();
     return catalogStore.getAll().stream().map(permissionVOMapper::toCatalogVO).toList();
   }
 
   public ApiPageResult<PermissionVO> queryPermissionPage(PermissionPageQuery query) {
-    authorizationService.check(Permission.VIEW);
     ensureCatalogLoaded();
     val page =
         catalogStore.findPage(

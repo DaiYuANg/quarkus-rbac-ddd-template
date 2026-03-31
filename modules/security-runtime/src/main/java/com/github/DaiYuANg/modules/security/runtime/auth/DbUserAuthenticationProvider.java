@@ -1,14 +1,16 @@
 package com.github.DaiYuANg.modules.security.runtime.auth;
 
 import com.github.DaiYuANg.common.constant.ResultCode;
+import com.github.DaiYuANg.common.exception.BizException;
 import com.github.DaiYuANg.identity.constant.UserStatus;
 import com.github.DaiYuANg.identity.repository.UserRepository;
-import com.github.DaiYuANg.security.auth.AuthenticationProviderResult;
-import com.github.DaiYuANg.security.auth.AuthenticationResult;
-import com.github.DaiYuANg.security.auth.LoginAuthenticationProvider;
-import com.github.DaiYuANg.security.auth.LoginAuthenticationRequest;
 import com.github.DaiYuANg.security.auth.PasswordHasher;
 import com.github.DaiYuANg.security.auth.UsernamePasswordAuthenticationRequest;
+import com.github.DaiYuANg.security.identity.QuarkusSecurityIdentityFactory;
+import io.quarkus.security.identity.AuthenticationRequestContext;
+import io.quarkus.security.identity.IdentityProvider;
+import io.quarkus.security.identity.SecurityIdentity;
+import io.smallrye.mutiny.Uni;
 import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -21,23 +23,24 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 @Slf4j
 public class DbUserAuthenticationProvider
-    implements LoginAuthenticationProvider<UsernamePasswordAuthenticationRequest> {
+    implements IdentityProvider<UsernamePasswordAuthenticationRequest> {
   private final UserRepository userRepository;
   private final PasswordHasher passwordHasher;
   private final AdminSecurityPrincipalAssembler principalAssembler;
+  private final QuarkusSecurityIdentityFactory securityIdentityFactory;
 
   @Override
-  public String providerId() {
-    return "db-user";
+  public Class<UsernamePasswordAuthenticationRequest> getRequestType() {
+    return UsernamePasswordAuthenticationRequest.class;
   }
 
   @Override
-  public boolean supports(LoginAuthenticationRequest request) {
-    return request instanceof UsernamePasswordAuthenticationRequest;
+  public Uni<SecurityIdentity> authenticate(
+      @NonNull UsernamePasswordAuthenticationRequest request, AuthenticationRequestContext context) {
+    return context.runBlocking(() -> authenticateBlocking(request));
   }
 
-  @Override
-  public AuthenticationProviderResult authenticate(
+  private SecurityIdentity authenticateBlocking(
       @NonNull UsernamePasswordAuthenticationRequest request) {
     return userRepository
         .findByUsername(request.username())
@@ -47,27 +50,25 @@ public class DbUserAuthenticationProvider
                 log.atDebug()
                     .addKeyValue("username", request.username())
                     .log("db-user: password mismatch");
-                return AuthenticationProviderResult.failure(
-                    ResultCode.USERNAME_OR_PASSWORD_INVALID);
+                throw new BizException(ResultCode.USERNAME_OR_PASSWORD_INVALID);
               }
               if (user.userStatus != UserStatus.ENABLED) {
                 log.atDebug()
                     .addKeyValue("username", request.username())
                     .log("db-user: user disabled");
-                return AuthenticationProviderResult.failure(ResultCode.USER_ACCESS_BLOCKED);
+                throw new BizException(ResultCode.USER_ACCESS_BLOCKED);
               }
               log.atDebug()
                   .addKeyValue("username", request.username())
                   .log("db-user: authenticated");
-              return AuthenticationProviderResult.success(
-                  new AuthenticationResult(principalAssembler.fromDbUser(user), providerId()));
+              return securityIdentityFactory.create(principalAssembler.fromDbUser(user));
             })
         .orElseGet(
             () -> {
               log.atDebug()
                   .addKeyValue("username", request.username())
                   .log("db-user: user not found, abstain");
-              return AuthenticationProviderResult.abstain();
+              return null;
             });
   }
 }

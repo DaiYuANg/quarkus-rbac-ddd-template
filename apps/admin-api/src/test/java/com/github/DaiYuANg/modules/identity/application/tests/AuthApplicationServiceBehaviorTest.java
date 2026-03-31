@@ -25,12 +25,14 @@ import com.github.DaiYuANg.modules.identity.application.profile.UserProfileResol
 import com.github.DaiYuANg.modules.security.runtime.auth.AdminAuthenticationLifecycle;
 import com.github.DaiYuANg.modules.security.runtime.auth.AdminTokenIssuer;
 import com.github.DaiYuANg.security.access.CurrentUserAccess;
-import com.github.DaiYuANg.security.auth.AuthenticationResult;
-import com.github.DaiYuANg.security.auth.LoginAuthenticationManager;
 import com.github.DaiYuANg.security.authorization.RbacPermissionCodes.User;
 import com.github.DaiYuANg.security.config.AuthSecurityConfig;
 import com.github.DaiYuANg.security.identity.AuthenticatedUser;
 import com.github.DaiYuANg.security.identity.CurrentAuthenticatedUser;
+import io.quarkus.security.AuthenticationFailedException;
+import com.github.DaiYuANg.security.token.PrincipalAttributesSerializer;
+import io.quarkus.security.identity.IdentityProviderManager;
+import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.enterprise.event.Event;
 import java.util.Map;
 import java.util.Optional;
@@ -49,7 +51,6 @@ class AuthApplicationServiceBehaviorTest {
     var user =
         new AuthenticatedUser(
             "alice", "Alice", "ADMIN", Set.of("admin"), Set.of(User.VIEW), Map.of(), 1L);
-    var authResult = new AuthenticationResult(user, "refresh-token");
     var issued =
         SystemAuthenticationTokenBuilder.builder()
             .accessToken("access")
@@ -60,7 +61,7 @@ class AuthApplicationServiceBehaviorTest {
             .build();
 
     var userRepository = mock(UserRepository.class);
-    var authenticationManager = mock(LoginAuthenticationManager.class);
+    var identityProviderManager = mock(IdentityProviderManager.class);
     var tokenIssuer = mock(AdminTokenIssuer.class);
     var loginAttemptStore = mock(LoginAttemptStore.class);
     var authorityVersionStore = mock(AuthorityVersionStore.class);
@@ -71,14 +72,17 @@ class AuthApplicationServiceBehaviorTest {
     var currentUserAccess = mock(CurrentUserAccess.class);
     var userProfileResolutionService = mock(UserProfileResolutionService.class);
     var meResponseMapper = mock(MeResponseMapper.class);
+    var principalAttributesSerializer = mock(PrincipalAttributesSerializer.class);
+    var securityIdentity = mock(SecurityIdentity.class);
 
-    when(authenticationManager.authenticate(any())).thenReturn(authResult);
+    when(identityProviderManager.authenticateBlocking(any())).thenReturn(securityIdentity);
+    when(principalAttributesSerializer.toAuthenticatedUser(securityIdentity)).thenReturn(user);
     when(tokenIssuer.issue(user)).thenReturn(issued);
 
     var service =
         new AuthApplicationService(
             userRepository,
-            authenticationManager,
+            identityProviderManager,
             tokenIssuer,
             loginAttemptStore,
             authorityVersionStore,
@@ -88,7 +92,8 @@ class AuthApplicationServiceBehaviorTest {
             lifecycle,
             currentUserAccess,
             userProfileResolutionService,
-            meResponseMapper);
+            meResponseMapper,
+            principalAttributesSerializer);
 
     var actual = service.refreshToken("refresh-old");
 
@@ -120,7 +125,7 @@ class AuthApplicationServiceBehaviorTest {
     var service =
         new AuthApplicationService(
             mock(UserRepository.class),
-            mock(LoginAuthenticationManager.class),
+            mock(IdentityProviderManager.class),
             mock(AdminTokenIssuer.class),
             mock(LoginAttemptStore.class),
             mock(AuthorityVersionStore.class),
@@ -130,7 +135,8 @@ class AuthApplicationServiceBehaviorTest {
             mock(AdminAuthenticationLifecycle.class),
             currentUserAccess,
             userProfileResolutionService,
-            mock(MeResponseMapper.class));
+            mock(MeResponseMapper.class),
+            mock(PrincipalAttributesSerializer.class));
 
     assertSame(expected, service.profile("alice"));
   }
@@ -144,7 +150,7 @@ class AuthApplicationServiceBehaviorTest {
     var service =
         new AuthApplicationService(
             mock(UserRepository.class),
-            mock(LoginAuthenticationManager.class),
+            mock(IdentityProviderManager.class),
             mock(AdminTokenIssuer.class),
             mock(LoginAttemptStore.class),
             mock(AuthorityVersionStore.class),
@@ -154,7 +160,8 @@ class AuthApplicationServiceBehaviorTest {
             mock(AdminAuthenticationLifecycle.class),
             currentUserAccess,
             mock(UserProfileResolutionService.class),
-            mock(MeResponseMapper.class));
+            mock(MeResponseMapper.class),
+            mock(PrincipalAttributesSerializer.class));
 
     var ex = assertThrows(BizException.class, () -> service.profile("bob"));
     assertEquals(ResultCode.FORBIDDEN, ex.getResultCode());
@@ -168,7 +175,7 @@ class AuthApplicationServiceBehaviorTest {
     var service =
         new AuthApplicationService(
             mock(UserRepository.class),
-            mock(LoginAuthenticationManager.class),
+            mock(IdentityProviderManager.class),
             mock(AdminTokenIssuer.class),
             mock(LoginAttemptStore.class),
             mock(AuthorityVersionStore.class),
@@ -178,9 +185,36 @@ class AuthApplicationServiceBehaviorTest {
             mock(AdminAuthenticationLifecycle.class),
             currentUserAccess,
             mock(UserProfileResolutionService.class),
-            mock(MeResponseMapper.class));
+            mock(MeResponseMapper.class),
+            mock(PrincipalAttributesSerializer.class));
 
     var ex = assertThrows(BizException.class, () -> service.profile("any"));
     assertEquals(ResultCode.UNAUTHORIZED, ex.getResultCode());
+  }
+
+  @Test
+  void refreshMapsAuthenticationFailureToRefreshTokenInvalid() {
+    var identityProviderManager = mock(IdentityProviderManager.class);
+    when(identityProviderManager.authenticateBlocking(any()))
+        .thenThrow(new AuthenticationFailedException());
+
+    var service =
+        new AuthApplicationService(
+            mock(UserRepository.class),
+            identityProviderManager,
+            mock(AdminTokenIssuer.class),
+            mock(LoginAttemptStore.class),
+            mock(AuthorityVersionStore.class),
+            loginEventMock(),
+            mock(AuditSnapshotProvider.class),
+            mock(AuthSecurityConfig.class),
+            mock(AdminAuthenticationLifecycle.class),
+            mock(CurrentUserAccess.class),
+            mock(UserProfileResolutionService.class),
+            mock(MeResponseMapper.class),
+            mock(PrincipalAttributesSerializer.class));
+
+    var ex = assertThrows(BizException.class, () -> service.refreshToken("refresh-old"));
+    assertEquals(ResultCode.REFRESH_TOKEN_INVALID, ex.getResultCode());
   }
 }

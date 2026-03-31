@@ -70,7 +70,7 @@ public class PermissionGroupResource {
 
   @POST
   @Path("/assign/permission")
-  @PermissionsAllowed(PermissionGroup.EDIT)
+  @PermissionsAllowed({PermissionGroup.EDIT, PermissionGroup.ASSIGN_PERMISSION})
   public Result<String, Void> assignPermissions(@Valid PermissionGroupRefPermissionForm form) {
     permissionGroupApplicationService.assignPermissions(form);
     return Results.ok();

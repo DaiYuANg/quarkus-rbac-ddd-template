@@ -69,7 +69,7 @@ public class RoleResource {
 
   @POST
   @Path("/assign/permission-group")
-  @PermissionsAllowed(Role.EDIT)
+  @PermissionsAllowed({Role.EDIT, Role.ASSIGN_PERMISSION_GROUP})
   public Result<String, Void> assignPermissionGroups(@Valid RoleRefPermissionGroupForm form) {
     roleApplicationService.assignPermissionGroups(form);
     return Results.ok();
