@@ -7,6 +7,7 @@ import com.github.DaiYuANg.cache.AuthorityVersionStore;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.time.Instant;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 
@@ -21,14 +22,14 @@ public class AccessControlAuditSupport {
     return authorityVersionStore.bumpGlobalVersion();
   }
 
-  public void record(String module, String action, String target, boolean success, String detail) {
+  public void record(@NonNull AccessControlAuditCommand command) {
     val snapshot = auditSnapshotProvider.snapshot();
     val log = new SysOperationLog();
-    log.module = module;
-    log.action = action;
-    log.target = target;
-    log.success = success;
-    log.detail = detail;
+    log.module = command.module();
+    log.action = command.action();
+    log.target = command.target();
+    log.success = command.success();
+    log.detail = command.detail();
     log.operator = snapshot.actorKey();
     log.operatorDisplayName = snapshot.actorDisplayName();
     log.operatorType = snapshot.actorType();

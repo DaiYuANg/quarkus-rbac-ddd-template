@@ -3,13 +3,12 @@ package com.github.DaiYuANg.modules.identity.application.profile.tests;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.github.DaiYuANg.cache.AuthorityVersionStore;
 import com.github.DaiYuANg.modules.identity.application.dto.response.UserDetailVoBuilder;
+import com.github.DaiYuANg.modules.identity.application.mapper.CurrentUserProfileSource;
 import com.github.DaiYuANg.modules.identity.application.mapper.UserDetailVoMapper;
 import com.github.DaiYuANg.modules.identity.application.profile.SuperAdminProfileProvider;
 import com.github.DaiYuANg.security.identity.CurrentAuthenticatedUser;
@@ -24,20 +23,19 @@ class SuperAdminProfileProviderTest {
     var authority = mock(AuthorityVersionStore.class);
     var mapper = mock(UserDetailVoMapper.class);
     when(authority.currentVersion()).thenReturn("v9");
-    when(mapper.fromCurrentUser(any(), anyString(), any(), any(), anyString(), any()))
+    when(mapper.fromCurrentUser(any(CurrentUserProfileSource.class)))
         .thenAnswer(
-            invocation ->
-                UserDetailVoBuilder.builder()
-                    .userid(invocation.getArgument(5, Long.class))
-                    .username(
-                        invocation
-                            .getArgument(0, CurrentAuthenticatedUser.class)
-                            .username())
-                    .nickname(invocation.getArgument(1, String.class))
-                    .permissions(invocation.getArgument(2, Set.class))
-                    .roleCodes(invocation.getArgument(3, Set.class))
-                    .authorityKey(invocation.getArgument(4, String.class))
-                    .build());
+            invocation -> {
+              var source = invocation.getArgument(0, CurrentUserProfileSource.class);
+              return UserDetailVoBuilder.builder()
+                  .userid(source.userId())
+                  .username(source.user().username())
+                  .nickname(source.nickname())
+                  .permissions(source.permissions())
+                  .roleCodes(source.roleCodes())
+                  .authorityKey(source.authorityKey())
+                  .build();
+            });
     var provider = new SuperAdminProfileProvider(authority, mapper);
     var current =
         new CurrentAuthenticatedUser(

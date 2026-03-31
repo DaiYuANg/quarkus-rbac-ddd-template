@@ -20,16 +20,10 @@ public interface UserDetailVoMapper {
       SysUser user, Set<String> permissions, Set<String> roleCodes, String authorityKey);
 
   @Mapping(target = "userid", source = "userId")
-  @Mapping(target = "username", source = "user.username")
-  @Mapping(target = "nickname", source = "nickname")
-  @Mapping(target = "permissions", source = "permissions")
-  @Mapping(target = "roleCodes", source = "roleCodes")
-  @Mapping(target = "authorityKey", source = "authorityKey")
-  UserDetailVo fromCurrentUser(
-      CurrentAuthenticatedUser user,
-      String nickname,
-      Set<String> permissions,
-      Set<String> roleCodes,
-      String authorityKey,
-      Long userId);
+  @Mapping(target = "username", source = "source.user.username")
+  @Mapping(target = "nickname", source = "source.nickname")
+  @Mapping(target = "permissions", source = "source.permissions")
+  @Mapping(target = "roleCodes", source = "source.roleCodes")
+  @Mapping(target = "authorityKey", source = "source.authorityKey")
+  UserDetailVo fromCurrentUser(CurrentUserProfileSource source);
 }

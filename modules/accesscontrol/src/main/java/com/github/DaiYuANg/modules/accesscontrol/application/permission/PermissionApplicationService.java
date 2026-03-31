@@ -1,6 +1,7 @@
 package com.github.DaiYuANg.modules.accesscontrol.application.permission;
 
 import com.github.DaiYuANg.accesscontrol.query.PermissionPageQuery;
+import com.github.DaiYuANg.cache.PermissionCatalogQueryBuilder;
 import com.github.DaiYuANg.cache.PermissionCatalogStore;
 import com.github.DaiYuANg.common.model.ApiPageResult;
 import com.github.DaiYuANg.modules.accesscontrol.application.mapper.PermissionVOMapper;
@@ -38,16 +39,18 @@ public class PermissionApplicationService {
     ensureCatalogLoaded();
     val page =
         catalogStore.findPage(
-            query.getKeyword(),
-            query.getName(),
-            query.getCode(),
-            query.getResource(),
-            query.getAction(),
-            query.getGroupCode(),
-            query.getSortBy(),
-            query.getSortDirection(),
-            query.offset(),
-            query.getPageSize());
+            PermissionCatalogQueryBuilder.builder()
+                .keyword(query.getKeyword())
+                .name(query.getName())
+                .code(query.getCode())
+                .resource(query.getResource())
+                .action(query.getAction())
+                .groupCode(query.getGroupCode())
+                .sortBy(query.getSortBy())
+                .sortDirection(query.getSortDirection())
+                .offset(query.offset())
+                .limit(query.getPageSize())
+                .build());
     return ApiPageResult.of(
         page.total(),
         query.getPageNum(),

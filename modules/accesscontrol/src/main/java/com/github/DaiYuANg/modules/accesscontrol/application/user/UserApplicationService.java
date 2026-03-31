@@ -15,6 +15,7 @@ import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UpdateU
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UserCreationForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UserRefRoleForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.UserVO;
+import com.github.DaiYuANg.modules.accesscontrol.application.support.AccessControlAuditCommandBuilder;
 import com.github.DaiYuANg.modules.accesscontrol.application.support.AccessControlAuditSupport;
 import com.github.DaiYuANg.security.auth.PasswordHasher;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -61,7 +62,14 @@ public class UserApplicationService {
     val user = userVOMapper.toEntity(form, passwordHasher);
     userRepository.persist(user);
     auditSupport.bumpGlobalVersion();
-    auditSupport.record("user", "create", form.username(), true, "create user");
+    auditSupport.record(
+        AccessControlAuditCommandBuilder.builder()
+            .module("user")
+            .action("create")
+            .target(form.username())
+            .success(true)
+            .detail("create user")
+            .build());
     return userVOMapper.toVO(user);
   }
 
@@ -76,7 +84,14 @@ public class UserApplicationService {
     refreshTokenStore.deleteByUserId(user.id);
     refreshTokenStore.deleteByUsername(user.username);
     auditSupport.bumpGlobalVersion();
-    auditSupport.record("user", "change-password", String.valueOf(id), true, "change password");
+    auditSupport.record(
+        AccessControlAuditCommandBuilder.builder()
+            .module("user")
+            .action("change-password")
+            .target(String.valueOf(id))
+            .success(true)
+            .detail("change password")
+            .build());
   }
 
   public Optional<UserVO> getUserById(@NonNull Long id) {
@@ -111,7 +126,14 @@ public class UserApplicationService {
       refreshTokenStore.deleteByUsername(user.username);
     }
     auditSupport.bumpGlobalVersion();
-    auditSupport.record("user", "update", user.username, true, "update user");
+    auditSupport.record(
+        AccessControlAuditCommandBuilder.builder()
+            .module("user")
+            .action("update")
+            .target(user.username)
+            .success(true)
+            .detail("update user")
+            .build());
     // Avoid N+1 lazy loads when mapping nested RBAC graph in UserVO.
     return userRepository
         .findByIdWithRbacGraph(user.id)
@@ -130,7 +152,14 @@ public class UserApplicationService {
     permissionSnapshotStore.delete(id);
     userRepository.deleteById(id);
     auditSupport.bumpGlobalVersion();
-    auditSupport.record("user", "delete", String.valueOf(id), true, "delete user");
+    auditSupport.record(
+        AccessControlAuditCommandBuilder.builder()
+            .module("user")
+            .action("delete")
+            .target(String.valueOf(id))
+            .success(true)
+            .detail("delete user")
+            .build());
   }
 
   public Optional<UserVO> getUserByUsername(@NonNull String username) {
@@ -150,7 +179,13 @@ public class UserApplicationService {
     permissionSnapshotStore.delete(user.id);
     auditSupport.bumpGlobalVersion();
     auditSupport.record(
-        "user", "assign-role", String.valueOf(form.userId()), true, "assign user roles");
+        AccessControlAuditCommandBuilder.builder()
+            .module("user")
+            .action("assign-role")
+            .target(String.valueOf(form.userId()))
+            .success(true)
+            .detail("assign user roles")
+            .build());
   }
 
   @Transactional
@@ -166,7 +201,14 @@ public class UserApplicationService {
       refreshTokenStore.deleteByUsername(user.username);
     }
     auditSupport.bumpGlobalVersion();
-    auditSupport.record("user", "status", String.valueOf(id), true, "update user status");
+    auditSupport.record(
+        AccessControlAuditCommandBuilder.builder()
+            .module("user")
+            .action("status")
+            .target(String.valueOf(id))
+            .success(true)
+            .detail("update user status")
+            .build());
   }
 
   public long countEmail(String email) {

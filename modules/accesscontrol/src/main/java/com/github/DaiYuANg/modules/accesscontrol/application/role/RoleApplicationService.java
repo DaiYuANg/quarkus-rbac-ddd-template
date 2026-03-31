@@ -16,6 +16,7 @@ import com.github.DaiYuANg.modules.accesscontrol.application.mapper.PermissionGr
 import com.github.DaiYuANg.modules.accesscontrol.application.mapper.PermissionVOMapper;
 import com.github.DaiYuANg.modules.accesscontrol.application.mapper.RoleVOMapper;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.RoleVO;
+import com.github.DaiYuANg.modules.accesscontrol.application.support.AccessControlAuditCommandBuilder;
 import com.github.DaiYuANg.modules.accesscontrol.application.support.AccessControlAuditSupport;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -62,7 +63,14 @@ public class RoleApplicationService {
     val role = roleVOMapper.toEntity(form);
     roleRepository.persist(role);
     auditSupport.bumpGlobalVersion();
-    auditSupport.record("role", "create", form.code(), true, "create role");
+    auditSupport.record(
+        AccessControlAuditCommandBuilder.builder()
+            .module("role")
+            .action("create")
+            .target(form.code())
+            .success(true)
+            .detail("create role")
+            .build());
     return toRoleVOWithCatalog(role);
   }
 
@@ -88,7 +96,14 @@ public class RoleApplicationService {
         .findAllByIds(form.permissionGroupIds()));
     }
     auditSupport.bumpGlobalVersion();
-    auditSupport.record("role", "update", String.valueOf(id), true, "update role");
+    auditSupport.record(
+        AccessControlAuditCommandBuilder.builder()
+            .module("role")
+            .action("update")
+            .target(String.valueOf(id))
+            .success(true)
+            .detail("update role")
+            .build());
     return toRoleVOWithCatalog(role);
   }
 
@@ -100,7 +115,14 @@ public class RoleApplicationService {
             .orElseThrow(() -> new BizException(ResultCode.DATA_NOT_FOUND));
     roleRepository.delete(role);
     auditSupport.bumpGlobalVersion();
-    auditSupport.record("role", "delete", String.valueOf(id), true, "delete role");
+    auditSupport.record(
+        AccessControlAuditCommandBuilder.builder()
+            .module("role")
+            .action("delete")
+            .target(String.valueOf(id))
+            .success(true)
+            .detail("delete role")
+            .build());
   }
 
   public Optional<RoleVO> getRoleByName(@NonNull String name) {
@@ -120,11 +142,13 @@ public class RoleApplicationService {
     }
     auditSupport.bumpGlobalVersion();
     auditSupport.record(
-        "role",
-        "assign-permission-group",
-        String.valueOf(form.roleId()),
-        true,
-        "assign permission groups");
+        AccessControlAuditCommandBuilder.builder()
+            .module("role")
+            .action("assign-permission-group")
+            .target(String.valueOf(form.roleId()))
+            .success(true)
+            .detail("assign permission groups")
+            .build());
   }
 
   public List<RoleVO> getAllRoles() {

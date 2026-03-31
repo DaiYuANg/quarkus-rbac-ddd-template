@@ -204,29 +204,19 @@ public class PermissionCatalogStore {
   }
 
   /** Filter, sort and paginate in memory. Matches PermissionRepository.page() semantics. */
-  public PermissionCatalogPage findPage(
-      String keyword,
-      String name,
-      String code,
-      String resource,
-      String action,
-      String groupCode,
-      String sortBy,
-      String sortDirection,
-      int offset,
-      int limit) {
+  public PermissionCatalogPage findPage(@NonNull PermissionCatalogQuery query) {
     return PermissionCatalogSearchSupport.findPage(
         getAll(),
-        keyword,
-        name,
-        code,
-        resource,
-        action,
-        groupCode,
-        sortBy,
-        sortDirection,
-        offset,
-        limit);
+        query.keyword(),
+        query.name(),
+        query.code(),
+        query.resource(),
+        query.action(),
+        query.groupCode(),
+        query.sortBy(),
+        query.sortDirection(),
+        query.offset(),
+        query.limit());
   }
 
   /** Returns true if catalog has any entries (for empty-catalog fallback check). */

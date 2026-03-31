@@ -16,6 +16,7 @@ import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.Permiss
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UpdatePermissionGroupForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.PermissionGroupVO;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.PermissionVO;
+import com.github.DaiYuANg.modules.accesscontrol.application.support.AccessControlAuditCommandBuilder;
 import com.github.DaiYuANg.modules.accesscontrol.application.support.AccessControlAuditSupport;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -62,7 +63,14 @@ public class PermissionGroupApplicationService {
     val group = permissionGroupVOMapper.toEntity(form);
     repository.persist(group);
     auditSupport.bumpGlobalVersion();
-    auditSupport.record("permission-group", "create", form.name(), true, "create permission group");
+    auditSupport.record(
+        AccessControlAuditCommandBuilder.builder()
+            .module("permission-group")
+            .action("create")
+            .target(form.name())
+            .success(true)
+            .detail("create permission group")
+            .build());
     return toPermissionGroupVOWithCatalog(group);
   }
 
@@ -81,7 +89,13 @@ public class PermissionGroupApplicationService {
     permissionGroupVOMapper.updateEntity(form, group);
     auditSupport.bumpGlobalVersion();
     auditSupport.record(
-        "permission-group", "update", String.valueOf(id), true, "update permission group");
+        AccessControlAuditCommandBuilder.builder()
+            .module("permission-group")
+            .action("update")
+            .target(String.valueOf(id))
+            .success(true)
+            .detail("update permission group")
+            .build());
     return toPermissionGroupVOWithCatalog(group);
   }
 
@@ -94,7 +108,13 @@ public class PermissionGroupApplicationService {
     repository.delete(group);
     auditSupport.bumpGlobalVersion();
     auditSupport.record(
-        "permission-group", "delete", String.valueOf(id), true, "delete permission group");
+        AccessControlAuditCommandBuilder.builder()
+            .module("permission-group")
+            .action("delete")
+            .target(String.valueOf(id))
+            .success(true)
+            .detail("delete permission group")
+            .build());
   }
 
   public ApiPageResult<PermissionGroupVO> queryPermissionGroupPage(
@@ -123,11 +143,13 @@ public class PermissionGroupApplicationService {
     repository.replacePermissionRefs(group.id, ids);
     auditSupport.bumpGlobalVersion();
     auditSupport.record(
-        "permission-group",
-        "assign-permission",
-        String.valueOf(form.permissionGroupId()),
-        true,
-        "assign permissions");
+        AccessControlAuditCommandBuilder.builder()
+            .module("permission-group")
+            .action("assign-permission")
+            .target(String.valueOf(form.permissionGroupId()))
+            .success(true)
+            .detail("assign permissions")
+            .build());
   }
 
   public List<PermissionGroupVO> getAllPermissionGroups() {
@@ -185,11 +207,13 @@ public class PermissionGroupApplicationService {
     }
     auditSupport.bumpGlobalVersion();
     auditSupport.record(
-        "permission-group",
-        targetGroupId == null ? "unbind-permission" : "bind-permission",
-        String.valueOf(targetGroupId),
-        true,
-        "bind permissions by groupId");
+        AccessControlAuditCommandBuilder.builder()
+            .module("permission-group")
+            .action(targetGroupId == null ? "unbind-permission" : "bind-permission")
+            .target(String.valueOf(targetGroupId))
+            .success(true)
+            .detail("bind permissions by groupId")
+            .build());
   }
 
   public long countName(String name) {
