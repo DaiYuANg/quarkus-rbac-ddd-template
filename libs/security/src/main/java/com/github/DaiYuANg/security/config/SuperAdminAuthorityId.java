@@ -12,7 +12,7 @@ import org.apache.commons.lang3.StringUtils;
  * follow the same Valkey layout as database users.
  */
 @UtilityClass
-public final class SuperAdminAuthorityId {
+public class SuperAdminAuthorityId {
 
   /** Deterministic negative long derived from username; stable across JVM restarts. */
   public long forUsername(@NonNull String username) {

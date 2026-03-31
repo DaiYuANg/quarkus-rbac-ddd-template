@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Issues JWTs for authenticated principals.
@@ -34,7 +35,7 @@ import lombok.val;
 public class JwtTokenService {
   private final AuthSecurityConfig authSecurityConfig;
 
-  public String generate(AuthenticatedUser user, String authorityVersion) {
+  public String generate(@NonNull AuthenticatedUser user, String authorityVersion) {
     val builder =
         Jwt.subject(user.username())
             .groups(user.permissions())

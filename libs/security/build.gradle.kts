@@ -8,5 +8,4 @@ dependencies {
   api(libs.quarkus.smallrye.jwt)
   api(libs.quarkus.smallrye.jwt.build)
   api(libs.quarkus.elytron.security.common)
-//  api(libs.microprofile.config)
 }
