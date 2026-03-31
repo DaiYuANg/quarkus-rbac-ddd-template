@@ -11,11 +11,11 @@ flowchart TD
   client[Client]
   authResource[AuthResource / MobileAuthResource]
   authApp[AuthApplicationService]
-  loginMgr[LoginAuthenticationManager]
+  idManager[IdentityProviderManager]
   superAdmin[SuperAdminAuthenticationProvider]
   dbUser[DbUserAuthenticationProvider]
   refreshProvider[AdminRefreshTokenAuthenticationProvider]
-  tokenIssuer[JwtAdminTokenIssuer]
+  tokenIssuer[AdminTokenIssuerPort / JwtAdminTokenIssuer]
   lifecycle[AdminAuthenticationLifecycle]
   jwt[JwtTokenService]
   refreshStore[(RefreshTokenStore / Redis)]
@@ -24,16 +24,16 @@ flowchart TD
   jwtReq[Quarkus JWT / SecurityIdentity]
   augmentor[AdminPermissionSecurityIdentityAugmentor]
   snapshotLoader[AdminPermissionSnapshotLoader]
-  authz[DefaultAuthorizationService]
+  endpointAuthz[@PermissionsAllowed / @PermissionChecker]
   postgres[(PostgreSQL)]
   catalog[(PermissionCatalogStore / Redis)]
 
   client --> authResource
   authResource --> authApp
-  authApp --> loginMgr
-  loginMgr --> superAdmin
-  loginMgr --> dbUser
-  loginMgr --> refreshProvider
+  authApp --> idManager
+  idManager --> superAdmin
+  idManager --> dbUser
+  idManager --> refreshProvider
 
   superAdmin --> catalog
   dbUser --> postgres
@@ -55,12 +55,12 @@ flowchart TD
   snapshotLoader --> postgres
   snapshotLoader --> catalog
   snapshotLoader --> authorityVersion
-  augmentor --> authz
+  augmentor --> endpointAuthz
 ```
 
 ### Current semantics
 
-- The login provider chain has three branches:
+- Quarkus `IdentityProviderManager` fans into three authentication branches:
   - `super-admin`
   - database user
   - refresh token
@@ -74,14 +74,14 @@ flowchart TD
 sequenceDiagram
   participant C as Client
   participant A as AuthApplicationService
-  participant P as Provider Chain
+  participant P as IdentityProviderManager
   participant PG as PostgreSQL
   participant PC as PermissionCatalogStore
   participant AV as AuthorityVersionStore
   participant PS as PermissionSnapshotStore
   participant RT as RefreshTokenStore
   participant AUG as SecurityIdentityAugmentor
-  participant AZ as AuthorizationService
+  participant EP as Quarkus endpoint authorization
 
   C->>A: login(username/password)
   A->>P: authenticate(...)
@@ -106,8 +106,8 @@ sequenceDiagram
     AUG->>AV: read current authorityVersion
     AUG->>PS: save refreshed snapshot
   end
-  AUG-->>AZ: CurrentAuthenticatedUser
-  AZ-->>C: allow / forbid
+  AUG-->>EP: enriched SecurityIdentity
+  EP-->>C: allow / forbid
 ```
 
 ### Data boundaries

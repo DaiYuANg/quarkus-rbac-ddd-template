@@ -1,5 +1,6 @@
 package com.github.DaiYuANg.cache;
 
+import com.github.DaiYuANg.cache.config.AuthCacheKeyConfig;
 import io.quarkus.redis.datasource.RedisDataSource;
 import io.quarkus.redis.datasource.keys.KeyCommands;
 import io.quarkus.redis.datasource.value.ValueCommands;
@@ -7,16 +8,19 @@ import jakarta.enterprise.context.ApplicationScoped;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
+import lombok.NonNull;
 
 @ApplicationScoped
 public class LoginAttemptStore {
 
   private final ValueCommands<String, String> valueCommands;
   private final KeyCommands<String> keyCommands;
+  private final AuthCacheKeyConfig authCacheKeyConfig;
 
-  public LoginAttemptStore(RedisDataSource ds) {
+  public LoginAttemptStore(@NonNull RedisDataSource ds, @NonNull AuthCacheKeyConfig authCacheKeyConfig) {
     this.valueCommands = ds.value(String.class);
     this.keyCommands = ds.key();
+    this.authCacheKeyConfig = authCacheKeyConfig;
   }
 
   public boolean isLocked(String username) {
@@ -55,10 +59,10 @@ public class LoginAttemptStore {
   }
 
   private String failureKey(String username) {
-    return "rbac-auth:login:failure:" + username;
+    return authCacheKeyConfig.loginFailureKey(username);
   }
 
   private String lockKey(String username) {
-    return "rbac-auth:login:lock:" + username;
+    return authCacheKeyConfig.loginLockKey(username);
   }
 }

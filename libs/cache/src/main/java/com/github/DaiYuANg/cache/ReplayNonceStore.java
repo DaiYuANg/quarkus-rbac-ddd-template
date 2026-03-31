@@ -1,5 +1,6 @@
 package com.github.DaiYuANg.cache;
 
+import com.github.DaiYuANg.cache.config.AuthCacheKeyConfig;
 import io.quarkus.redis.datasource.RedisDataSource;
 import io.quarkus.redis.datasource.keys.KeyCommands;
 import io.quarkus.redis.datasource.value.ValueCommands;
@@ -17,14 +18,14 @@ import java.util.HexFormat;
 @ApplicationScoped
 public class ReplayNonceStore {
 
-  private static final String KEY_PREFIX = "replay:nonce:";
-
   private final ValueCommands<String, String> valueCommands;
   private final KeyCommands<String> keyCommands;
+  private final AuthCacheKeyConfig authCacheKeyConfig;
 
-  public ReplayNonceStore(RedisDataSource redis) {
+  public ReplayNonceStore(RedisDataSource redis, AuthCacheKeyConfig authCacheKeyConfig) {
     this.valueCommands = redis.value(String.class);
     this.keyCommands = redis.key();
+    this.authCacheKeyConfig = authCacheKeyConfig;
   }
 
   /**
@@ -36,7 +37,7 @@ public class ReplayNonceStore {
       return false;
     }
     int seconds = (int) Math.clamp(ttl.toSeconds(), 1, Integer.MAX_VALUE);
-    String key = KEY_PREFIX + sha256Hex(nonce);
+    String key = authCacheKeyConfig.replayNonceKey(sha256Hex(nonce));
     if (!valueCommands.setnx(key, "1")) {
       return false;
     }

@@ -4,8 +4,7 @@ import lombok.experimental.UtilityClass;
 
 /**
  * Canonical RBAC permission codes ({@code resource:action}) for admin APIs. Use these instead of
- * duplicating string literals in {@code @PermissionsAllowed}, {@link AuthorizationService} checks,
- * and tests.
+ * duplicating string literals in {@code @PermissionsAllowed}, permission checkers, and tests.
  *
  * @author ddddd <dai_yuang@icloud.com>
  */

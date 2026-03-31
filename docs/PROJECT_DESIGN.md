@@ -302,7 +302,7 @@ Versions below are taken from the version catalog; bump them in **`gradle/libs.v
 | **Quarkus Security** | Integration with HTTP permissions |
 | **SmallRye JWT** | Verify/sign; RSA keys via project task `generateRsaKeys` |
 | **Elytron common** | Shared security utilities |
-| **Custom provider chain** | Super-admin + DB + refresh-token login orchestration in `libs:security` / `modules:security-runtime` |
+| **Quarkus identity providers** | Super-admin + DB + refresh-token authentication via `IdentityProviderManager` and runtime `IdentityProvider` implementations |
 | **Password hashing** | BCrypt (see the `super-admin` config in `application.yaml`) |
 | **WildFly Elytron SASL Digest** | **2.8.3.Final** (dependency catalog) where digest-related flows apply |
 

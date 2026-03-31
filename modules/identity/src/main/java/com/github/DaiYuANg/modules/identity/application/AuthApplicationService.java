@@ -41,7 +41,8 @@ import lombok.val;
  * <p>Coordinates:
  *
  * <ul>
- *   <li>authentication provider chain (DB users + super admin)
+ *   <li>Quarkus {@code IdentityProviderManager} authentication (super-admin + DB user + refresh
+ *       token)
  *   <li>refresh token rotation and revocation
  *   <li>publishing Valkey permission snapshots on login/refresh
  * </ul>

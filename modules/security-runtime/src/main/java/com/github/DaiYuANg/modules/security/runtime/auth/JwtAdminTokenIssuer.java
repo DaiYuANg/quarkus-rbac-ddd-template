@@ -4,15 +4,18 @@ import com.github.DaiYuANg.cache.AuthorityVersionStore;
 import com.github.DaiYuANg.cache.RefreshTokenStore;
 import com.github.DaiYuANg.modules.identity.application.dto.response.SystemAuthenticationToken;
 import com.github.DaiYuANg.modules.identity.application.dto.response.SystemAuthenticationTokenBuilder;
+import com.github.DaiYuANg.modules.identity.application.port.AdminTokenIssuerPort;
 import com.github.DaiYuANg.security.identity.AuthenticatedUser;
 import com.github.DaiYuANg.security.token.JwtTokenService;
+import com.github.DaiYuANg.security.token.TokenIssuer;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import lombok.RequiredArgsConstructor;
 
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
-public class JwtAdminTokenIssuer implements AdminTokenIssuer {
+public class JwtAdminTokenIssuer
+    implements AdminTokenIssuerPort, TokenIssuer<SystemAuthenticationToken> {
   private final JwtTokenService jwtTokenService;
   private final RefreshTokenStore refreshTokenStore;
   private final AuthorityVersionStore authorityVersionStore;
@@ -31,11 +34,5 @@ public class JwtAdminTokenIssuer implements AdminTokenIssuer {
         .expiresIn(jwtTokenService.accessTokenExpiresIn())
         .authorityVersion(authorityVersion)
         .build();
-  }
-
-  @Override
-  public SystemAuthenticationToken authenticate(String refreshToken) {
-    throw new UnsupportedOperationException(
-        "Refresh token authentication is delegated to provider chain");
   }
 }

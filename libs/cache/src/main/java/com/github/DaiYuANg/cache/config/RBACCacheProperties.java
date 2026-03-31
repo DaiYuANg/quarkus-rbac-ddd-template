@@ -1,92 +1,96 @@
 package com.github.DaiYuANg.cache.config;
 
-import jakarta.enterprise.context.ApplicationScoped;
+import io.smallrye.config.ConfigMapping;
+import io.smallrye.config.WithDefault;
+import io.smallrye.config.WithName;
 
 /** Key prefix configuration for RBAC authority storage. */
-@ApplicationScoped
-public class RBACCacheProperties {
+@ConfigMapping(prefix = "app.cache.rbac")
+public interface RBACCacheProperties {
+  @WithName("authority-prefix")
+  @WithDefault("rbac:authority")
+  String authorityPrefix();
 
-  private static final String PREFIX = "rbac:authority";
+  @WithName("permission-catalog-prefix")
+  @WithDefault("rbac:catalog:permission")
+  String permissionCatalogPrefix();
 
-  public String roleKeyPrefix() {
-    return PREFIX + ":role";
+  @WithName("authority-hash-ref-role-key")
+  @WithDefault("roleHash")
+  String authorityHashRefRoleKey();
+
+  @WithName("authority-hash-ref-permission-key")
+  @WithDefault("permissionHash")
+  String authorityHashRefPermissionKey();
+
+  default String roleKeyPrefix() {
+    return authorityPrefix() + ":role";
   }
 
-  public String permissionKeyPrefix() {
-    return PREFIX + ":permission";
+  default String permissionKeyPrefix() {
+    return authorityPrefix() + ":permission";
   }
 
-  public String authorityKeyPrefix() {
-    return PREFIX;
+  default String authorityKeyPrefix() {
+    return authorityPrefix();
   }
 
-  public String authorityHashRefRoleKey() {
-    return "roleHash";
-  }
-
-  public String authorityHashRefPermissionKey() {
-    return "permissionHash";
-  }
-
-  public String roleHashKey(String hash) {
+  default String roleHashKey(String hash) {
     return roleKeyPrefix() + ":" + hash;
   }
 
-  public String permissionHashKey(String hash) {
+  default String permissionHashKey(String hash) {
     return permissionKeyPrefix() + ":" + hash;
   }
 
-  public String authorityHashKey(Long userId) {
+  default String authorityHashKey(Long userId) {
     return authorityKeyPrefix() + ":hash:" + userId;
   }
 
-  public String authorityKey(Long userId) {
+  default String authorityKey(Long userId) {
     return authorityKeyPrefix() + ":" + userId;
   }
 
-  public String roleRefCountKey(String hash) {
+  default String roleRefCountKey(String hash) {
     return roleKeyPrefix() + ":ref:" + hash;
   }
 
-  public String permissionRefCountKey(String hash) {
+  default String permissionRefCountKey(String hash) {
     return permissionKeyPrefix() + ":ref:" + hash;
   }
 
-  public String usernameToUserIdKey(String username) {
+  default String usernameToUserIdKey(String username) {
     return authorityKeyPrefix() + ":user:id:" + username;
   }
 
-  // Permission catalog (master list of all permissions loaded at startup)
-  private static final String CATALOG_PREFIX = "rbac:catalog:permission";
-
-  public String permissionCatalogByIdKey(Long id) {
-    return CATALOG_PREFIX + ":id:" + id;
+  default String permissionCatalogByIdKey(Long id) {
+    return permissionCatalogPrefix() + ":id:" + id;
   }
 
-  public String permissionCatalogByCodeKey(String code) {
-    return CATALOG_PREFIX + ":code:" + code;
+  default String permissionCatalogByCodeKey(String code) {
+    return permissionCatalogPrefix() + ":code:" + code;
   }
 
-  public String permissionCatalogByNameKey(String name) {
-    return CATALOG_PREFIX + ":name:" + name;
+  default String permissionCatalogByNameKey(String name) {
+    return permissionCatalogPrefix() + ":name:" + name;
   }
 
-  public String permissionCatalogIdsKey() {
-    return CATALOG_PREFIX + ":ids";
+  default String permissionCatalogIdsKey() {
+    return permissionCatalogPrefix() + ":ids";
   }
 
   /** Single JSON blob of all permissions for getAll (1 round trip). */
-  public String permissionCatalogListKey() {
-    return CATALOG_PREFIX + ":list";
+  default String permissionCatalogListKey() {
+    return permissionCatalogPrefix() + ":list";
   }
 
   /** Set of code index keys for clearCatalog without KEYS. */
-  public String permissionCatalogCodeKeysSetKey() {
-    return CATALOG_PREFIX + ":code_keys";
+  default String permissionCatalogCodeKeysSetKey() {
+    return permissionCatalogPrefix() + ":code_keys";
   }
 
   /** Set of name index keys for clearCatalog without KEYS. */
-  public String permissionCatalogNameKeysSetKey() {
-    return CATALOG_PREFIX + ":name_keys";
+  default String permissionCatalogNameKeysSetKey() {
+    return permissionCatalogPrefix() + ":name_keys";
   }
 }

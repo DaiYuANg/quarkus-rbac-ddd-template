@@ -1,8 +1,10 @@
 package com.github.DaiYuANg.audit.support;
 
-import com.github.DaiYuANg.security.access.RequestMetadataAccess;
-import com.github.DaiYuANg.security.identity.CurrentAuthenticatedUserProvider;
+import com.github.DaiYuANg.security.access.CurrentUserAccess;
+import com.github.DaiYuANg.security.request.RequestMetadata;
+import com.github.DaiYuANg.security.request.RequestMetadataProvider;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -10,12 +12,12 @@ import lombok.val;
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class AuditSnapshotProvider {
-  private final CurrentAuthenticatedUserProvider currentAuthenticatedUserProvider;
-  private final RequestMetadataAccess requestMetadataAccess;
+  private final CurrentUserAccess currentUserAccess;
+  private final Instance<RequestMetadataProvider> requestMetadataProvider;
 
   public AuditSnapshot snapshot() {
-    val request = requestMetadataAccess.current();
-    val user = currentAuthenticatedUserProvider.getCurrentUser().orElse(null);
+    val request = currentRequest();
+    val user = currentUserAccess.currentUser().orElse(null);
     if (user == null) {
       return AuditSnapshotBuilder.builder()
           .actorKey("SYSTEM:anonymous")
@@ -34,5 +36,12 @@ public class AuditSnapshotProvider {
         .userAgent(request.userAgent())
         .requestId(request.requestId())
         .build();
+  }
+
+  private RequestMetadata currentRequest() {
+    if (requestMetadataProvider.isUnsatisfied()) {
+      return RequestMetadata.empty();
+    }
+    return requestMetadataProvider.get().currentOrEmpty();
   }
 }

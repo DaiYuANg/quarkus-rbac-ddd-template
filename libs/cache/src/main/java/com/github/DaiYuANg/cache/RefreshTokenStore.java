@@ -1,5 +1,6 @@
 package com.github.DaiYuANg.cache;
 
+import com.github.DaiYuANg.cache.config.AuthCacheKeyConfig;
 import io.quarkus.redis.datasource.RedisDataSource;
 import io.quarkus.redis.datasource.keys.KeyCommands;
 import io.quarkus.redis.datasource.set.SetCommands;
@@ -21,11 +22,13 @@ public class RefreshTokenStore {
   private final ValueCommands<String, String> valueCommands;
   private final SetCommands<String, String> setCommands;
   private final KeyCommands<String> keyCommands;
+  private final AuthCacheKeyConfig authCacheKeyConfig;
 
-  public RefreshTokenStore(@NonNull RedisDataSource ds) {
+  public RefreshTokenStore(@NonNull RedisDataSource ds, @NonNull AuthCacheKeyConfig authCacheKeyConfig) {
     this.valueCommands = ds.value(String.class);
     this.setCommands = ds.set(String.class);
     this.keyCommands = ds.key();
+    this.authCacheKeyConfig = authCacheKeyConfig;
   }
 
   public void save(String refreshToken, Long userId, String username, @NonNull Duration ttl) {
@@ -75,15 +78,15 @@ public class RefreshTokenStore {
   }
 
   private String key(String refreshToken) {
-    return "rbac-auth:refresh:" + refreshToken;
+    return authCacheKeyConfig.refreshTokenKey(refreshToken);
   }
 
   private String userKey(String username) {
-    return "rbac-auth:refresh:user:" + username;
+    return authCacheKeyConfig.refreshUserKey(username);
   }
 
   private String userIdKey(Long userId) {
-    return "rbac-auth:refresh:user-id:" + userId;
+    return authCacheKeyConfig.refreshUserIdKey(userId);
   }
 
   private void cleanupMembership(RefreshTokenOwner owner, String refreshToken) {

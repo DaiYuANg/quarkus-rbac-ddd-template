@@ -11,7 +11,7 @@ For the fuller auth chain and PostgreSQL / Redis data flow, see [SECURITY_RUNTIM
 4. If the snapshot is missing, stale, or no longer bound to the current token, it reloads through `PermissionSnapshotLoader`.
 5. Effective permissions are attached back onto `SecurityIdentity`.
 6. Endpoint-level static protection can still use Quarkus annotations.
-7. Service-level complex protection must call `AuthorizationService`.
+7. Endpoint authorization is primarily enforced through `@PermissionsAllowed` and `@PermissionChecker`; service methods only keep the narrow business guards that cannot be expressed at the resource boundary.
 
 ## Snapshot lifecycle
 - Login success publishes a permission snapshot to Valkey/Redis.
@@ -22,5 +22,5 @@ For the fuller auth chain and PostgreSQL / Redis data flow, see [SECURITY_RUNTIM
 
 ## Recommended usage
 - Use `@PermissionsAllowed` for fixed endpoint entry permissions.
-- Use `AuthorizationService.check(...)` for business-sensitive operations.
-- Use `checkAny(...)` / `checkAll(...)` where one action may be granted by multiple permission codes.
+- Use `@PermissionChecker` for identity-aware conditions such as "self service" checks.
+- Keep service-layer permission branching only when the rule depends on in-method business state and cannot be expressed cleanly on the resource method.

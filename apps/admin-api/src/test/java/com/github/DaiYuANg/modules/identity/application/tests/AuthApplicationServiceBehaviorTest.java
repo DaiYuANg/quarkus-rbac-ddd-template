@@ -21,9 +21,9 @@ import com.github.DaiYuANg.modules.identity.application.dto.response.SystemAuthe
 import com.github.DaiYuANg.modules.identity.application.dto.response.SystemAuthenticationTokenBuilder;
 import com.github.DaiYuANg.modules.identity.application.dto.response.UserDetailVo;
 import com.github.DaiYuANg.modules.identity.application.dto.response.UserDetailVoBuilder;
+import com.github.DaiYuANg.modules.identity.application.port.AdminTokenIssuerPort;
 import com.github.DaiYuANg.modules.identity.application.profile.UserProfileResolutionService;
 import com.github.DaiYuANg.modules.security.runtime.auth.AdminAuthenticationLifecycle;
-import com.github.DaiYuANg.modules.security.runtime.auth.AdminTokenIssuer;
 import com.github.DaiYuANg.security.access.CurrentUserAccess;
 import com.github.DaiYuANg.security.authorization.RbacPermissionCodes.User;
 import com.github.DaiYuANg.security.config.AuthSecurityConfig;
@@ -62,7 +62,7 @@ class AuthApplicationServiceBehaviorTest {
 
     var userRepository = mock(UserRepository.class);
     var identityProviderManager = mock(IdentityProviderManager.class);
-    var tokenIssuer = mock(AdminTokenIssuer.class);
+    var tokenIssuer = mock(AdminTokenIssuerPort.class);
     var loginAttemptStore = mock(LoginAttemptStore.class);
     var authorityVersionStore = mock(AuthorityVersionStore.class);
     var loginAuditEvent = loginEventMock();
@@ -126,7 +126,7 @@ class AuthApplicationServiceBehaviorTest {
         new AuthApplicationService(
             mock(UserRepository.class),
             mock(IdentityProviderManager.class),
-            mock(AdminTokenIssuer.class),
+            mock(AdminTokenIssuerPort.class),
             mock(LoginAttemptStore.class),
             mock(AuthorityVersionStore.class),
             loginEventMock(),
@@ -151,7 +151,7 @@ class AuthApplicationServiceBehaviorTest {
         new AuthApplicationService(
             mock(UserRepository.class),
             mock(IdentityProviderManager.class),
-            mock(AdminTokenIssuer.class),
+            mock(AdminTokenIssuerPort.class),
             mock(LoginAttemptStore.class),
             mock(AuthorityVersionStore.class),
             loginEventMock(),
@@ -176,7 +176,7 @@ class AuthApplicationServiceBehaviorTest {
         new AuthApplicationService(
             mock(UserRepository.class),
             mock(IdentityProviderManager.class),
-            mock(AdminTokenIssuer.class),
+            mock(AdminTokenIssuerPort.class),
             mock(LoginAttemptStore.class),
             mock(AuthorityVersionStore.class),
             loginEventMock(),
@@ -202,7 +202,7 @@ class AuthApplicationServiceBehaviorTest {
         new AuthApplicationService(
             mock(UserRepository.class),
             identityProviderManager,
-            mock(AdminTokenIssuer.class),
+            mock(AdminTokenIssuerPort.class),
             mock(LoginAttemptStore.class),
             mock(AuthorityVersionStore.class),
             loginEventMock(),

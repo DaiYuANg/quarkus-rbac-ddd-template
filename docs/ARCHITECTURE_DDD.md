@@ -26,7 +26,7 @@ libs/
 ├── identity            # User (depends on accesscontrol for roles)
 ├── audit               # OperationLog, LoginLog
 ├── cache               # Refresh tokens, authority version, login attempts, catalog cache, replay nonces
-├── security            # Auth provider chain, JWT helpers, principal definitions, config
+├── security            # Quarkus security integration, JWT helpers, principal definitions, config
 └── rest-support        # Shared JAX-RS: GlobalExceptionHandler, RefreshTokenCookies
 
 modules/

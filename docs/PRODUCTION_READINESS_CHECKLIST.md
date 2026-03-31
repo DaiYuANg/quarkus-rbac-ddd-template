@@ -12,7 +12,7 @@
 - Login must publish permission snapshots to Valkey/Redis.
 - `SecurityIdentityAugmentor` must reload snapshots when `authorityVersion` changes.
 - Service-layer authorization must protect role binding, permission-group binding, password reset, and similar sensitive operations.
-- Static endpoint guards may keep using Quarkus annotations, but complex checks must go through `AuthorizationService`.
+- Static endpoint guards should prefer Quarkus annotations, with `@PermissionChecker` for identity-aware exceptions such as self-service flows.
 
 ## Database
 - Run migrator before starting `admin-api`.

@@ -14,7 +14,7 @@
 - 登录必须将权限快照发布到 Valkey/Redis。
 - `SecurityIdentityAugmentor` 必须在 `authorityVersion` 变更时重新加载快照。
 - 服务层授权必须保护角色绑定、权限组绑定、密码重置等敏感操作。
-- 端点静态守卫可继续使用 Quarkus 注解，复杂检查须通过 `AuthorizationService`。
+- 端点静态守卫优先使用 Quarkus 注解；像“本人操作自己”这类例外优先通过 `@PermissionChecker` 表达。
 
 ## 数据库
 
