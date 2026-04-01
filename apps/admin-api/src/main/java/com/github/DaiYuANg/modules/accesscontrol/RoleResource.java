@@ -1,6 +1,5 @@
 package com.github.DaiYuANg.modules.accesscontrol;
 
-import com.github.DaiYuANg.common.model.ApiPageResult;
 import com.github.DaiYuANg.common.model.Results;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.RoleCreationForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.RoleRefPermissionGroupForm;
@@ -17,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.toolkit4j.data.model.envelope.Result;
+import org.toolkit4j.data.model.page.PageResult;
 
 @Path("/api/v1/role")
 @Produces("application/json")
@@ -33,7 +33,7 @@ public class RoleResource {
 
   @GET
   @PermissionsAllowed(Role.VIEW)
-  public Result<String, ApiPageResult<RoleVO>> queryRolePage(
+  public Result<String, PageResult<RoleVO>> queryRolePage(
       @BeanParam @Valid RolePageQueryParams query) {
     return Results.ok(roleApplicationService.queryRolePage(query.toQuery()));
   }

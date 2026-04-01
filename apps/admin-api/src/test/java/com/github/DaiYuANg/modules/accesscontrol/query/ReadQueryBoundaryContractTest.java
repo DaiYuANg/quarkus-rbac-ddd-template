@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import com.github.DaiYuANg.accesscontrol.query.PermissionGroupPageQuery;
 import com.github.DaiYuANg.accesscontrol.query.PermissionPageQuery;
 import com.github.DaiYuANg.accesscontrol.query.RolePageQuery;
-import com.github.DaiYuANg.common.model.ApiPageQuery;
 import com.github.DaiYuANg.identity.constant.UserStatus;
 import com.github.DaiYuANg.identity.query.UserPageQuery;
 import jakarta.ws.rs.QueryParam;

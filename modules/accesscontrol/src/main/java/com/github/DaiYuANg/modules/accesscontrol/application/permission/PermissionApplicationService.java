@@ -3,15 +3,17 @@ package com.github.DaiYuANg.modules.accesscontrol.application.permission;
 import com.github.DaiYuANg.accesscontrol.query.PermissionPageQuery;
 import com.github.DaiYuANg.cache.PermissionCatalogQueryBuilder;
 import com.github.DaiYuANg.cache.PermissionCatalogStore;
-import com.github.DaiYuANg.common.model.ApiPageResult;
 import com.github.DaiYuANg.modules.accesscontrol.application.mapper.PermissionVOMapper;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.PermissionVO;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+
 import java.util.List;
 import java.util.Optional;
+
 import lombok.RequiredArgsConstructor;
 import lombok.val;
+import org.toolkit4j.data.model.page.PageResult;
 
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
@@ -35,27 +37,28 @@ public class PermissionApplicationService {
     return catalogStore.getAll().stream().map(permissionVOMapper::toCatalogVO).toList();
   }
 
-  public ApiPageResult<PermissionVO> queryPermissionPage(PermissionPageQuery query) {
+  public PageResult<PermissionVO> queryPermissionPage(PermissionPageQuery query) {
     ensureCatalogLoaded();
     val page =
-        catalogStore.findPage(
-            PermissionCatalogQueryBuilder.builder()
-                .keyword(query.getKeyword())
-                .name(query.getName())
-                .code(query.getCode())
-                .resource(query.getResource())
-                .action(query.getAction())
-                .groupCode(query.getGroupCode())
-                .sortBy(query.getSortBy())
-                .sortDirection(query.getSortDirection())
-                .offset(query.offset())
-                .limit(query.getPageSize())
-                .build());
-    return ApiPageResult.of(
-        page.total(),
-        query.getPageNum(),
-        query.getPageSize(),
-        page.content().stream().map(permissionVOMapper::toCatalogVO).toList());
+      catalogStore.findPage(
+        PermissionCatalogQueryBuilder.builder()
+          .keyword(query.getKeyword())
+          .name(query.getName())
+          .code(query.getCode())
+          .resource(query.getResource())
+          .action(query.getAction())
+          .groupCode(query.getGroupCode())
+          .sortBy(query.getSortBy())
+          .sortDirection(query.getSortDirection())
+          .offset(query.getOffset())
+          .limit(query.getSize())
+          .build());
+    return PageResult.of(
+      page.content().stream().map(permissionVOMapper::toCatalogVO).toList(),
+      query.getOffset(),
+      query.getSize(),
+      page.total()
+    );
   }
 
   private void ensureCatalogLoaded() {

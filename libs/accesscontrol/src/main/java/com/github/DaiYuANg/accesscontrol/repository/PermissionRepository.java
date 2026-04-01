@@ -13,9 +13,12 @@ import com.github.DaiYuANg.persistence.query.BlazeQueryDSLSupport;
 import com.github.DaiYuANg.persistence.repository.BasePanacheCommandRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+
 import java.util.Optional;
+
 import lombok.RequiredArgsConstructor;
 import lombok.val;
+import org.jspecify.annotations.NonNull;
 import org.toolkit4j.data.model.page.PageResult;
 
 /**
@@ -29,7 +32,7 @@ import org.toolkit4j.data.model.page.PageResult;
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class PermissionRepository extends BasePanacheCommandRepository<SysPermission>
-    implements PermissionQueryRepository {
+  implements PermissionQueryRepository {
 
   private static final QSysPermission p = new QSysPermission("permission");
 
@@ -58,27 +61,27 @@ public class PermissionRepository extends BasePanacheCommandRepository<SysPermis
       return 0L;
     }
     Long value =
-        blazeQueryFactory
-            .<Long>create()
-            .from(p)
-            .select(p.id.count())
-            .where(p.code.eq(code))
-            .fetchOne();
+      blazeQueryFactory
+        .<Long>create()
+        .from(p)
+        .select(p.id.count())
+        .where(p.code.eq(code))
+        .fetchOne();
     return value == null ? 0L : value;
   }
 
   @Override
-  public PageResult<PermissionListProjection> page(PermissionPageQuery query) {
+  public PageResult<PermissionListProjection> page(@NonNull PermissionPageQuery query) {
     val blazeQuery = blazeQueryFactory.selectFrom(p);
     query.buildCondition(p).ifPresent(blazeQuery::where);
     query.buildOrders(p).forEach(blazeQuery::orderBy);
     val page =
-        queryDslSupport.executeWithEntityView(
-            blazeQuery,
-            PermissionListView.class,
-            query.offset(),
-            query.getPageSize(),
-            mapper::toProjection);
+      queryDslSupport.executeWithEntityView(
+        blazeQuery,
+        PermissionListView.class,
+        query.getOffset(),
+        query.getSize(),
+        mapper::toProjection);
     return BlazeQueryDSLSupport.toPageResult(page, query);
   }
 

@@ -14,6 +14,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
+import org.jspecify.annotations.NonNull;
 
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
@@ -24,7 +25,7 @@ public class JwtAdminTokenIssuer
   private final AuthorityVersionStore authorityVersionStore;
 
   @Override
-  public SystemAuthenticationToken issue(AuthenticatedUser user) {
+  public SystemAuthenticationToken issue(@NonNull AuthenticatedUser user) {
     val authorityVersion =
         SecurityPrincipalKinds.UserType.SUPER_ADMIN.equals(user.userType())
             ? SuperAdminAuthorityVersion.VALUE

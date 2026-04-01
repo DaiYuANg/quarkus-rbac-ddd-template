@@ -2,7 +2,7 @@ package com.github.DaiYuANg.accesscontrol.query;
 
 import com.github.DaiYuANg.accesscontrol.entity.QSysPermissionGroup;
 import com.github.DaiYuANg.accesscontrol.entity.SysPermissionGroup_;
-import com.github.DaiYuANg.common.model.ApiPageQuery;
+import com.github.DaiYuANg.common.model.PageReq;
 import com.github.DaiYuANg.persistence.entity.BaseEntity_;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -19,7 +19,7 @@ import lombok.val;
 
 @Getter
 @Setter
-public class PermissionGroupPageQuery extends ApiPageQuery {
+public class PermissionGroupPageQuery extends PageReq {
   private static final Map<String, String> SORT_ALIASES =
       new LinkedHashMap<>(
           Map.of(
@@ -57,7 +57,7 @@ public class PermissionGroupPageQuery extends ApiPageQuery {
   }
 
   private Optional<String> likePattern(String value) {
-    return normalizedValue(value).map(v -> '%' + v.toLowerCase() + '%');
+    return Optional.ofNullable(value).map(v -> '%' + v.toLowerCase() + '%');
   }
 
   private OrderSpecifier<?> order(ComparableExpressionBase<?> expression, boolean defaultAsc) {

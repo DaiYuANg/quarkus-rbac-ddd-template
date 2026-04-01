@@ -13,9 +13,11 @@ import com.github.DaiYuANg.persistence.query.BlazeQueryDSLSupport;
 import com.github.DaiYuANg.persistence.repository.BasePanacheCommandRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import org.toolkit4j.data.model.page.PageResult;
@@ -31,7 +33,7 @@ import org.toolkit4j.data.model.page.PageResult;
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class UserRepository extends BasePanacheCommandRepository<SysUser>
-    implements UserQueryRepository {
+  implements UserQueryRepository {
 
   private static final QSysUser u = new QSysUser("user");
 
@@ -45,27 +47,37 @@ public class UserRepository extends BasePanacheCommandRepository<SysUser>
     return userLookupQuerySupport.findByUsername(username);
   }
 
-  /** Loads user with full RBAC graph (roles -> permissionGroups -> permissions) in one query. */
+  /**
+   * Loads user with full RBAC graph (roles -> permissionGroups -> permissions) in one query.
+   */
   public Optional<SysUser> findByUsernameWithRbacGraph(String username) {
     return userRbacQuerySupport.findByUsernameWithRbacGraph(username);
   }
 
-  /** Loads user with full RBAC graph (roles -> permissionGroups -> permissions) in one query. */
+  /**
+   * Loads user with full RBAC graph (roles -> permissionGroups -> permissions) in one query.
+   */
   public Optional<SysUser> findByIdWithRbacGraph(Long id) {
     return userRbacQuerySupport.findByIdWithRbacGraph(id);
   }
 
-  /** Loads all users with full RBAC graph (roles -> permissionGroups -> permissions) in one query. */
+  /**
+   * Loads all users with full RBAC graph (roles -> permissionGroups -> permissions) in one query.
+   */
   public List<SysUser> listAllWithRbacGraph() {
     return userRbacQuerySupport.listAllWithRbacGraph();
   }
 
-  /** Returns role codes without loading RBAC entity graph. */
+  /**
+   * Returns role codes without loading RBAC entity graph.
+   */
   public Set<String> findRoleCodesByUsername(String username) {
     return userRbacQuerySupport.findRoleCodesByUsername(username);
   }
 
-  /** Returns permission codes without loading RBAC entity graph. */
+  /**
+   * Returns permission codes without loading RBAC entity graph.
+   */
   public Set<String> findPermissionCodesByUsername(String username) {
     return userRbacQuerySupport.findPermissionCodesByUsername(username);
   }
@@ -96,8 +108,8 @@ public class UserRepository extends BasePanacheCommandRepository<SysUser>
     query.buildCondition(u).ifPresent(blazeQuery::where);
     query.buildOrders(u).forEach(blazeQuery::orderBy);
     val page =
-        queryDslSupport.executeWithEntityView(
-            blazeQuery, UserListView.class, query.offset(), query.getPageSize(), mapper::toProjection);
+      queryDslSupport.executeWithEntityView(
+        blazeQuery, UserListView.class, query.getOffset(), query.getSize(), mapper::toProjection);
     return BlazeQueryDSLSupport.toPageResult(page, query);
   }
 

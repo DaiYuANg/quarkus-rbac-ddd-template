@@ -1,7 +1,6 @@
 package com.github.DaiYuANg.modules.accesscontrol;
 
 import com.github.DaiYuANg.security.authorization.RbacPermissionCodes.Auth;
-import com.github.DaiYuANg.common.model.ApiPageResult;
 import com.github.DaiYuANg.common.model.Results;
 import com.github.DaiYuANg.security.identity.PrincipalAttributeKeys;
 import com.google.common.primitives.Longs;
@@ -10,7 +9,6 @@ import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UserCre
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UserRefRoleForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.UserVO;
 import com.github.DaiYuANg.modules.accesscontrol.application.user.UserApplicationService;
-import com.github.DaiYuANg.modules.accesscontrol.ChangePasswordForm;
 import com.github.DaiYuANg.modules.accesscontrol.query.UserPageQueryParams;
 import io.quarkus.security.PermissionChecker;
 import com.github.DaiYuANg.security.authorization.RbacPermissionCodes.User;
@@ -20,13 +18,16 @@ import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.toolkit4j.data.model.envelope.Result;
+import org.toolkit4j.data.model.page.PageResult;
 
 @Path("/api/v1/user")
 @Produces(MediaType.APPLICATION_JSON)
@@ -37,8 +38,8 @@ public class UserResource {
 
   @GET
   @PermissionsAllowed(User.VIEW)
-  public Result<String, ApiPageResult<UserVO>> queryUserPage(
-      @BeanParam @Valid UserPageQueryParams query) {
+  public Result<String, PageResult<UserVO>> queryUserPage(
+    @BeanParam @Valid UserPageQueryParams query) {
     return Results.ok(userApplicationService.queryUserPage(query.toQuery()));
   }
 
@@ -52,7 +53,7 @@ public class UserResource {
   @Path("/{id}/password")
   @PermissionsAllowed({Auth.CHANGE_PASSWORD, User.RESET_PASSWORD, User.EDIT})
   public Result<String, Void> updateUserPassword(
-      @PathParam("id") Long id, @Valid ChangePasswordForm form) {
+    @PathParam("id") Long id, @Valid ChangePasswordForm form) {
     userApplicationService.updateUserPassword(id, form.newPassword());
     return Results.ok();
   }
@@ -90,7 +91,7 @@ public class UserResource {
   @Path("/username/{username}")
   @PermissionsAllowed(User.VIEW)
   public Result<String, Optional<UserVO>> getUserByUsername(
-      @PathParam("username") String username) {
+    @PathParam("username") String username) {
     return Results.ok(userApplicationService.getUserByUsername(username));
   }
 
@@ -134,7 +135,7 @@ public class UserResource {
   @Path("/{id}/status")
   @PermissionsAllowed(User.EDIT)
   public Result<String, Void> updateUserStatus(
-      @PathParam("id") Long id, @QueryParam("status") Integer status) {
+    @PathParam("id") Long id, @QueryParam("status") Integer status) {
     userApplicationService.updateUserStatus(id, status);
     return Results.ok();
   }

@@ -21,6 +21,7 @@ import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
+import org.jspecify.annotations.NonNull;
 import org.toolkit4j.data.model.page.PageResult;
 
 /**
@@ -124,7 +125,7 @@ public class PermissionGroupRepository extends BasePanacheCommandRepository<SysP
   }
 
   @Override
-  public PageResult<PermissionGroupListProjection> page(PermissionGroupPageQuery query) {
+  public PageResult<PermissionGroupListProjection> page(@NonNull PermissionGroupPageQuery query) {
     val blazeQuery = blazeQueryFactory.selectFrom(g);
     query.buildCondition(g).ifPresent(blazeQuery::where);
     query.buildOrders(g).forEach(blazeQuery::orderBy);
@@ -132,8 +133,8 @@ public class PermissionGroupRepository extends BasePanacheCommandRepository<SysP
         queryDslSupport.executeWithEntityView(
             blazeQuery,
             PermissionGroupListView.class,
-            query.offset(),
-            query.getPageSize(),
+            query.getOffset(),
+            query.getSize(),
             mapper::toProjection);
     return BlazeQueryDSLSupport.toPageResult(page, query);
   }

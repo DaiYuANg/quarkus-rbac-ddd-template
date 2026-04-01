@@ -2,7 +2,7 @@ package com.github.DaiYuANg.accesscontrol.query;
 
 import com.github.DaiYuANg.accesscontrol.entity.QSysPermission;
 import com.github.DaiYuANg.accesscontrol.entity.SysPermission_;
-import com.github.DaiYuANg.common.model.ApiPageQuery;
+import com.github.DaiYuANg.common.model.PageReq;
 import com.github.DaiYuANg.persistence.entity.BaseEntity_;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -20,7 +20,7 @@ import lombok.val;
 
 @Getter
 @Setter
-public class PermissionPageQuery extends ApiPageQuery {
+public class PermissionPageQuery extends PageReq {
   private static final Map<String, String> SORT_ALIASES =
       new LinkedHashMap<>(
           Map.of(

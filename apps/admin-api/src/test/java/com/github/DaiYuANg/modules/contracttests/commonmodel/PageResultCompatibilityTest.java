@@ -2,7 +2,6 @@ package com.github.DaiYuANg.modules.contracttests.commonmodel;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.github.DaiYuANg.common.model.ApiPageResult;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 

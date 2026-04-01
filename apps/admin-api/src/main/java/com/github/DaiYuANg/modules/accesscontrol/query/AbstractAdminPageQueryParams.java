@@ -1,15 +1,16 @@
 package com.github.DaiYuANg.modules.accesscontrol.query;
 
-import com.github.DaiYuANg.common.model.ApiPageQuery;
+import com.github.DaiYuANg.common.model.PageReq;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.ws.rs.QueryParam;
 import lombok.Getter;
 import lombok.Setter;
+import org.jspecify.annotations.NonNull;
 
 @Getter
 @Setter
-abstract class AbstractAdminPageQueryParams<Q extends ApiPageQuery> {
+abstract class AbstractAdminPageQueryParams<Q extends PageReq> {
   @QueryParam("pageNum")
   @Min(1)
   private Integer pageNum;
@@ -37,9 +38,9 @@ abstract class AbstractAdminPageQueryParams<Q extends ApiPageQuery> {
   @QueryParam("sortDirection")
   private String sortDirection;
 
-  protected Q applyTo(Q query) {
-    query.setPageNum(pageNum);
-    query.setPageSize(pageSize);
+  protected Q applyTo(@NonNull Q query) {
+    query.setPage(pageNum);
+    query.setSize(pageSize);
     query.setPage(page);
     query.setSize(size);
     query.setKeyword(keyword);

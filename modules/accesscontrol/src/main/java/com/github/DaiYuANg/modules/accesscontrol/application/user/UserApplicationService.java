@@ -2,9 +2,7 @@ package com.github.DaiYuANg.modules.accesscontrol.application.user;
 
 import com.github.DaiYuANg.common.constant.ResultCode;
 import com.github.DaiYuANg.common.exception.BizException;
-import com.github.DaiYuANg.common.model.ApiPageResult;
 import com.github.DaiYuANg.identity.constant.UserStatus;
-import com.github.DaiYuANg.identity.entity.SysUser;
 import com.github.DaiYuANg.identity.query.UserPageQuery;
 import com.github.DaiYuANg.identity.repository.UserRepository;
 import com.github.DaiYuANg.modules.accesscontrol.application.mapper.UserVOMapper;
@@ -23,6 +21,7 @@ import java.util.Optional;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
+import org.toolkit4j.data.model.page.PageResult;
 
 /**
  * User management application service.
@@ -47,8 +46,8 @@ public class UserApplicationService {
   private final UserVOMapper userVOMapper;
   private final UserChecker userChecker;
 
-  public ApiPageResult<UserVO> queryUserPage(@NonNull UserPageQuery query) {
-    return ApiPageResult.map(userRepository.page(query), userVOMapper::toProjectionVO);
+  public PageResult<UserVO> queryUserPage(@NonNull UserPageQuery query) {
+    return userRepository.page(query).mapContent(userVOMapper::toProjectionVO);
   }
 
   @Transactional

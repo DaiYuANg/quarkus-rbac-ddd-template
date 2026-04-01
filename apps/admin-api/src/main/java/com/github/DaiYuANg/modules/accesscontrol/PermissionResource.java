@@ -1,6 +1,5 @@
 package com.github.DaiYuANg.modules.accesscontrol;
 
-import com.github.DaiYuANg.common.model.ApiPageResult;
 import com.github.DaiYuANg.common.model.Results;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.PermissionVO;
 import com.github.DaiYuANg.modules.accesscontrol.application.permission.PermissionApplicationService;
@@ -14,6 +13,7 @@ import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.toolkit4j.data.model.envelope.Result;
+import org.toolkit4j.data.model.page.PageResult;
 
 @Path("/api/v1/permission")
 @Produces("application/json")
@@ -38,7 +38,7 @@ public class PermissionResource {
 
   @GET
   @PermissionsAllowed(Permission.VIEW)
-  public Result<String, ApiPageResult<PermissionVO>> query(
+  public Result<String, PageResult<PermissionVO>> query(
       @BeanParam @Valid PermissionPageQueryParams query) {
     return Results.ok(permissionApplicationService.queryPermissionPage(query.toQuery()));
   }

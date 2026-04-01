@@ -20,6 +20,7 @@ import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
+import org.jspecify.annotations.NonNull;
 import org.toolkit4j.data.model.page.PageResult;
 
 /**
@@ -107,13 +108,13 @@ public class RoleRepository extends BasePanacheCommandRepository<SysRole>
   }
 
   @Override
-  public PageResult<RoleListProjection> page(RolePageQuery query) {
+  public PageResult<RoleListProjection> page(@NonNull RolePageQuery query) {
     val blazeQuery = blazeQueryFactory.selectFrom(r);
     query.buildCondition(r).ifPresent(blazeQuery::where);
     query.buildOrders(r).forEach(blazeQuery::orderBy);
     val page =
         queryDslSupport.executeWithEntityView(
-            blazeQuery, RoleListView.class, query.offset(), query.getPageSize(), mapper::toProjection);
+            blazeQuery, RoleListView.class, query.getOffset(), query.getSize(), mapper::toProjection);
     return BlazeQueryDSLSupport.toPageResult(page, query);
   }
 

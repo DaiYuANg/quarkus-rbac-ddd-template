@@ -1,6 +1,5 @@
 package com.github.DaiYuANg.modules.accesscontrol;
 
-import com.github.DaiYuANg.common.model.ApiPageResult;
 import com.github.DaiYuANg.common.model.Results;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.PermissionGroupCreationForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.PermissionGroupRefPermissionForm;
@@ -17,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.toolkit4j.data.model.envelope.Result;
+import org.toolkit4j.data.model.page.PageResult;
 
 @Path("/api/v1/permission-group")
 @Produces("application/json")
@@ -56,7 +56,7 @@ public class PermissionGroupResource {
 
   @GET
   @PermissionsAllowed(PermissionGroup.VIEW)
-  public Result<String, ApiPageResult<PermissionGroupVO>> query(
+  public Result<String, PageResult<PermissionGroupVO>> query(
       @BeanParam @Valid PermissionGroupPageQueryParams query) {
     return Results.ok(permissionGroupApplicationService.queryPermissionGroupPage(query.toQuery()));
   }

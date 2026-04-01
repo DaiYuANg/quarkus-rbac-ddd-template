@@ -24,7 +24,7 @@ record-builder = "52"
 query-dsl = "7.1"
 wildfly-elytron = "2.8.3.Final"
 testcontainers = "1.21.4"
-toolkit4j = "0.0.4"
+toolkit4j = "0.0.5"
 
 [plugins]
 quarkus = { id = "io.quarkus", version.ref = "quarkus" }
@@ -48,7 +48,6 @@ mapstruct-processor = { group = "org.mapstruct", name = "mapstruct-processor", v
 jakarta-ws-rs = { group = "jakarta.ws.rs", name = "jakarta.ws.rs-api" }
 jakarta-validation = { group = "jakarta.validation", name = "jakarta.validation-api" }
 jackson-annotations = { group = "com.fasterxml.jackson.core", name = "jackson-annotations" }
-microprofile-config = { group = "org.eclipse.microprofile.config", name = "microprofile-config-api" }
 blaze-persistence-core-api = { group = "com.blazebit", name = "blaze-persistence-core-api", version.ref = "blaze-persistence" }
 blaze-persistence-core-impl = { group = "com.blazebit", name = "blaze-persistence-core-impl", version.ref = "blaze-persistence" }
 blaze-persistence-entity-view-api = { group = "com.blazebit", name = "blaze-persistence-entity-view-api", version.ref = "blaze-persistence" }

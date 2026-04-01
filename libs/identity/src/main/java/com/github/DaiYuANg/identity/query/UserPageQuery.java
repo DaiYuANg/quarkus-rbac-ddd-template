@@ -1,6 +1,6 @@
 package com.github.DaiYuANg.identity.query;
 
-import com.github.DaiYuANg.common.model.ApiPageQuery;
+import com.github.DaiYuANg.common.model.PageReq;
 import com.github.DaiYuANg.identity.constant.UserStatus;
 import com.github.DaiYuANg.identity.entity.QSysUser;
 import com.github.DaiYuANg.identity.entity.SysUser_;
@@ -21,7 +21,7 @@ import lombok.val;
 
 @Getter
 @Setter
-public class UserPageQuery extends ApiPageQuery {
+public class UserPageQuery extends PageReq {
   private static final Map<String, String> SORT_ALIASES =
       new LinkedHashMap<>(
           Map.of(

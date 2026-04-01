@@ -1,15 +1,15 @@
 package com.github.DaiYuANg.rest.support;
 
 import jakarta.ws.rs.core.NewCookie;
+import lombok.experimental.UtilityClass;
 
 /** Shared HttpOnly refresh-token cookies for any API prefix (admin vs mobile, etc.). */
-public final class RefreshTokenCookies {
+@UtilityClass
+public class RefreshTokenCookies {
 
-  private static final String COMMENT = "refresh token";
+  private final String COMMENT = "refresh token";
 
-  private RefreshTokenCookies() {}
-
-  public static NewCookie issue(
+  public NewCookie issue(
       String cookiePath, String cookieName, String token, int maxAgeSeconds, boolean secure) {
     return new NewCookie.Builder(cookieName)
         .value(token)
@@ -21,7 +21,7 @@ public final class RefreshTokenCookies {
         .build();
   }
 
-  public static NewCookie cleared(String cookiePath, String cookieName, boolean secure) {
+  public NewCookie cleared(String cookiePath, String cookieName, boolean secure) {
     return new NewCookie.Builder(cookieName)
         .value("")
         .path(cookiePath)
