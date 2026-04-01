@@ -6,7 +6,7 @@ import com.github.DaiYuANg.common.constant.ResultCode;
 import com.github.DaiYuANg.common.exception.BizException;
 import com.github.DaiYuANg.security.auth.PasswordHasher;
 import com.github.DaiYuANg.security.auth.UsernamePasswordAuthenticationRequest;
-import com.github.DaiYuANg.security.config.SuperAdminAccountConfig;
+import com.github.DaiYuANg.security.config.AuthSecurityConfig;
 import com.github.DaiYuANg.security.config.SuperAdminAuthorityId;
 import com.github.DaiYuANg.security.identity.QuarkusSecurityIdentityFactory;
 import com.github.DaiYuANg.security.identity.SecurityPrincipalDefinition;
@@ -16,7 +16,6 @@ import io.quarkus.security.identity.AuthenticationRequestContext;
 import io.quarkus.security.identity.IdentityProvider;
 import io.quarkus.security.identity.SecurityIdentity;
 import io.smallrye.mutiny.Uni;
-import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.LinkedHashSet;
@@ -27,16 +26,20 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 
 @ApplicationScoped
-@Priority(100)
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 @Slf4j
 public class SuperAdminAuthenticationProvider
     implements IdentityProvider<UsernamePasswordAuthenticationRequest> {
-  private final SuperAdminAccountConfig config;
+  private final AuthSecurityConfig authSecurityConfig;
   private final PasswordHasher passwordHasher;
   private final PermissionCatalogStore permissionCatalogStore;
   private final SecurityPrincipalFactory securityPrincipalFactory;
   private final QuarkusSecurityIdentityFactory securityIdentityFactory;
+
+  @Override
+  public int priority() {
+    return 100;
+  }
 
   @Override
   public Class<UsernamePasswordAuthenticationRequest> getRequestType() {
@@ -51,6 +54,7 @@ public class SuperAdminAuthenticationProvider
 
   private SecurityIdentity authenticateBlocking(
       @NonNull UsernamePasswordAuthenticationRequest request) {
+    val config = authSecurityConfig.superAdmin();
     val configuredUsername = config.username().map(String::trim).orElse("");
     val configuredPasswordHash = config.passwordHash().map(String::trim).orElse("");
     if (configuredUsername.isEmpty() || configuredPasswordHash.isEmpty()) {
@@ -103,3 +107,5 @@ public class SuperAdminAuthenticationProvider
     return SecurityPrincipalKinds.Provider.SUPER_ADMIN;
   }
 }
+
+

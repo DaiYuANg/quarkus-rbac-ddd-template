@@ -4,6 +4,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 
+import com.github.DaiYuANg.security.config.SuperAdminAuthorityVersion;
 import com.github.DaiYuANg.testsupport.QuarkusPostgresValkeyTestProfile;
 import com.github.DaiYuANg.testsupport.ValkeyTestResource;
 import io.quarkus.test.common.QuarkusTestResource;
@@ -41,7 +42,7 @@ class AdminApiFullStackFlowIT {
             .body("data.accessToken", notNullValue())
             .body("data.refreshToken", notNullValue())
             .body("data.tokenType", equalTo("Bearer"))
-            .body("data.authorityVersion", notNullValue())
+            .body("data.authorityVersion", equalTo(SuperAdminAuthorityVersion.VALUE))
             .header("Set-Cookie", notNullValue())
             .extract()
             .path("data.accessToken");
@@ -54,8 +55,6 @@ class AdminApiFullStackFlowIT {
         .statusCode(200)
         .body("code", equalTo("00000"))
         .body("data.id", equalTo("root"))
-        // JWT claim mapping may expose displayName as subject until custom claims are mapped
-        // everywhere
         .body("data.name", notNullValue())
         .body("data.permissions", notNullValue());
   }

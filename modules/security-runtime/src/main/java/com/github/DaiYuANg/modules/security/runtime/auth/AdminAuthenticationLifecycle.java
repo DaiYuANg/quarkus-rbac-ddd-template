@@ -4,8 +4,10 @@ import com.github.DaiYuANg.cache.AuthorityVersionStore;
 import com.github.DaiYuANg.cache.PermissionSnapshotStore;
 import com.github.DaiYuANg.cache.RefreshTokenStore;
 import com.github.DaiYuANg.modules.identity.application.port.AuthenticationLifecyclePort;
+import com.github.DaiYuANg.security.config.SuperAdminAuthorityVersion;
 import com.github.DaiYuANg.security.identity.AuthenticatedUser;
 import com.github.DaiYuANg.security.identity.SecurityPrincipalFactory;
+import com.github.DaiYuANg.security.identity.SecurityPrincipalKinds;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import lombok.NonNull;
@@ -29,13 +31,15 @@ public class AdminAuthenticationLifecycle implements AuthenticationLifecyclePort
   private final PermissionSnapshotStore permissionSnapshotStore;
   private final SecurityPrincipalFactory securityPrincipalFactory;
 
-  public String authorityVersion(String username) {
-    return authorityVersionStore.versionFor(username);
+  public String authorityVersion(@NonNull AuthenticatedUser user) {
+    return SecurityPrincipalKinds.UserType.SUPER_ADMIN.equals(user.userType())
+        ? SuperAdminAuthorityVersion.VALUE
+        : authorityVersionStore.versionFor(user.username());
   }
 
   @Override
   public void publishSnapshot(@NonNull AuthenticatedUser user) {
-    val authorityVersion = authorityVersion(user.username());
+    val authorityVersion = authorityVersion(user);
     val snapshot = securityPrincipalFactory.snapshot(user, authorityVersion);
     permissionSnapshotStore.save(snapshot);
   }

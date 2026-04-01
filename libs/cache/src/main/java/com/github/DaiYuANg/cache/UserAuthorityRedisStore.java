@@ -72,7 +72,9 @@ class UserAuthorityRedisStore {
         authorityHashKey, PrincipalAttributeKeys.DISPLAY_NAME, record.displayName());
     hashCommands.hset(authorityHashKey, PrincipalAttributeKeys.USER_TYPE, record.userType());
     hashCommands.hset(
-        authorityHashKey, PrincipalAttributeKeys.AUTHORITY_VERSION, record.authorityVersion());
+        authorityHashKey,
+        PrincipalAttributeKeys.AUTHORITY_VERSION,
+        StringUtils.defaultString(record.authorityVersion()));
 
     valueCommands.set(props.authorityKey(record.userId()), authorityHash);
     valueCommands.set(props.usernameToUserIdKey(record.username()), String.valueOf(record.userId()));
@@ -95,7 +97,9 @@ class UserAuthorityRedisStore {
     val authorityHashKey = props.authorityHashKey(userId);
     keyCommands.del(props.authorityKey(userId));
     keyCommands.del(authorityHashKey);
-    existing.map(UserAuthorityRecord::username).ifPresent(username -> keyCommands.del(props.usernameToUserIdKey(username)));
+    existing
+        .map(UserAuthorityRecord::username)
+        .ifPresent(username -> keyCommands.del(props.usernameToUserIdKey(username)));
     return existing;
   }
 

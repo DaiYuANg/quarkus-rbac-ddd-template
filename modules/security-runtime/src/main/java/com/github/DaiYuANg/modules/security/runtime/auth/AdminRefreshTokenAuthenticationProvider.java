@@ -15,7 +15,6 @@ import io.quarkus.security.identity.AuthenticationRequestContext;
 import io.quarkus.security.identity.IdentityProvider;
 import io.quarkus.security.identity.SecurityIdentity;
 import io.smallrye.mutiny.Uni;
-import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import lombok.NonNull;
@@ -24,7 +23,6 @@ import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 
 @ApplicationScoped
-@Priority(300)
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class AdminRefreshTokenAuthenticationProvider
     implements IdentityProvider<RefreshTokenAuthenticationRequest> {
@@ -33,6 +31,11 @@ public class AdminRefreshTokenAuthenticationProvider
   private final AdminDbUserAuthoritySupport userAuthoritySupport;
   private final PermissionSnapshotLoader permissionSnapshotLoader;
   private final QuarkusSecurityIdentityFactory securityIdentityFactory;
+
+  @Override
+  public int priority() {
+    return 100;
+  }
 
   @Override
   public Class<RefreshTokenAuthenticationRequest> getRequestType() {
@@ -86,3 +89,5 @@ public class AdminRefreshTokenAuthenticationProvider
     return StringUtils.trimToNull(value);
   }
 }
+
+

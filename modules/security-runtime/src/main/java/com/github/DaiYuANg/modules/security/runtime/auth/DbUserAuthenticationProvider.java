@@ -12,7 +12,6 @@ import io.quarkus.security.identity.AuthenticationRequestContext;
 import io.quarkus.security.identity.IdentityProvider;
 import io.quarkus.security.identity.SecurityIdentity;
 import io.smallrye.mutiny.Uni;
-import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import lombok.NonNull;
@@ -20,7 +19,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @ApplicationScoped
-@Priority(200)
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 @Slf4j
 public class DbUserAuthenticationProvider
@@ -29,6 +27,11 @@ public class DbUserAuthenticationProvider
   private final PasswordHasher passwordHasher;
   private final AdminDbUserAuthoritySupport userAuthoritySupport;
   private final QuarkusSecurityIdentityFactory securityIdentityFactory;
+
+  @Override
+  public int priority() {
+    return 10;
+  }
 
   @Override
   public Class<UsernamePasswordAuthenticationRequest> getRequestType() {
@@ -73,3 +76,5 @@ public class DbUserAuthenticationProvider
             });
   }
 }
+
+

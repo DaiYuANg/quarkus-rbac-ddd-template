@@ -31,6 +31,26 @@ class JwtTokenServiceTest {
           public long loginFailureLockSeconds() {
             return 900L;
           }
+
+          @Override
+          public SuperAdmin superAdmin() {
+            return new SuperAdmin() {
+              @Override
+              public java.util.Optional<String> username() {
+                return java.util.Optional.empty();
+              }
+
+              @Override
+              public java.util.Optional<String> passwordHash() {
+                return java.util.Optional.empty();
+              }
+
+              @Override
+              public java.util.Optional<String> displayName() {
+                return java.util.Optional.empty();
+              }
+            };
+          }
         };
 
     var service = new JwtTokenService(config);

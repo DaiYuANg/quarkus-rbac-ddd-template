@@ -5,7 +5,9 @@ import com.github.DaiYuANg.cache.RefreshTokenStore;
 import com.github.DaiYuANg.modules.identity.application.dto.response.SystemAuthenticationToken;
 import com.github.DaiYuANg.modules.identity.application.dto.response.SystemAuthenticationTokenBuilder;
 import com.github.DaiYuANg.modules.identity.application.port.AdminTokenIssuerPort;
+import com.github.DaiYuANg.security.config.SuperAdminAuthorityVersion;
 import com.github.DaiYuANg.security.identity.AuthenticatedUser;
+import com.github.DaiYuANg.security.identity.SecurityPrincipalKinds;
 import com.github.DaiYuANg.security.token.JwtTokenService;
 import com.github.DaiYuANg.security.token.TokenIssuer;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -23,7 +25,10 @@ public class JwtAdminTokenIssuer
 
   @Override
   public SystemAuthenticationToken issue(AuthenticatedUser user) {
-    val authorityVersion = authorityVersionStore.versionFor(user.username());
+    val authorityVersion =
+        SecurityPrincipalKinds.UserType.SUPER_ADMIN.equals(user.userType())
+            ? SuperAdminAuthorityVersion.VALUE
+            : authorityVersionStore.versionFor(user.username());
     val accessToken = jwtTokenService.generate(user, authorityVersion);
     val refreshToken = jwtTokenService.generateRefreshToken();
     refreshTokenStore.save(
