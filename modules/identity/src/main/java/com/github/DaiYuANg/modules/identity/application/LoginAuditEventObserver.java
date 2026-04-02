@@ -1,7 +1,6 @@
-package com.github.DaiYuANg.modules.identity;
+package com.github.DaiYuANg.modules.identity.application;
 
 import com.github.DaiYuANg.audit.service.LoginLogService;
-import com.github.DaiYuANg.modules.identity.application.LoginAuditEvent;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.ObservesAsync;
 import jakarta.inject.Inject;

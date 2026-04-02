@@ -15,6 +15,9 @@ dependencies {
   implementation(enforcedPlatform(libs.quarkus.bom))
   implementation(projects.libs.common)
   implementation(projects.libs.restSupport)
+  implementation(projects.libs.security)
+  implementation(projects.libs.identity)
+  implementation(projects.libs.accesscontrol)
   implementation(projects.modules.identity)
   implementation(projects.modules.accesscontrol)
   implementation(projects.modules.securityRuntime)
@@ -25,6 +28,8 @@ dependencies {
   implementation(libs.bundles.quarkus.security.application)
 
   testImplementation(libs.bundles.quarkus.test)
+  testImplementation(projects.libs.cache)
+  testImplementation(projects.libs.audit)
   testImplementation(libs.testcontainers.postgresql)
   testImplementation(libs.testcontainers.jdbc)
 }

@@ -4,6 +4,7 @@ dependencies {
   implementation(enforcedPlatform(libs.quarkus.bom))
   implementation(projects.libs.common)
   implementation(projects.libs.restSupport)
+  implementation(projects.libs.security)
   implementation(projects.modules.identity)
   implementation(projects.modules.securityRuntime)
 

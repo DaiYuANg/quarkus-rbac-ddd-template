@@ -9,8 +9,15 @@ abstract class VerifyLayerDependenciesTask : DefaultTask() {
       mapOf(":modules:security-runtime" to setOf(":modules:identity"))
   private val allowedAppLibraryDependencies =
       mapOf(
-          ":apps:admin-api" to setOf(":libs:common", ":libs:rest-support"),
-          ":apps:mobile-api" to setOf(":libs:common", ":libs:rest-support"),
+          ":apps:admin-api" to
+              setOf(
+                  ":libs:common",
+                  ":libs:rest-support",
+                  ":libs:security",
+                  ":libs:identity",
+                  ":libs:accesscontrol"),
+          ":apps:mobile-api" to
+              setOf(":libs:common", ":libs:rest-support", ":libs:security"),
           ":apps:migrator" to emptySet())
 
   init {

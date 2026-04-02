@@ -10,6 +10,7 @@ import com.github.DaiYuANg.security.identity.SecurityPrincipalFactory;
 import com.github.DaiYuANg.security.identity.SecurityPrincipalKinds;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import java.util.Optional;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -42,6 +43,11 @@ public class AdminAuthenticationLifecycle implements AuthenticationLifecyclePort
     val authorityVersion = authorityVersion(user);
     val snapshot = securityPrincipalFactory.snapshot(user, authorityVersion);
     permissionSnapshotStore.save(snapshot);
+  }
+
+  @Override
+  public Optional<String> findRefreshTokenOwner(String refreshToken) {
+    return refreshTokenStore.getUsername(StringUtils.trimToNull(refreshToken));
   }
 
   @Override

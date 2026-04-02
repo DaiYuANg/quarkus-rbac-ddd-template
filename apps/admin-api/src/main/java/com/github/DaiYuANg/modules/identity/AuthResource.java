@@ -1,17 +1,14 @@
 package com.github.DaiYuANg.modules.identity;
 
-import com.github.DaiYuANg.cache.RefreshTokenStore;
 import com.github.DaiYuANg.common.constant.ResultCode;
 import com.github.DaiYuANg.common.exception.BizException;
 import com.github.DaiYuANg.common.model.Results;
-import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.github.DaiYuANg.modules.identity.application.AuthApplicationService;
 import com.github.DaiYuANg.modules.identity.application.dto.request.LoginRequest;
 import com.github.DaiYuANg.modules.identity.application.dto.response.MeResponse;
 import com.github.DaiYuANg.modules.identity.application.dto.response.UserDetailVo;
 import com.github.DaiYuANg.rest.support.RefreshTokenCookies;
-import com.github.DaiYuANg.security.config.AuthSecurityConfig;
 import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.PermitAll;
 import jakarta.inject.Inject;
@@ -38,8 +35,6 @@ public class AuthResource {
 
   private final AuthApplicationService authApplicationService;
   private final JsonWebToken jwt;
-  private final RefreshTokenStore refreshTokenStore;
-  private final AuthSecurityConfig authSecurityConfig;
 
   @POST
   @Path("/login")
@@ -52,7 +47,7 @@ public class AuthResource {
                 REFRESH_COOKIE_PATH,
                 REFRESH_TOKEN_COOKIE,
                 token.refreshToken(),
-                Math.toIntExact(authSecurityConfig.refreshTokenTtlSeconds()),
+                Math.toIntExact(authApplicationService.refreshTokenTtlSeconds()),
                 isSecureRequest(uriInfo)))
         .build();
   }
@@ -82,14 +77,7 @@ public class AuthResource {
     if (refreshToken == null) {
       throw new BizException(ResultCode.REFRESH_TOKEN_INVALID);
     }
-    val owner =
-        refreshTokenStore
-            .getUsername(refreshToken)
-            .orElseThrow(() -> new BizException(ResultCode.REFRESH_TOKEN_INVALID));
-    if (!Objects.equal(owner, jwt.getName())) {
-      throw new BizException(ResultCode.FORBIDDEN);
-    }
-    authApplicationService.logout(refreshToken);
+    authApplicationService.logout(jwt.getName(), refreshToken);
     return Response.ok(Results.ok())
         .cookie(
             RefreshTokenCookies.cleared(
@@ -115,7 +103,7 @@ public class AuthResource {
                 REFRESH_COOKIE_PATH,
                 REFRESH_TOKEN_COOKIE,
                 token.refreshToken(),
-                Math.toIntExact(authSecurityConfig.refreshTokenTtlSeconds()),
+                Math.toIntExact(authApplicationService.refreshTokenTtlSeconds()),
                 isSecureRequest(uriInfo)))
         .build();
   }

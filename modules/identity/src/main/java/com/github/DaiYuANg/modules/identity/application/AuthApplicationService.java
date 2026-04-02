@@ -145,8 +145,19 @@ public class AuthApplicationService {
     return meResponseMapper.fromCurrentUser(current, current.displayName(), current.permissions());
   }
 
-  public void logout(@NonNull String refreshToken) {
+  public long refreshTokenTtlSeconds() {
+    return authSecurityConfig.refreshTokenTtlSeconds();
+  }
+
+  public void logout(@NonNull String username, @NonNull String refreshToken) {
     log.atDebug().log("logout (revoke refresh token)");
+    val owner =
+        authenticationLifecycle
+            .findRefreshTokenOwner(refreshToken)
+            .orElseThrow(() -> new BizException(ResultCode.REFRESH_TOKEN_INVALID));
+    if (!Objects.equal(owner, username)) {
+      throw new BizException(ResultCode.FORBIDDEN);
+    }
     authenticationLifecycle.revokeRefreshToken(refreshToken);
   }
 

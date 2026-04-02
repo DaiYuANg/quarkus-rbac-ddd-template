@@ -1,14 +1,14 @@
 plugins { alias(libs.plugins.jandex) }
 
 dependencies {
-  api(projects.libs.common)
-  api(projects.libs.persistence)
-  api(projects.libs.identity)
-  api(projects.libs.accesscontrol)
-  api(projects.libs.audit)
-  api(projects.libs.cache)
-  api(projects.libs.security)
-  api(libs.quarkus.arc)
-  api(libs.quarkus.hibernate.orm.panache)
-  api(libs.quarkus.hibernate.validator)
+  implementation(projects.libs.common)
+  implementation(projects.libs.persistence)
+  implementation(projects.libs.identity)
+  implementation(projects.libs.accesscontrol)
+  implementation(projects.libs.audit)
+  implementation(projects.libs.cache)
+  implementation(projects.libs.security)
+  implementation(libs.quarkus.arc)
+  implementation(libs.quarkus.hibernate.orm.panache)
+  implementation(libs.quarkus.hibernate.validator)
 }

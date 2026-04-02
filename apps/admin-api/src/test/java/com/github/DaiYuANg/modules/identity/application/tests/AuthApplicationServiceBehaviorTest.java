@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.github.DaiYuANg.audit.support.AuditSnapshotProvider;
@@ -22,8 +23,8 @@ import com.github.DaiYuANg.modules.identity.application.dto.response.SystemAuthe
 import com.github.DaiYuANg.modules.identity.application.dto.response.UserDetailVo;
 import com.github.DaiYuANg.modules.identity.application.dto.response.UserDetailVoBuilder;
 import com.github.DaiYuANg.modules.identity.application.port.AdminTokenIssuerPort;
+import com.github.DaiYuANg.modules.identity.application.port.AuthenticationLifecyclePort;
 import com.github.DaiYuANg.modules.identity.application.profile.UserProfileResolutionService;
-import com.github.DaiYuANg.modules.security.runtime.auth.AdminAuthenticationLifecycle;
 import com.github.DaiYuANg.security.access.CurrentUserAccess;
 import com.github.DaiYuANg.security.authorization.RbacPermissionCodes.User;
 import com.github.DaiYuANg.security.config.AuthSecurityConfig;
@@ -68,7 +69,7 @@ class AuthApplicationServiceBehaviorTest {
     var loginAuditEvent = loginEventMock();
     var auditSnapshotProvider = mock(AuditSnapshotProvider.class);
     var authSecurityConfig = mock(AuthSecurityConfig.class);
-    var lifecycle = mock(AdminAuthenticationLifecycle.class);
+    var lifecycle = mock(AuthenticationLifecyclePort.class);
     var currentUserAccess = mock(CurrentUserAccess.class);
     var userProfileResolutionService = mock(UserProfileResolutionService.class);
     var meResponseMapper = mock(MeResponseMapper.class);
@@ -132,7 +133,7 @@ class AuthApplicationServiceBehaviorTest {
             loginEventMock(),
             mock(AuditSnapshotProvider.class),
             mock(AuthSecurityConfig.class),
-            mock(AdminAuthenticationLifecycle.class),
+            mock(AuthenticationLifecyclePort.class),
             currentUserAccess,
             userProfileResolutionService,
             mock(MeResponseMapper.class),
@@ -157,7 +158,7 @@ class AuthApplicationServiceBehaviorTest {
             loginEventMock(),
             mock(AuditSnapshotProvider.class),
             mock(AuthSecurityConfig.class),
-            mock(AdminAuthenticationLifecycle.class),
+            mock(AuthenticationLifecyclePort.class),
             currentUserAccess,
             mock(UserProfileResolutionService.class),
             mock(MeResponseMapper.class),
@@ -182,7 +183,7 @@ class AuthApplicationServiceBehaviorTest {
             loginEventMock(),
             mock(AuditSnapshotProvider.class),
             mock(AuthSecurityConfig.class),
-            mock(AdminAuthenticationLifecycle.class),
+            mock(AuthenticationLifecyclePort.class),
             currentUserAccess,
             mock(UserProfileResolutionService.class),
             mock(MeResponseMapper.class),
@@ -208,7 +209,7 @@ class AuthApplicationServiceBehaviorTest {
             loginEventMock(),
             mock(AuditSnapshotProvider.class),
             mock(AuthSecurityConfig.class),
-            mock(AdminAuthenticationLifecycle.class),
+            mock(AuthenticationLifecyclePort.class),
             mock(CurrentUserAccess.class),
             mock(UserProfileResolutionService.class),
             mock(MeResponseMapper.class),
@@ -216,5 +217,81 @@ class AuthApplicationServiceBehaviorTest {
 
     var ex = assertThrows(BizException.class, () -> service.refreshToken("refresh-old"));
     assertEquals(ResultCode.REFRESH_TOKEN_INVALID, ex.getResultCode());
+  }
+
+  @Test
+  void logoutRejectsUnknownRefreshToken() {
+    var lifecycle = mock(AuthenticationLifecyclePort.class);
+    when(lifecycle.findRefreshTokenOwner("rt-1")).thenReturn(Optional.empty());
+
+    var service =
+        new AuthApplicationService(
+            mock(UserRepository.class),
+            mock(IdentityProviderManager.class),
+            mock(AdminTokenIssuerPort.class),
+            mock(LoginAttemptStore.class),
+            mock(AuthorityVersionStore.class),
+            loginEventMock(),
+            mock(AuditSnapshotProvider.class),
+            mock(AuthSecurityConfig.class),
+            lifecycle,
+            mock(CurrentUserAccess.class),
+            mock(UserProfileResolutionService.class),
+            mock(MeResponseMapper.class),
+            mock(PrincipalAttributesSerializer.class));
+
+    var ex = assertThrows(BizException.class, () -> service.logout("alice", "rt-1"));
+    assertEquals(ResultCode.REFRESH_TOKEN_INVALID, ex.getResultCode());
+  }
+
+  @Test
+  void logoutRejectsRefreshTokenOwnedByAnotherUser() {
+    var lifecycle = mock(AuthenticationLifecyclePort.class);
+    when(lifecycle.findRefreshTokenOwner("rt-1")).thenReturn(Optional.of("bob"));
+
+    var service =
+        new AuthApplicationService(
+            mock(UserRepository.class),
+            mock(IdentityProviderManager.class),
+            mock(AdminTokenIssuerPort.class),
+            mock(LoginAttemptStore.class),
+            mock(AuthorityVersionStore.class),
+            loginEventMock(),
+            mock(AuditSnapshotProvider.class),
+            mock(AuthSecurityConfig.class),
+            lifecycle,
+            mock(CurrentUserAccess.class),
+            mock(UserProfileResolutionService.class),
+            mock(MeResponseMapper.class),
+            mock(PrincipalAttributesSerializer.class));
+
+    var ex = assertThrows(BizException.class, () -> service.logout("alice", "rt-1"));
+    assertEquals(ResultCode.FORBIDDEN, ex.getResultCode());
+  }
+
+  @Test
+  void logoutRevokesRefreshTokenWhenOwnedByCurrentUser() {
+    var lifecycle = mock(AuthenticationLifecyclePort.class);
+    when(lifecycle.findRefreshTokenOwner("rt-1")).thenReturn(Optional.of("alice"));
+
+    var service =
+        new AuthApplicationService(
+            mock(UserRepository.class),
+            mock(IdentityProviderManager.class),
+            mock(AdminTokenIssuerPort.class),
+            mock(LoginAttemptStore.class),
+            mock(AuthorityVersionStore.class),
+            loginEventMock(),
+            mock(AuditSnapshotProvider.class),
+            mock(AuthSecurityConfig.class),
+            lifecycle,
+            mock(CurrentUserAccess.class),
+            mock(UserProfileResolutionService.class),
+            mock(MeResponseMapper.class),
+            mock(PrincipalAttributesSerializer.class));
+
+    service.logout("alice", "rt-1");
+
+    verify(lifecycle).revokeRefreshToken("rt-1");
   }
 }
