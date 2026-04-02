@@ -2,9 +2,8 @@ package com.github.DaiYuANg.persistence.outbox;
 
 import com.github.DaiYuANg.persistence.entity.BaseEntity;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import java.time.Instant;
 
@@ -33,7 +32,7 @@ public class OutboxMessageEntity extends BaseEntity {
   @Column(name = "published_at")
   public Instant publishedAt;
 
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false, length = 32)
+  @Convert(converter = OutboxStatusConverter.class)
+  @Column(nullable = false, columnDefinition = "SMALLINT")
   public OutboxStatus status = OutboxStatus.PENDING;
 }

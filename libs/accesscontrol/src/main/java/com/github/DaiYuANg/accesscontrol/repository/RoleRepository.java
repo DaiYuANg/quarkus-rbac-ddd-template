@@ -116,7 +116,7 @@ public class RoleRepository extends BasePanacheCommandRepository<SysRole>
                     r.id,
                     r.name,
                     r.code,
-                    r.status.stringValue(),
+                    r.status,
                     r.sort));
     query.buildCondition(r).ifPresent(blazeQuery::where);
     query.buildOrders(r).forEach(blazeQuery::orderBy);

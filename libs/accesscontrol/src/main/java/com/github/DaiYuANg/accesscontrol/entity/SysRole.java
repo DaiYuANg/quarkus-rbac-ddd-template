@@ -1,6 +1,7 @@
 package com.github.DaiYuANg.accesscontrol.entity;
 
 import com.github.DaiYuANg.accesscontrol.constant.RoleStatus;
+import com.github.DaiYuANg.accesscontrol.entity.converter.RoleStatusConverter;
 import com.github.DaiYuANg.persistence.entity.BaseEntity;
 import jakarta.persistence.*;
 import java.util.LinkedHashSet;
@@ -15,8 +16,8 @@ public class SysRole extends BaseEntity {
   @Column(nullable = false, unique = true, length = 128)
   public String code;
 
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false, length = 32)
+  @Convert(converter = RoleStatusConverter.class)
+  @Column(nullable = false, columnDefinition = "SMALLINT")
   public RoleStatus status = RoleStatus.ENABLED;
 
   @Column public Integer sort = 0;

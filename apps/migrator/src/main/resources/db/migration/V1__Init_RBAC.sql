@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS sys_role
     update_by   VARCHAR(128),
     name        VARCHAR(128)                NOT NULL,
     code        VARCHAR(128)                NOT NULL,
-    status      VARCHAR(32)                 NOT NULL,
+    status      SMALLINT                    NOT NULL,
     sort        INTEGER                     NOT NULL DEFAULT 0,
     version     INTEGER,
     deleted     BOOLEAN                     DEFAULT FALSE
@@ -81,7 +81,7 @@ CREATE TABLE IF NOT EXISTS sys_user
     nickname               VARCHAR(128),
     email                  VARCHAR(128),
     latest_sign_in         TIMESTAMP WITHOUT TIME ZONE,
-    user_status            VARCHAR(32)                 NOT NULL,
+    user_status            SMALLINT                    NOT NULL,
     version                INTEGER,
     sort                   BIGINT,
     avatar                 BIGINT,
@@ -138,7 +138,7 @@ COMMENT ON COLUMN sys_permission_group.description IS 'Permission group descript
 
 COMMENT ON COLUMN sys_role.name IS 'Role name';
 COMMENT ON COLUMN sys_role.code IS 'Role code';
-COMMENT ON COLUMN sys_role.status IS 'Role status';
+COMMENT ON COLUMN sys_role.status IS 'Role status (0=disabled, 1=enabled)';
 COMMENT ON COLUMN sys_role.deleted IS 'Soft delete flag';
 
 COMMENT ON COLUMN sys_user.username IS 'Username';
@@ -148,7 +148,7 @@ COMMENT ON COLUMN sys_user.nickname IS 'Nickname';
 COMMENT ON COLUMN sys_user.password IS 'Password';
 COMMENT ON COLUMN sys_user.avatar IS 'Avatar';
 COMMENT ON COLUMN sys_user.email IS 'Email';
-COMMENT ON COLUMN sys_user.user_status IS 'User status';
+COMMENT ON COLUMN sys_user.user_status IS 'User status (0=disabled, 1=enabled)';
 COMMENT ON COLUMN sys_user.deleted IS 'Soft delete flag';
 COMMENT ON COLUMN sys_user.latest_sign_in IS 'Last sign-in time';
 COMMENT ON COLUMN sys_user.latest_change_password IS 'Last password change time';
@@ -176,11 +176,11 @@ VALUES (1, now(), now(), 'System Admin', 'System management', 'system-admin', 0)
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO sys_role (id, create_at, update_at, name, code, status, sort)
-VALUES (1, now(), now(), 'Super Admin', 'super-admin', 'ENABLED', 0)
+VALUES (1, now(), now(), 'Super Admin', 'super-admin', 1, 0)
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO sys_user (id, create_at, update_at, username, password, identifier, mobile_phone, nickname, email, latest_sign_in, user_status)
-VALUES (1, now(), now(), 'root', '$2a$10$luMSnAos9B8gjWQj6YvzjueaTY6fmV6S0x2drXr/7EQo1leChX2GC', 'root-identifier', '13800000000', 'root', 'root@example.com', now(), 'ENABLED')
+VALUES (1, now(), now(), 'root', '$2a$10$luMSnAos9B8gjWQj6YvzjueaTY6fmV6S0x2drXr/7EQo1leChX2GC', 'root-identifier', '13800000000', 'root', 'root@example.com', now(), 1)
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO sys_permission_group_ref_permission (permission_group_id, permission_id)

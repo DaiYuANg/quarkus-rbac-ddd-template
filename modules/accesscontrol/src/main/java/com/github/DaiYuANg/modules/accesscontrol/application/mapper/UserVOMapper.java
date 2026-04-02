@@ -13,14 +13,12 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.MappingTarget;
-import org.mapstruct.Named;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
 @Mapper(
     componentModel = MappingConstants.ComponentModel.CDI,
     uses = RoleVOMapper.class)
 public interface UserVOMapper {
-  @Mapping(target = "userStatus", source = "userStatus", qualifiedByName = "toUserStatus")
   @Mapping(target = "createAt", expression = "java(null)")
   @Mapping(target = "updateAt", expression = "java(null)")
   @Mapping(target = "roles", expression = "java(new java.util.LinkedHashSet<>())")
@@ -54,12 +52,4 @@ public interface UserVOMapper {
   @Mapping(target = "updateBy", ignore = true)
   @Mapping(target = "userStatus", source = "status")
   void updateEntity(UpdateUserForm form, @MappingTarget SysUser user);
-
-  @Named("toUserStatus")
-  default UserStatus toUserStatus(String value) {
-    if (value == null || value.isBlank()) {
-      return UserStatus.ENABLED;
-    }
-    return UserStatus.valueOf(value);
-  }
 }

@@ -13,14 +13,12 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.MappingTarget;
-import org.mapstruct.Named;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
 @Mapper(
     componentModel = MappingConstants.ComponentModel.CDI,
     uses = PermissionGroupVOMapper.class)
 public interface RoleVOMapper {
-  @Mapping(target = "status", source = "status", qualifiedByName = "toRoleStatus")
   @Mapping(target = "createAt", expression = "java(null)")
   @Mapping(target = "updateAt", expression = "java(null)")
   @Mapping(target = "permissionGroups", expression = "java(new java.util.LinkedHashSet<>())")
@@ -57,12 +55,4 @@ public interface RoleVOMapper {
   @Mapping(target = "updateAt", source = "role.updateAt")
   @Mapping(target = "permissionGroups", source = "permissionGroups")
   RoleVO toVOWithPermissionGroups(SysRole role, Set<PermissionGroupVO> permissionGroups);
-
-  @Named("toRoleStatus")
-  default RoleStatus toRoleStatus(String value) {
-    if (value == null || value.isBlank()) {
-      return RoleStatus.ENABLED;
-    }
-    return RoleStatus.valueOf(value);
-  }
 }

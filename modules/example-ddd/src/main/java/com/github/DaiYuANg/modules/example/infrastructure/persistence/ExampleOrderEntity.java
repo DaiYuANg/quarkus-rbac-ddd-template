@@ -13,8 +13,8 @@ public class ExampleOrderEntity extends BaseEntity {
   @Column(name = "buyer_username", nullable = false, length = 128)
   public String buyerUsername;
 
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false, length = 32)
+  @Convert(converter = ExampleOrderStatusConverter.class)
+  @Column(nullable = false, columnDefinition = "SMALLINT")
   public ExampleOrderStatus status = ExampleOrderStatus.CREATED;
 
   @Column(name = "total_minor", nullable = false)

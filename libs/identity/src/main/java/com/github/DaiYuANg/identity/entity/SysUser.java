@@ -2,6 +2,7 @@ package com.github.DaiYuANg.identity.entity;
 
 import com.github.DaiYuANg.accesscontrol.entity.SysRole;
 import com.github.DaiYuANg.identity.constant.UserStatus;
+import com.github.DaiYuANg.identity.entity.converter.UserStatusConverter;
 import com.github.DaiYuANg.persistence.entity.BaseEntity;
 import jakarta.persistence.*;
 import java.time.Instant;
@@ -33,8 +34,8 @@ public class SysUser extends BaseEntity {
   @Column(name = "latest_sign_in")
   public Instant latestSignIn;
 
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false, length = 32)
+  @Convert(converter = UserStatusConverter.class)
+  @Column(nullable = false, columnDefinition = "SMALLINT")
   public UserStatus userStatus = UserStatus.ENABLED;
 
   @ManyToMany

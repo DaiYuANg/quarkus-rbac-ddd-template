@@ -114,7 +114,7 @@ public class UserRepository extends BasePanacheCommandRepository<SysUser>
                     u.email,
                     u.mobilePhone,
                     u.identifier,
-                    u.userStatus.stringValue(),
+                    u.userStatus,
                     u.latestSignIn));
     query.buildCondition(u).ifPresent(blazeQuery::where);
     query.buildOrders(u).forEach(blazeQuery::orderBy);

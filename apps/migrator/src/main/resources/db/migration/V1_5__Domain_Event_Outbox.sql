@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS app_outbox_message
     occurred_at    TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     available_at   TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     published_at   TIMESTAMP WITHOUT TIME ZONE,
-    status         VARCHAR(32)                 NOT NULL
+    status         SMALLINT                    NOT NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_app_outbox_status_available

@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS ex_order
     create_by       VARCHAR(128),
     update_by       VARCHAR(128),
     buyer_username  VARCHAR(128)                NOT NULL,
-    status          VARCHAR(32)                 NOT NULL,
+    status          SMALLINT                    NOT NULL,
     total_minor     BIGINT                      NOT NULL
 );
 

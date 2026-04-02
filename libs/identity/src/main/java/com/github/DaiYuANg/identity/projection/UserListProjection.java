@@ -1,7 +1,7 @@
 package com.github.DaiYuANg.identity.projection;
 
+import com.github.DaiYuANg.identity.constant.UserStatus;
 import io.soabase.recordbuilder.core.RecordBuilder;
-
 import java.time.Instant;
 
 @RecordBuilder
@@ -12,5 +12,5 @@ public record UserListProjection(
     String email,
     String mobilePhone,
     String identifier,
-    String userStatus,
+    UserStatus userStatus,
     Instant latestSignIn) {}
