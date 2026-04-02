@@ -67,6 +67,10 @@ flowchart TD
 - `mobile-api` 不再配置 `super-admin`，因此它的 provider 链里这条分支通常会直接 `abstain`
 - `super-admin` 权限不是手工配置列表，而是运行时读取权限目录全量代码
 - JWT 主要承担身份传输；请求时最终权限以 Redis 快照 / DB 重新装载后的结果为准
+- `authorityVersion` 在当前实现里是“权限版本提示”，不是把权限固化进 access token；版本不一致时下一个请求会重装载快照
+- 因此角色/权限/权限组变更可以在**不更换 access token** 的情况下，于后续请求立即生效
+- 禁用用户会同时清理权限快照与 refresh token；后续旧 access token 会被当作失效身份处理，旧 refresh token 也不可再刷新
+- 改密码会回收 refresh token，但不会主动吊销已经签发的 access token；旧 access token 在过期前仍可继续访问
 
 ## 2. 存储层数据流转
 
@@ -120,7 +124,21 @@ sequenceDiagram
   - permission catalog cache
 - access control 侧变更用户/角色/权限后会 bump authority version；后续请求会触发快照失效与重装载
 
-## 3. 当前和旧文档不一致、已修正的点
+## 3. 当前 token 语义
+
+- **权限扩张 / 回收**
+  - 同一个旧 `accessToken` 在下一次请求时会按最新 RBAC 状态重算权限
+  - 权限新增后可直接放行新接口，权限回收后可直接返回 `403`
+- **禁用用户**
+  - 旧 `accessToken` 后续请求返回 `401`
+  - 旧 `refreshToken` 调刷新接口返回 `401` / `A0231`
+- **改密码**
+  - 旧 `refreshToken` 立即失效
+  - 旧密码不能再登录
+  - 新密码可以登录
+  - 已签发 `accessToken` 不做即时吊销，保持到 TTL 结束
+
+## 4. 当前和旧文档不一致、已修正的点
 
 - `config users` 已收敛成单个 `super-admin`
 - `mobile-api` 不再配置 `super-admin` 后门账号
@@ -128,7 +146,7 @@ sequenceDiagram
 - `app.identity.*` 现在只保留 `db-user-type` 作为可配置项；`SUPER_ADMIN` 是固定常量
 - 文档里不再宣称移动端存在 `mobile-member` / `mobile-merchant` 这类配置账号
 
-## 4. 相关文档
+## 5. 相关文档
 
 - [AUTHORIZATION_FLOW.zh-CN.md](AUTHORIZATION_FLOW.zh-CN.md)
 - [MOBILE_API.zh-CN.md](MOBILE_API.zh-CN.md)

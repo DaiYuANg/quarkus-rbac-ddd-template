@@ -1,6 +1,5 @@
 package com.github.DaiYuANg.security.identity;
 
-import com.github.DaiYuANg.security.authorization.StringPermission;
 import com.github.DaiYuANg.security.token.PrincipalAttributesSerializer;
 import io.quarkus.security.identity.SecurityIdentity;
 import io.quarkus.security.runtime.QuarkusSecurityIdentity;
@@ -18,8 +17,7 @@ public class QuarkusSecurityIdentityFactory {
     val builder =
         QuarkusSecurityIdentity.builder().setPrincipal(user::username).setAnonymous(false);
     user.roles().forEach(builder::addRole);
-    user.permissions()
-        .forEach(permission -> builder.addPermission(new StringPermission(permission)));
+    user.permissions().forEach(builder::addPermissionAsString);
     principalAttributesSerializer.toAttributes(user).forEach(builder::addAttribute);
     return builder.build();
   }

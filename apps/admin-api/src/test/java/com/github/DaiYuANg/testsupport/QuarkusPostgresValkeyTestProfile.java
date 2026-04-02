@@ -20,6 +20,7 @@ public final class QuarkusPostgresValkeyTestProfile implements QuarkusTestProfil
         Map.entry("quarkus.datasource.username", "postgres"),
         Map.entry("quarkus.datasource.password", "postgres"),
         Map.entry("quarkus.hibernate-orm.schema-management.strategy", "drop-and-create"),
+        Map.entry("quarkus.hibernate-orm.sql-load-script", "import-test.sql"),
         Map.entry("quarkus.redis.hosts", "${test.redis.hosts}"),
         Map.entry("quarkus.redis.devservices.enabled", "false"),
         Map.entry("quarkus.http.test-port", "0"),

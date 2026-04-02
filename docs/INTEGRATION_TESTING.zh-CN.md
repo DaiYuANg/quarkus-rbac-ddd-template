@@ -17,9 +17,17 @@
 | admin-api | `com.github.DaiYuANg.integration.AdminApiFullStackFlowIT` |
 | mobile-api | `com.github.DaiYuANg.mobile.integration.MobileApiFullStackFlowIT` |
 
-`AdminApiFullStackFlowIT` 覆盖 **super-admin 登录 → JWT → `/me`** 与 **存活探针**。`MobileApiFullStackFlowIT` 现在只保留用户侧进程的基础 smoke test，不再假设存在移动端配置账号。
+`AdminApiFullStackFlowIT` 当前覆盖：
 
-**刷新令牌** 未包含：`AdminRefreshTokenAuthenticationProvider` 目前只从 **`UserRepository`** 重新加载 DB 用户；若需测刷新，请另写 IT 并插入 `sys_user` 等种子数据。
+- `root`（super-admin）登录、JWT 下发、`/me`、`/q/health/live`
+- `root` 创建用户、角色、权限组并分配权限
+- 使用**同一个 access token** 验证权限扩张与权限回收
+- 用户被禁用后，旧 `accessToken` 与旧 `refreshToken` 的失效行为
+- 用户改密后，旧 `refreshToken` 失效、旧密码登录失败、新密码登录成功，以及旧 `accessToken` 在过期前仍可继续使用
+- 管理端分页 HTTP 契约：只接收零基 `page` / `size`，响应直接返回 `toolkit4j` 的 `PageResult` 字段（`content / page / size / totalElements / totalPages`）
+- 管理端权限目录测试种子统一来自 `apps/admin-api/src/test/resources/import-test.sql`
+
+`MobileApiFullStackFlowIT` 现在只保留用户侧进程的基础 smoke test，不再假设存在移动端配置账号。
 
 执行：
 
@@ -33,6 +41,7 @@
 ## 契约测试 vs 全链路
 
 - **`AdminIdentityRestJsonContractTest`** / **`MobileIdentityRestJsonContractTest`**：Mock 应用服务，锁定 **JSON 字段**。
+- **`PageQueryCompatibilityTest`** / **`PageResultCompatibilityTest`**：锁定管理端分页契约，避免再次引入 `pageNum/pageSize` 或自定义分页包装字段。
 - **`*FullStackFlowIT`**：真实服务、Redis、数据库，更容易发现装配与安全回归。
 
 ## 可选：对手动启动的进程做联调

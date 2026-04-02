@@ -21,6 +21,10 @@
 - `super-admin` 的权限来自权限目录全量代码，不是单独维护的静态权限清单。
 - 角色 / 权限 / 权限组变更需递增 authority version。
 - Authority version 不一致会强制从数据库刷新快照。
+- 因为 access token 只携带 authority version 提示，权限变更后同一个旧 token 也会按最新权限重新判断。
+- 角色被撤销后，旧 token 访问原本允许的接口会直接返回 `403`。
+- 用户被禁用后，请求不会再被重建成有效主体；旧 access token 会返回 `401`。
+- 改密码会回收 refresh token，但不会即时吊销已签发 access token；旧 access token 是否可继续访问取决于是否过期与用户是否仍有效。
 
 ## 推荐用法
 

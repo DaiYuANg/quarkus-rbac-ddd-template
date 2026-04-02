@@ -8,7 +8,8 @@
 
 - **安全**：Quarkus Security、JWT、刷新令牌、登录提供者链
 - **RBAC**：用户、角色、权限、权限组，基于 Valkey 缓存的权限快照
-- **持久化**：Hibernate ORM + Panache，Blaze-Persistence + Entity View 查询
+- **接口契约**：分页查询统一使用 `page/size`，分页响应直接使用 `toolkit4j` `PageResult`
+- **持久化**：Hibernate ORM + Panache，Blaze-Persistence + QueryDSL 投影查询
 - **DDD**：限界上下文 **modules**（`identity`、`accesscontrol`、`security-runtime`、示例 `example-ddd`）与共享 **libs**
 - **应用**：**admin-api**（管理端 REST）、**mobile-api**（C 端示例进程，独立路由与 `app.identity.*` 主体类型）
 - **横切**：**libs:rest-support**（统一异常映射、刷新 Cookie）、可选 **@ReplayProtected**（时间戳 + nonce，Redis）
@@ -94,6 +95,7 @@ apps/
 |------|---------|------|
 | 项目设计（DDD、架构图、技术栈） | [PROJECT_DESIGN.md](docs/PROJECT_DESIGN.md) | [PROJECT_DESIGN.zh-CN.md](docs/PROJECT_DESIGN.zh-CN.md) |
 | Security 运行时（认证链、快照流、Mermaid 图） | [SECURITY_RUNTIME.md](docs/SECURITY_RUNTIME.md) | [SECURITY_RUNTIME.zh-CN.md](docs/SECURITY_RUNTIME.zh-CN.md) |
+| 集成 / 全链路测试 | [INTEGRATION_TESTING.md](docs/INTEGRATION_TESTING.md) | [INTEGRATION_TESTING.zh-CN.md](docs/INTEGRATION_TESTING.zh-CN.md) |
 | Mobile API（依赖白名单） | [MOBILE_API.md](docs/MOBILE_API.md) | [MOBILE_API.zh-CN.md](docs/MOBILE_API.zh-CN.md) |
 | DDD 架构说明 | [ARCHITECTURE_DDD.md](docs/ARCHITECTURE_DDD.md) | [ARCHITECTURE_DDD.zh-CN.md](docs/ARCHITECTURE_DDD.zh-CN.md) |
 | 授权流程 | [AUTHORIZATION_FLOW.md](docs/AUTHORIZATION_FLOW.md) | [AUTHORIZATION_FLOW.zh-CN.md](docs/AUTHORIZATION_FLOW.zh-CN.md) |

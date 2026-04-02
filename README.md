@@ -8,7 +8,8 @@ A reusable Quarkus backend foundation with RBAC (Role-Based Access Control), JWT
 
 - **Security**: Quarkus Security, JWT, refresh token, provider-chain login orchestration
 - **RBAC**: User, Role, Permission, PermissionGroup with Valkey-cached permission snapshots
-- **Persistence**: Hibernate ORM + Panache, Blaze-Persistence + Entity View for queries
+- **API contract**: paging uses `page/size`, and paged responses use raw `toolkit4j` `PageResult`
+- **Persistence**: Hibernate ORM + Panache, Blaze-Persistence + QueryDSL projections for read-side queries
 - **DDD**: Bounded-context **modules** (`identity`, `accesscontrol`, `security-runtime`, optional `example-ddd`) plus shared **libs**
 - **Apps**: **admin-api** (management REST), **mobile-api** (C-side REST, separate routes and principal typing via `app.identity.*`)
 - **Cross-cutting**: **libs:rest-support** (shared JAX-RS exception mapping, refresh-token cookies), optional **@ReplayProtected** (timestamp + nonce, Redis)
@@ -94,6 +95,7 @@ Notable keys:
 |----------|---------|------|
 | Project design (DDD, diagrams, stack) | [PROJECT_DESIGN.md](docs/PROJECT_DESIGN.md) | [PROJECT_DESIGN.zh-CN.md](docs/PROJECT_DESIGN.zh-CN.md) |
 | Security runtime (auth chain, snapshot flow, Mermaid diagrams) | [SECURITY_RUNTIME.md](docs/SECURITY_RUNTIME.md) | [SECURITY_RUNTIME.zh-CN.md](docs/SECURITY_RUNTIME.zh-CN.md) |
+| Integration / full-stack testing | [INTEGRATION_TESTING.md](docs/INTEGRATION_TESTING.md) | [INTEGRATION_TESTING.zh-CN.md](docs/INTEGRATION_TESTING.zh-CN.md) |
 | Mobile API (dependency whitelist) | [MOBILE_API.md](docs/MOBILE_API.md) | [MOBILE_API.zh-CN.md](docs/MOBILE_API.zh-CN.md) |
 | DDD Architecture | [ARCHITECTURE_DDD.md](docs/ARCHITECTURE_DDD.md) | [ARCHITECTURE_DDD.zh-CN.md](docs/ARCHITECTURE_DDD.zh-CN.md) |
 | Authorization Flow | [AUTHORIZATION_FLOW.md](docs/AUTHORIZATION_FLOW.md) | [AUTHORIZATION_FLOW.zh-CN.md](docs/AUTHORIZATION_FLOW.zh-CN.md) |

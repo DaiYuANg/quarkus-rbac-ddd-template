@@ -195,6 +195,17 @@ sequenceDiagram
 - **驱动适配器（REST）**  
   在 **`apps/*`**，薄资源层做 HTTP ↔ 应用服务/DTO。**libs:rest-support** 统一异常映射与 Cookie 工具。
 
+### 3.1 CQRS-lite 读侧
+
+- `apps:*` 负责 `@BeanParam` / `@QueryParam` 绑定，并把 HTTP 输入映射为纯查询模型。
+- `libs:identity:query` 与 `libs:accesscontrol:query` 暴露不带 HTTP 注解的 read-query 对象。
+- 管理端分页入参当前统一为零基 `page` / `size`；不再保留 `pageNum` / `pageSize` 兼容命名。
+- 共享 `PageReq` 直接继承 `toolkit4j` 的 `PageRequest`，内部不再重复封装 `getPageNum` / `getPageSize` 这类别名访问器。
+- 分页返回直接使用 `toolkit4j` 的 `PageResult`，HTTP JSON 字段以 `content / page / size / totalElements / totalPages` 为准，不再额外包一层自定义分页模型。
+- Blaze-Persistence 与 QueryDSL 构造投影是当前读侧实现。
+- 未来如果要引入 Doma，只需替换或补充读侧实现，不必先改 REST 签名或应用服务查询契约。
+- `modules:example-ddd` 演示了参考目录命名：`application.command`、`application.readmodel`、`domain.model`、`infrastructure.persistence`。
+
 **RBAC 模板中的限界上下文：**
 
 | 上下文 | 主要 libs | module |
@@ -258,7 +269,7 @@ sequenceDiagram
 | **PostgreSQL** | `quarkus-jdbc-postgresql`，Agroal 连接池 |
 | **Hibernate ORM + Panache** | `libs` 中 Active Record / Repository 风格 |
 | **Schema** | 应用侧常用 **`validate`**；**Flyway** 在 `apps:migrator` |
-| **Blaze-Persistence** | **1.6.18** + Quarkus 集成；Entity View 用于查询/投影 |
+| **Blaze-Persistence** | **1.6.18** + Quarkus 集成；与 QueryDSL 一起用于读侧查询与分页 |
 | **QueryDSL** | **7.1**（Jakarta APT）；与 Blaze 在 persistence 中集成 |
 | **Snowflake ID** | `io.github.daiyuang:hibernate-snowflake-id:0.0.1`（使用处） |
 | **物理命名** | 如 `CamelCaseToUnderscoresNamingStrategy` |

@@ -19,6 +19,10 @@ For the fuller auth chain and PostgreSQL / Redis data flow, see [SECURITY_RUNTIM
 - `super-admin` permissions come from the full permission catalog, not a manually maintained static list.
 - Role / permission / permission-group changes must bump authority version.
 - Authority version mismatch forces snapshot refresh from database.
+- Because the access token only carries an authority-version hint, the same existing token is re-evaluated against current permissions after RBAC changes.
+- After role revocation, the same old token can immediately receive `403` on an endpoint that was previously allowed.
+- After a user is disabled, the request is no longer rebuilt into a valid principal; the old access token then returns `401`.
+- Password changes revoke refresh tokens, but do not immediately revoke already-issued access tokens; continued use then depends on expiry and whether the user is still valid.
 
 ## Recommended usage
 - Use `@PermissionsAllowed` for fixed endpoint entry permissions.

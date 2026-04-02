@@ -204,7 +204,10 @@ Classic DDD speaks of **domain**, **application**, **infrastructure**, and **int
 
 - `apps:*` own `@BeanParam` / `@QueryParam` binding and map those inputs into pure read-query models.
 - `libs:identity:query` and `libs:accesscontrol:query` expose HTTP-free read-query objects.
-- Blaze-Persistence and QueryDSL are the current read-side implementations.
+- Admin paging input is now standardized on zero-based `page` / `size`; the old `pageNum` / `pageSize` aliases are no longer part of the HTTP contract.
+- Shared `PageReq` directly extends `toolkit4j` `PageRequest`; it no longer duplicates alias accessors such as `getPageNum` / `getPageSize`.
+- Paged responses now return raw `toolkit4j` `PageResult` fields (`content / page / size / totalElements / totalPages`) instead of an extra custom page wrapper.
+- Blaze-Persistence and QueryDSL constructor projections are the current read-side implementations.
 - Doma can be introduced later on the read side without changing resource signatures or application-service query contracts.
 - `modules:example-ddd` demonstrates the reference naming split: `application.command`, `application.readmodel`, `domain.model`, and `infrastructure.persistence`.
 
@@ -290,7 +293,7 @@ Versions below are taken from the version catalog; bump them in **`gradle/libs.v
 | **PostgreSQL** | `quarkus-jdbc-postgresql`, Agroal pool |
 | **Hibernate ORM + Panache** | Active Record / repository style in `libs` |
 | **Schema management** | Often **`validate`** in apps; **Flyway** in `apps:migrator` |
-| **Blaze-Persistence** | **1.6.18** + Quarkus integration; Entity Views for query/projection scenarios |
+| **Blaze-Persistence** | **1.6.18** + Quarkus integration; used together with QueryDSL for read-side queries and pagination |
 | **QueryDSL** | **7.1** (Jakarta classifier via APT); integrated with Blaze where configured |
 | **Snowflake IDs** | `io.github.daiyuang:hibernate-snowflake-id:0.0.1` (where used) |
 | **Naming** | e.g. `CamelCaseToUnderscoresNamingStrategy` for physical column names |
