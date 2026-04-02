@@ -5,6 +5,7 @@ import com.github.DaiYuANg.cache.PermissionCatalogQueryBuilder;
 import com.github.DaiYuANg.cache.PermissionCatalogStore;
 import com.github.DaiYuANg.modules.accesscontrol.application.mapper.PermissionVOMapper;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.response.PermissionVO;
+import com.github.DaiYuANg.persistence.query.PageResults;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -53,12 +54,10 @@ public class PermissionApplicationService {
           .offset(query.getOffset())
           .limit(query.getSize())
           .build());
-    return PageResult.of(
-      page.content().stream().map(permissionVOMapper::toCatalogVO).toList(),
-      query.getOffset(),
-      query.getSize(),
-      page.total()
-    );
+    return PageResults.from(
+        page.content().stream().map(permissionVOMapper::toCatalogVO).toList(),
+        query,
+        page.total());
   }
 
   private void ensureCatalogLoaded() {

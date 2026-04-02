@@ -7,19 +7,11 @@ import jakarta.ws.rs.QueryParam;
 import lombok.Getter;
 import lombok.Setter;
 import org.jspecify.annotations.NonNull;
+import org.apache.commons.lang3.StringUtils;
 
 @Getter
 @Setter
 abstract class AbstractAdminPageQueryParams<Q extends PageReq> {
-  @QueryParam("pageNum")
-  @Min(1)
-  private Integer pageNum;
-
-  @QueryParam("pageSize")
-  @Min(1)
-  @Max(200)
-  private Integer pageSize;
-
   @QueryParam("page")
   @Min(0)
   private Integer page;
@@ -39,13 +31,19 @@ abstract class AbstractAdminPageQueryParams<Q extends PageReq> {
   private String sortDirection;
 
   protected Q applyTo(@NonNull Q query) {
-    query.setPage(pageNum);
-    query.setSize(pageSize);
-    query.setPage(page);
-    query.setSize(size);
-    query.setKeyword(keyword);
-    query.setSortBy(sortBy);
-    query.setSortDirection(sortDirection);
+    if (page != null) {
+      query.setPage(page + 1);
+    }
+    if (size != null) {
+      query.setSize(size);
+    }
+    query.setKeyword(normalize(keyword));
+    query.setSortBy(normalize(sortBy));
+    query.setSortDirection(normalize(sortDirection));
     return query;
+  }
+
+  private String normalize(String value) {
+    return StringUtils.trimToNull(value);
   }
 }

@@ -2,7 +2,6 @@ package com.github.DaiYuANg.common.model;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Setter;
 import lombok.val;
 import org.toolkit4j.data.model.page.PageRequest;
 
@@ -17,6 +16,14 @@ public class PageReq extends PageRequest {
   private String sortBy;
 
   private String sortDirection;
+
+  public int offset() {
+    return Optional.ofNullable(getOffset()).orElse(0);
+  }
+
+  public int pageIndex() {
+    return Math.max(Optional.ofNullable(getPage()).orElse(1) - 1, 0);
+  }
 
   protected final boolean isAscending(boolean defaultAsc) {
     return normalizedValue(getSortDirection())

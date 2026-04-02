@@ -4,15 +4,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.toolkit4j.data.model.page.PageResult;
 
 class PageResultCompatibilityTest {
 
   @Test
-  void exposesContractAliasesForFrontend() {
-    var page = ApiPageResult.of(10L, 2, 25, List.of("a", "b"));
+  void usesToolkitPageResultFields() {
+    var page = new PageResult<>(List.of("a", "b"), 2, 25, 10L, 1L);
 
-    assertEquals(List.of("a", "b"), page.items());
-    assertEquals(2, page.page());
-    assertEquals(25, page.pageSizeAlias());
+    assertEquals(List.of("a", "b"), page.getContent());
+    assertEquals(2, page.getPage());
+    assertEquals(25, page.getSize());
   }
 }

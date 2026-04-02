@@ -3,14 +3,13 @@ package com.github.DaiYuANg.identity.repository;
 import com.github.DaiYuANg.common.constant.ResultCode;
 import com.github.DaiYuANg.identity.entity.QSysUser;
 import com.github.DaiYuANg.identity.entity.SysUser;
-import com.github.DaiYuANg.identity.mapper.UserListViewMapper;
 import com.github.DaiYuANg.identity.projection.UserListProjection;
 import com.github.DaiYuANg.identity.query.UserPageQuery;
 import com.github.DaiYuANg.identity.query.UserQueryRepository;
-import com.github.DaiYuANg.identity.view.UserListView;
 import com.github.DaiYuANg.persistence.query.BlazeJPAQueryFactory;
-import com.github.DaiYuANg.persistence.query.BlazeQueryDSLSupport;
+import com.github.DaiYuANg.persistence.query.PageResults;
 import com.github.DaiYuANg.persistence.repository.BasePanacheCommandRepository;
+import com.querydsl.core.types.Projections;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -37,8 +36,6 @@ public class UserRepository extends BasePanacheCommandRepository<SysUser>
 
   private static final QSysUser u = new QSysUser("user");
 
-  private final BlazeQueryDSLSupport queryDslSupport;
-  private final UserListViewMapper mapper;
   private final BlazeJPAQueryFactory blazeQueryFactory;
   private final UserLookupQuerySupport userLookupQuerySupport;
   private final UserRbacQuerySupport userRbacQuerySupport;
@@ -104,13 +101,25 @@ public class UserRepository extends BasePanacheCommandRepository<SysUser>
 
   @Override
   public PageResult<UserListProjection> page(UserPageQuery query) {
-    val blazeQuery = blazeQueryFactory.selectFrom(u);
+    val blazeQuery =
+        blazeQueryFactory
+            .<UserListProjection>create()
+            .from(u)
+            .select(
+                Projections.constructor(
+                    UserListProjection.class,
+                    u.id,
+                    u.username,
+                    u.nickname,
+                    u.email,
+                    u.mobilePhone,
+                    u.identifier,
+                    u.userStatus.stringValue(),
+                    u.latestSignIn));
     query.buildCondition(u).ifPresent(blazeQuery::where);
     query.buildOrders(u).forEach(blazeQuery::orderBy);
-    val page =
-      queryDslSupport.executeWithEntityView(
-        blazeQuery, UserListView.class, query.getOffset(), query.getSize(), mapper::toProjection);
-    return BlazeQueryDSLSupport.toPageResult(page, query);
+    val page = blazeQuery.fetchPage(query.offset(), query.getSize());
+    return PageResults.from(page, query);
   }
 
   @Override

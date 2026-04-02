@@ -2,15 +2,14 @@ package com.github.DaiYuANg.accesscontrol.repository;
 
 import com.github.DaiYuANg.accesscontrol.entity.QSysPermissionGroup;
 import com.github.DaiYuANg.accesscontrol.entity.SysPermissionGroup;
-import com.github.DaiYuANg.accesscontrol.mapper.PermissionGroupListViewMapper;
 import com.github.DaiYuANg.accesscontrol.projection.PermissionGroupListProjection;
 import com.github.DaiYuANg.accesscontrol.query.PermissionGroupPageQuery;
 import com.github.DaiYuANg.accesscontrol.query.PermissionGroupQueryRepository;
-import com.github.DaiYuANg.accesscontrol.view.PermissionGroupListView;
 import com.github.DaiYuANg.common.constant.ResultCode;
 import com.github.DaiYuANg.persistence.query.BlazeJPAQueryFactory;
-import com.github.DaiYuANg.persistence.query.BlazeQueryDSLSupport;
+import com.github.DaiYuANg.persistence.query.PageResults;
 import com.github.DaiYuANg.persistence.repository.BasePanacheCommandRepository;
+import com.querydsl.core.types.Projections;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.Collection;
@@ -40,8 +39,6 @@ public class PermissionGroupRepository extends BasePanacheCommandRepository<SysP
   private static final QSysPermissionGroup g = new QSysPermissionGroup("permissionGroup");
 
   private final BlazeJPAQueryFactory blazeQueryFactory;
-  private final BlazeQueryDSLSupport queryDslSupport;
-  private final PermissionGroupListViewMapper mapper;
   private final PermissionGroupPermissionQuerySupport permissionQuerySupport;
   private final PermissionGroupPermissionMutationSupport permissionMutationSupport;
 
@@ -126,17 +123,22 @@ public class PermissionGroupRepository extends BasePanacheCommandRepository<SysP
 
   @Override
   public PageResult<PermissionGroupListProjection> page(@NonNull PermissionGroupPageQuery query) {
-    val blazeQuery = blazeQueryFactory.selectFrom(g);
+    val blazeQuery =
+        blazeQueryFactory
+            .<PermissionGroupListProjection>create()
+            .from(g)
+            .select(
+                Projections.constructor(
+                    PermissionGroupListProjection.class,
+                    g.id,
+                    g.name,
+                    g.description,
+                    g.code,
+                    g.sort));
     query.buildCondition(g).ifPresent(blazeQuery::where);
     query.buildOrders(g).forEach(blazeQuery::orderBy);
-    val page =
-        queryDslSupport.executeWithEntityView(
-            blazeQuery,
-            PermissionGroupListView.class,
-            query.getOffset(),
-            query.getSize(),
-            mapper::toProjection);
-    return BlazeQueryDSLSupport.toPageResult(page, query);
+    val page = blazeQuery.fetchPage(query.offset(), query.getSize());
+    return PageResults.from(page, query);
   }
 
   @Override

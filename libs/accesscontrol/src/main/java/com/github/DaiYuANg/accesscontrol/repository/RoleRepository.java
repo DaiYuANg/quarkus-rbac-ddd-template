@@ -3,15 +3,14 @@ package com.github.DaiYuANg.accesscontrol.repository;
 import com.github.DaiYuANg.accesscontrol.entity.QSysPermissionGroup;
 import com.github.DaiYuANg.accesscontrol.entity.QSysRole;
 import com.github.DaiYuANg.accesscontrol.entity.SysRole;
-import com.github.DaiYuANg.accesscontrol.mapper.RoleListViewMapper;
 import com.github.DaiYuANg.accesscontrol.projection.RoleListProjection;
 import com.github.DaiYuANg.accesscontrol.query.RolePageQuery;
 import com.github.DaiYuANg.accesscontrol.query.RoleQueryRepository;
-import com.github.DaiYuANg.accesscontrol.view.RoleListView;
 import com.github.DaiYuANg.common.constant.ResultCode;
 import com.github.DaiYuANg.persistence.query.BlazeJPAQueryFactory;
-import com.github.DaiYuANg.persistence.query.BlazeQueryDSLSupport;
+import com.github.DaiYuANg.persistence.query.PageResults;
 import com.github.DaiYuANg.persistence.repository.BasePanacheCommandRepository;
+import com.querydsl.core.types.Projections;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.Collection;
@@ -40,8 +39,6 @@ public class RoleRepository extends BasePanacheCommandRepository<SysRole>
   private static final QSysPermissionGroup g = new QSysPermissionGroup("permissionGroup");
 
   private final BlazeJPAQueryFactory blazeQueryFactory;
-  private final BlazeQueryDSLSupport queryDslSupport;
-  private final RoleListViewMapper mapper;
 
   public Optional<SysRole> findByName(String name) {
     if (name == null || name.isBlank()) {
@@ -109,13 +106,22 @@ public class RoleRepository extends BasePanacheCommandRepository<SysRole>
 
   @Override
   public PageResult<RoleListProjection> page(@NonNull RolePageQuery query) {
-    val blazeQuery = blazeQueryFactory.selectFrom(r);
+    val blazeQuery =
+        blazeQueryFactory
+            .<RoleListProjection>create()
+            .from(r)
+            .select(
+                Projections.constructor(
+                    RoleListProjection.class,
+                    r.id,
+                    r.name,
+                    r.code,
+                    r.status.stringValue(),
+                    r.sort));
     query.buildCondition(r).ifPresent(blazeQuery::where);
     query.buildOrders(r).forEach(blazeQuery::orderBy);
-    val page =
-        queryDslSupport.executeWithEntityView(
-            blazeQuery, RoleListView.class, query.getOffset(), query.getSize(), mapper::toProjection);
-    return BlazeQueryDSLSupport.toPageResult(page, query);
+    val page = blazeQuery.fetchPage(query.offset(), query.getSize());
+    return PageResults.from(page, query);
   }
 
   @Override
