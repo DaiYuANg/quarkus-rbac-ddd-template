@@ -1,6 +1,6 @@
 [versions]
 jdk = "25"
-quarkus = "3.34.1"
+quarkus = "3.34.2"
 jandex = "2.3.0"
 lombok-plugin = "3.1.6"
 spotless = "8.4.0"
