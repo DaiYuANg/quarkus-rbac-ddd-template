@@ -44,7 +44,7 @@ public class AdminRefreshTokenAuthenticationProvider
 
   @Override
   public Uni<SecurityIdentity> authenticate(
-      @NonNull RefreshTokenAuthenticationRequest request, AuthenticationRequestContext context) {
+    @NonNull RefreshTokenAuthenticationRequest request, @org.jspecify.annotations.NonNull AuthenticationRequestContext context) {
     return context.runBlocking(() -> authenticateBlocking(request));
   }
 

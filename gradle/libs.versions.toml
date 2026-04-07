@@ -1,19 +1,8 @@
 [versions]
 jdk = "25"
 quarkus = "3.34.2"
-jandex = "2.3.0"
-lombok-plugin = "3.1.6"
-spotless = "8.4.0"
 googleJavaFormat = "1.28.0"
 ktfmt = "0.54"
-version-check = "1.1.0"
-dotenv = "4.0.0"
-git-plugin = "0.15.1"
-task-tree = "4.0.1"
-plantuml = "2.4.0"
-checkstyle = "10.18.2"
-spotbugs = "6.4.8"
-owasp-dependency-check = "12.2.0"
 mapstruct = "1.6.3"
 jetbrains-annotations = "26.1.0"
 blaze-persistence = "1.6.18"
@@ -28,16 +17,16 @@ toolkit4j = "0.0.5"
 
 [plugins]
 quarkus = { id = "io.quarkus", version.ref = "quarkus" }
-jandex = { id = "org.kordamp.gradle.jandex", version.ref = "jandex" }
-lombok = { id = "name.remal.lombok", version.ref = "lombok-plugin" }
-spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
-version-check = { id = "nl.littlerobots.version-catalog-update", version.ref = "version-check" }
-dotenv = { id = "co.uzzu.dotenv.gradle", version.ref = "dotenv" }
-git = { id = "com.xenoterracide.gradle.git", version.ref = "git-plugin" }
-task-tree = { id = "com.dorongold.task-tree", version.ref = "task-tree" }
-plantuml = { id = "io.gitlab.plunts.plantuml", version.ref = "plantuml" }
-spotbugs = { id = "com.github.spotbugs", version.ref = "spotbugs" }
-owasp-dependency-check = { id = "org.owasp.dependencycheck", version.ref = "owasp-dependency-check" }
+jandex = { id = "org.kordamp.gradle.jandex", version = "2.3.0" }
+lombok = { id = "name.remal.lombok", version = "3.1.6" }
+spotless = { id = "com.diffplug.spotless", version = "8.4.0" }
+version-check = { id = "nl.littlerobots.version-catalog-update", version = "1.1.0" }
+dotenv = { id = "co.uzzu.dotenv.gradle", version = "4.0.0" }
+git = { id = "com.xenoterracide.gradle.git", version = "0.15.1" }
+task-tree = { id = "com.dorongold.task-tree", version = "4.0.1" }
+plantuml = { id = "io.gitlab.plunts.plantuml", version = "2.4.1" }
+spotbugs = { id = "com.github.spotbugs", version = "6.4.8" }
+owasp-dependency-check = { id = "org.owasp.dependencycheck", version = "12.2.0" }
 
 [libraries]
 quarkus-bom = { group = "io.quarkus", name = "quarkus-bom", version.ref = "quarkus" }

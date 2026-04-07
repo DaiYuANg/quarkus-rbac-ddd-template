@@ -17,6 +17,7 @@ import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.val;
+import org.jspecify.annotations.NonNull;
 
 @Getter
 @Setter
@@ -75,11 +76,11 @@ public class PermissionPageQuery extends PageReq {
                     permission.description.lower().like(like)));
   }
 
-  private Optional<BooleanExpression> likeIfPresent(StringPath path, String value) {
+  private Optional<BooleanExpression> likeIfPresent(@NonNull StringPath path, String value) {
     return likePattern(value).map(path.lower()::like);
   }
 
-  private Optional<BooleanExpression> eqIfPresent(StringPath path, String value) {
+  private Optional<BooleanExpression> eqIfPresent(@NonNull StringPath path, String value) {
     return normalizedValue(value).map(path::eq);
   }
 

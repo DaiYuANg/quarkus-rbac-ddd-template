@@ -15,8 +15,11 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.Provider;
 import java.time.Duration;
 import java.time.Instant;
+
+import lombok.RequiredArgsConstructor;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Settings use {@code app.replay.*} (see {@code application.yaml}); Redis uses existing {@code
@@ -26,9 +29,10 @@ import org.apache.commons.lang3.StringUtils;
 @ReplayProtected
 @Dependent
 @Priority(Priorities.AUTHORIZATION + 50)
+@RequiredArgsConstructor
 public class ReplayProtectionFilter implements ContainerRequestFilter {
-  @Inject ReplayProtectionConfig replayProtectionConfig;
-  @Inject ReplayNonceStore replayNonceStore;
+  private final ReplayProtectionConfig replayProtectionConfig;
+  private final ReplayNonceStore replayNonceStore;
 
   @Override
   public void filter(ContainerRequestContext requestContext) {
@@ -63,28 +67,28 @@ public class ReplayProtectionFilter implements ContainerRequestFilter {
       return;
     }
 
-    Instant clientInstant =
+    val clientInstant =
         replayProtectionConfig.timestampEpochSeconds()
             ? Instant.ofEpochSecond(parsed)
             : Instant.ofEpochMilli(parsed);
-    Instant now = Instant.now();
+    val now = Instant.now();
     long skewSeconds = Duration.between(clientInstant, now).abs().getSeconds();
     if (skewSeconds > replayProtectionConfig.maxSkewSeconds()) {
       abort(requestContext, "timestamp outside allowed skew");
       return;
     }
 
-    Duration nonceTtl = Duration.ofSeconds(replayProtectionConfig.nonceTtlSeconds());
+    val nonceTtl = Duration.ofSeconds(replayProtectionConfig.nonceTtlSeconds());
     if (!replayNonceStore.tryConsumeOnce(nonce, nonceTtl)) {
       abort(requestContext, "duplicate or invalid nonce");
     }
   }
 
-  private static String normalizeHeader(String value) {
+  private String normalizeHeader(String value) {
     return StringUtils.trimToNull(value);
   }
 
-  private static void abort(ContainerRequestContext ctx, String message) {
+  private void abort(@NonNull ContainerRequestContext ctx, String message) {
     ctx.abortWith(
         Response.status(ResultCode.BAD_REQUEST.status())
             .type(MediaType.APPLICATION_JSON)

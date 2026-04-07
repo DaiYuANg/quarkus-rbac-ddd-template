@@ -1,5 +1,8 @@
 package com.github.DaiYuANg.accesscontrol.projection;
 
+import io.soabase.recordbuilder.core.RecordBuilder;
+
+@RecordBuilder
 public record PermissionListProjection(
     Long id,
     String name,

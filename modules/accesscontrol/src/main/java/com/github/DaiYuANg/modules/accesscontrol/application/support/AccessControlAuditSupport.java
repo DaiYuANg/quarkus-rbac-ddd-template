@@ -6,13 +6,17 @@ import com.github.DaiYuANg.audit.support.AuditSnapshotProvider;
 import com.github.DaiYuANg.cache.AuthorityVersionStore;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+
 import java.time.Instant;
+
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = @Inject)
+@Slf4j
 public class AccessControlAuditSupport {
   private final AuthorityVersionStore authorityVersionStore;
   private final OperationLogRepository operationLogRepository;
@@ -23,19 +27,20 @@ public class AccessControlAuditSupport {
   }
 
   public void recordSuccess(
-      @NonNull String module,
-      @NonNull String action,
-      @NonNull String target,
-      @NonNull String detail) {
-    bumpGlobalVersion();
+    @NonNull String module,
+    @NonNull String action,
+    @NonNull String target,
+    @NonNull String detail) {
+    val newVersion = bumpGlobalVersion();
+    log.atInfo().log("[Module:{},Action:{},Target:{},Detail:{},NewVersion:{}]", module, action, target, detail, newVersion);
     record(
-        AccessControlAuditCommandBuilder.builder()
-            .module(module)
-            .action(action)
-            .target(target)
-            .success(true)
-            .detail(detail)
-            .build());
+      AccessControlAuditCommandBuilder.builder()
+        .module(module)
+        .action(action)
+        .target(target)
+        .success(true)
+        .detail(detail)
+        .build());
   }
 
   public void record(@NonNull AccessControlAuditCommand command) {

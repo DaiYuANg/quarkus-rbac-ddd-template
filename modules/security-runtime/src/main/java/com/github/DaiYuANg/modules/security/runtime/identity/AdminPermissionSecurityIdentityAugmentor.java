@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Request-time permission enrichment.
@@ -71,7 +72,7 @@ public class AdminPermissionSecurityIdentityAugmentor implements SecurityIdentit
     return securityIdentityFactory.create(loaded.toAuthenticatedUser());
   }
 
-  private String extractAuthorityVersion(@NonNull SecurityIdentity identity) {
+  private @Nullable String extractAuthorityVersion(@NonNull SecurityIdentity identity) {
     val direct = identity.getAttribute(PrincipalAttributeKeys.AUTHORITY_VERSION);
     if (direct != null) {
       return String.valueOf(direct);
@@ -112,7 +113,7 @@ public class AdminPermissionSecurityIdentityAugmentor implements SecurityIdentit
     return userId != null || normalize(expectedVersion) != null;
   }
 
-  private Long extractUserId(@NonNull SecurityIdentity identity) {
+  private @Nullable Long extractUserId(@NonNull SecurityIdentity identity) {
     val direct = identity.getAttribute(PrincipalAttributeKeys.USER_ID);
     if (direct != null) {
       return parseUserId(direct);

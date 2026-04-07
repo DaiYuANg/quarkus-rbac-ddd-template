@@ -6,10 +6,8 @@ import com.github.DaiYuANg.identity.entity.QSysUser;
 import com.github.DaiYuANg.identity.entity.SysUser_;
 import com.github.DaiYuANg.persistence.entity.BaseEntity_;
 import com.querydsl.core.types.OrderSpecifier;
-import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.ComparableExpressionBase;
-import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.core.types.dsl.SimpleExpression;
+import com.querydsl.core.types.dsl.*;
+
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +16,7 @@ import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.val;
+import org.jspecify.annotations.NonNull;
 
 @Getter
 @Setter
@@ -65,11 +64,11 @@ public class UserPageQuery extends PageReq {
   }
 
   private Optional<BooleanExpression> likeIfPresent(
-      com.querydsl.core.types.dsl.StringPath path, String value) {
+    @NonNull StringPath path, String value) {
     return likePattern(value).map(path.lower()::like);
   }
 
-  private <T> Optional<BooleanExpression> eqIfPresent(SimpleExpression<T> path, T value) {
+  private <T> Optional<BooleanExpression> eqIfPresent(@NonNull SimpleExpression<T> path, T value) {
     return Optional.ofNullable(value).map(path::eq);
   }
 

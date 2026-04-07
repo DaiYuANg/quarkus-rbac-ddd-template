@@ -7,20 +7,18 @@ import io.quarkus.arc.DefaultBean;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.time.Duration;
+
+import lombok.RequiredArgsConstructor;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 
 @ApplicationScoped
 @DefaultBean
+@RequiredArgsConstructor
 public class AdminPermissionSnapshotRefreshPolicy implements PermissionSnapshotRefreshPolicy {
   private static final Duration SNAPSHOT_TTL = Duration.ofHours(12);
 
   private final AuthorityVersionStore authorityVersionStore;
-
-  @Inject
-  public AdminPermissionSnapshotRefreshPolicy(AuthorityVersionStore authorityVersionStore) {
-    this.authorityVersionStore = authorityVersionStore;
-  }
 
   @Override
   public boolean shouldReuse(String expectedAuthorityVersion, PermissionSnapshot cachedSnapshot) {

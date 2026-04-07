@@ -24,15 +24,13 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.apache.commons.lang3.StringUtils;
 import org.toolkit4j.data.model.envelope.Result;
 
+import static com.github.DaiYuANg.modules.constant.HttpConstant.*;
+
 @Path("/api/v1/auth")
 @Produces("application/json")
 @Consumes("application/json")
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class AuthResource {
-  private static final String REFRESH_TOKEN_HEADER = "X-Refresh-Token";
-  private static final String REFRESH_TOKEN_COOKIE = "refresh_token";
-  private static final String REFRESH_COOKIE_PATH = "/api/v1/auth";
-
   private final AuthApplicationService authApplicationService;
   private final JsonWebToken jwt;
 

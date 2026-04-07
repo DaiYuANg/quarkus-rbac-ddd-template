@@ -40,7 +40,7 @@ public class DbUserAuthenticationProvider
 
   @Override
   public Uni<SecurityIdentity> authenticate(
-      @NonNull UsernamePasswordAuthenticationRequest request, AuthenticationRequestContext context) {
+    @NonNull UsernamePasswordAuthenticationRequest request, @org.jspecify.annotations.NonNull AuthenticationRequestContext context) {
     return context.runBlocking(() -> authenticateBlocking(request));
   }
 

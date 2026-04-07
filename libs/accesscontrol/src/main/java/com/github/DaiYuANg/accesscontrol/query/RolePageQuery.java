@@ -13,9 +13,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
+
+import com.querydsl.core.types.dsl.StringPath;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.val;
+import org.jspecify.annotations.NonNull;
 
 @Getter
 @Setter
@@ -53,7 +56,7 @@ public class RolePageQuery extends PageReq {
   }
 
   private Optional<BooleanExpression> likeIfPresent(
-      com.querydsl.core.types.dsl.StringPath path, String value) {
+    @NonNull StringPath path, String value) {
     return likePattern(value).map(path.lower()::like);
   }
 

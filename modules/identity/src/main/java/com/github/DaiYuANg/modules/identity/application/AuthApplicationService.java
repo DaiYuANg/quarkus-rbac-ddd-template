@@ -224,8 +224,6 @@ public class AuthApplicationService {
     try {
       return principalAttributesSerializer.toAuthenticatedUser(
           identityProviderManager.authenticateBlocking(request));
-    } catch (BizException ex) {
-      throw ex;
     } catch (AuthenticationFailedException | IllegalArgumentException ex) {
       throw new BizException(defaultFailureCode);
     }

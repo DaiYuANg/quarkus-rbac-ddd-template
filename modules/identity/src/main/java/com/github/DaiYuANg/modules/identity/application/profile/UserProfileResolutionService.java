@@ -8,7 +8,10 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import java.util.Comparator;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+
+import static java.util.Comparator.comparingInt;
 
 @ApplicationScoped
 public class UserProfileResolutionService {
@@ -31,8 +34,8 @@ public class UserProfileResolutionService {
                     ResultCode.DATA_NOT_FOUND, "no profile provider for user: " + user.username()));
   }
 
-  private java.util.stream.Stream<UserProfileProvider> orderedProviders() {
+  private Stream<UserProfileProvider> orderedProviders() {
     return StreamSupport.stream(providers.spliterator(), false)
-        .sorted(Comparator.comparingInt(UserProfileProvider::order));
+        .sorted(comparingInt(UserProfileProvider::order));
   }
 }

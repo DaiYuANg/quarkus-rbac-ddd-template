@@ -82,8 +82,7 @@ public class AdminPermissionSnapshotLoader implements PermissionSnapshotLoader {
     val configuredUsername = normalize(superAdminAccountConfig.username().orElse(null));
     val normalizedUsername = normalize(username);
     if (configuredUsername == null
-        || normalizedUsername == null
-        || !configuredUsername.equalsIgnoreCase(normalizedUsername)) {
+      || !configuredUsername.equalsIgnoreCase(normalizedUsername)) {
       return Optional.empty();
     }
     val permissions =

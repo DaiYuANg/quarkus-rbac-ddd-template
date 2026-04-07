@@ -28,7 +28,7 @@ public class JaxRsRequestMetadataProvider implements RequestMetadataProvider {
         remoteIpHeader != null && remoteIpHeader.contains(",")
             ? blankToNull(remoteIpHeader.split(",")[0])
             : blankToNull(remoteIpHeader);
-    val userAgent = blankToNull(firstHeader("User-Agent"));
+    val userAgent = blankToNull(firstHeader(HttpHeaders.USER_AGENT));
     val requestId = blankToNull(firstHeader("X-Request-Id", "X-Correlation-Id"));
     return Optional.of(
         new RequestMetadata(remoteIp, userAgent, requestId));

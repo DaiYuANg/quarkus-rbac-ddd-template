@@ -6,6 +6,7 @@ import com.github.DaiYuANg.identity.entity.SysUser;
 import com.github.DaiYuANg.identity.repository.UserRepository;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UpdateUserForm;
 import com.github.DaiYuANg.modules.accesscontrol.application.dto.request.UserCreationForm;
+import com.github.DaiYuANg.modules.accesscontrol.application.model.AvailabilityCheck;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.function.Consumer;
@@ -53,16 +54,6 @@ public class UserChecker {
   private void ensureMobilePhoneAvailable(@NonNull String mobilePhone) {
     if (userRepository.countByMobilePhone(mobilePhone) > 0) {
       throw new BizException(ResultCode.DATA_ALREADY_EXISTS, "mobilePhone already exists");
-    }
-  }
-
-  private record AvailabilityCheck(String next, String current, Consumer<String> validator) {
-    private boolean changed() {
-      return next != null && !Objects.equals(next, current);
-    }
-
-    private void validate() {
-      validator.accept(next);
     }
   }
 }
