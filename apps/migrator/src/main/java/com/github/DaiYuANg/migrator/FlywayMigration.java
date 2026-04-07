@@ -9,20 +9,7 @@ import org.flywaydb.core.Flyway;
 
 @QuarkusMain
 public class FlywayMigration {
-
   static void main(String... args) {
     Quarkus.run(MigrationApp.class, args);
-  }
-
-  @RequiredArgsConstructor(onConstructor_ = @Inject)
-  public static class MigrationApp implements QuarkusApplication {
-
-    private final Flyway flyway;
-
-    @Override
-    public int run(String... args) {
-      flyway.migrate();
-      return 0;
-    }
   }
 }

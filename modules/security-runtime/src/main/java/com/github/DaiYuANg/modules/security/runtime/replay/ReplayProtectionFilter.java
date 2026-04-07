@@ -72,7 +72,7 @@ public class ReplayProtectionFilter implements ContainerRequestFilter {
             ? Instant.ofEpochSecond(parsed)
             : Instant.ofEpochMilli(parsed);
     val now = Instant.now();
-    long skewSeconds = Duration.between(clientInstant, now).abs().getSeconds();
+    val skewSeconds = Duration.between(clientInstant, now).abs().getSeconds();
     if (skewSeconds > replayProtectionConfig.maxSkewSeconds()) {
       abort(requestContext, "timestamp outside allowed skew");
       return;

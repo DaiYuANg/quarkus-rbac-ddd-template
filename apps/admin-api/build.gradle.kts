@@ -1,5 +1,4 @@
 plugins {
-  alias(libs.plugins.quarkus)
   alias(libs.plugins.plantuml)
 }
 
@@ -12,7 +11,6 @@ classDiagrams {
 }
 
 dependencies {
-  implementation(enforcedPlatform(libs.quarkus.bom))
   implementation(projects.libs.common)
   implementation(projects.libs.restSupport)
   implementation(projects.libs.security)

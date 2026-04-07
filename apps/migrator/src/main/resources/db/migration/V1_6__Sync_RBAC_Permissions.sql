@@ -27,29 +27,3 @@ SET name = EXCLUDED.name,
     description = EXCLUDED.description,
     expression = EXCLUDED.expression,
     update_at = now();
-
-INSERT INTO sys_permission_group_ref_permission (permission_group_id, permission_id)
-SELECT 1, p.id
-FROM sys_permission p
-WHERE p.code IN (
-    'user:view',
-    'user:add',
-    'user:edit',
-    'user:delete',
-    'user:assign-role',
-    'user:reset-password',
-    'role:view',
-    'role:add',
-    'role:edit',
-    'role:delete',
-    'role:assign-permission-group',
-    'permission:view',
-    'permission:edit',
-    'permission-group:view',
-    'permission-group:add',
-    'permission-group:edit',
-    'permission-group:delete',
-    'permission-group:assign-permission',
-    'auth:change-password'
-)
-ON CONFLICT DO NOTHING;
