@@ -13,7 +13,7 @@ record-builder = "52"
 query-dsl = "7.1"
 wildfly-elytron = "2.8.3.Final"
 testcontainers = "1.21.4"
-toolkit4j = "0.0.5"
+toolkit4j = "0.0.6"
 
 [plugins]
 quarkus = { id = "io.quarkus", version.ref = "quarkus" }
