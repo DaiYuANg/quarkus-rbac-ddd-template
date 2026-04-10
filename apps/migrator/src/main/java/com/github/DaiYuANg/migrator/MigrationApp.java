@@ -12,7 +12,6 @@ public class MigrationApp implements QuarkusApplication {
 
   @Override
   public int run(String... args) {
-    flyway.validate();
     flyway.migrate();
     return 0;
   }

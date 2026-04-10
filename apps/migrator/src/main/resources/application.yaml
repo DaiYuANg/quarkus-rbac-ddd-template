@@ -15,10 +15,8 @@ quarkus:
     password: postgres
     jdbc:
       url: jdbc:postgresql://localhost:5433/rbac
-  hibernate-orm:
-    active: false
   flyway:
-    migrate-at-start: true
+    migrate-at-start: false
     validate-at-start: false
     clean-disabled: true
     locations: db/migration
@@ -26,12 +24,6 @@ quarkus:
     baseline-on-migrate: true
     baseline-version: 0
     table: flyway_schema_history
-  management:
-    enabled: true
-    port: 9001
-    root-path: /q
-  info:
-    enabled: true
 
 "%dev":
   quarkus:
@@ -63,6 +55,8 @@ quarkus:
       username: ${DB_USERNAME:postgres}
       password: ${DB_PASSWORD:postgres}
       jdbc:
-        url: ${DB_JDBC_URL:jdbc:postgresql://postgres:5433/rbac}
+        # Keep the packaged app runnable on a developer machine by default.
+        # Container deployments override this with DB_JDBC_URL (for example docker-compose uses postgres:5432).
+        url: ${DB_JDBC_URL:jdbc:postgresql://localhost:5433/rbac}
     flyway:
       schemas: ${DB_SCHEMA:public}
