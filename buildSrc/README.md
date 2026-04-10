@@ -26,7 +26,8 @@ Example:
 
 1. Replace package in all source files (java, kt, kts, yaml, md, sql, xml, properties)
 2. Update `group` in root `build.gradle.kts`
-3. Rename directory structure (e.g. `com/github/DaiYuANg` → `com/example/myproject`)
+3. Rename package directories under source roots such as `src/main/java`, `src/test/java`,
+   `src/main/kotlin`, and `src/test/kotlin` across `apps`, `libs`, and `modules`
 
 ---
 

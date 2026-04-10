@@ -26,7 +26,8 @@
 
 1. 替换所有源文件中的包名（java, kt, kts, yaml, md, sql, xml, properties）
 2. 更新根项目 `build.gradle.kts` 中的 `group`
-3. 重命名目录结构（如 `com/github/DaiYuANg` → `com/example/myproject`）
+3. 重命名 `apps`、`libs`、`modules` 下 `src/main/java`、`src/test/java`、
+   `src/main/kotlin`、`src/test/kotlin` 等源码根目录中的包路径
 
 ---
 

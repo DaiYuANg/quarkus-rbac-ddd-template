@@ -3,7 +3,6 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.TaskAction
-import java.io.File
 
 /**
  * Gradle task to batch-replace package names and group.
@@ -17,7 +16,8 @@ import java.io.File
  * Performs:
  * 1. Replace package in all source files (java, kt, kts, yaml, md, sql, xml, properties)
  * 2. Update group in build.gradle.kts
- * 3. Rename directory structure (com/github/DaiYuANg -> com/example/myproject)
+ * 3. Rename package directories under source roots such as src/main/java, src/test/java,
+ *    src/main/kotlin, and src/test/kotlin across apps/libs/modules
  */
 abstract class ReplacePackageTask : DefaultTask() {
 
@@ -55,8 +55,6 @@ abstract class ReplacePackageTask : DefaultTask() {
     }
 
     val rootDir = project.rootProject.layout.projectDirectory.asFile
-    val extensions = listOf("java", "kt", "kts", "yaml", "yml", "md", "sql", "xml", "properties")
-    val excludeDirs = setOf("build", ".gradle", ".git", "buildSrc/build", "buildSrc")
 
     logger.lifecycle("Replacing package: $from -> $to")
     if (dry) logger.lifecycle("(dry-run mode, no files will be modified)")
@@ -64,17 +62,10 @@ abstract class ReplacePackageTask : DefaultTask() {
     // 1. Replace file contents
     var replaceCount = 0
     rootDir.walkTopDown()
-      .filter { it.isFile }
-      .filter { file ->
-        val relativePath = file.relativeTo(rootDir).path
-        !excludeDirs.any { relativePath.contains("/$it/") || relativePath.startsWith("$it/") }
-      }
-      .filter { extensions.any { ext -> it.extension.equals(ext, ignoreCase = true) } }
+      .filter { file -> ReplacePackageSupport.shouldReplaceContent(rootDir, file) }
       .forEach { file ->
         val content = file.readText(Charsets.UTF_8)
-        val newContent = content
-          .replace(from, to)
-          .replace(from.replace(".", "/"), to.replace(".", "/"))
+        val newContent = ReplacePackageSupport.replacePackageInContent(content, from, to)
         if (content != newContent) {
           if (!dry) file.writeText(newContent, Charsets.UTF_8)
           replaceCount++
@@ -98,43 +89,15 @@ abstract class ReplacePackageTask : DefaultTask() {
     }
 
     // 3. Rename directory structure
-    val fromPath = from.replace(".", File.separator)
-    val toPath = to.replace(".", File.separator)
-
-    if (fromPath != toPath) {
-      val srcDirs = listOf("libs", "apps").flatMap { lib ->
-        rootDir.resolve(lib).takeIf { it.exists() }?.listFiles()?.toList().orEmpty()
-          .map { it.resolve("src/main/java") }
-          .filter { it.exists() }
-      }
-
-      var moveCount = 0
-      for (srcDir in srcDirs) {
-        val fromDir = srcDir.resolve(fromPath)
-        val toDir = srcDir.resolve(toPath)
-        if (fromDir.exists() && fromDir.isDirectory) {
-          if (!dry) {
-            toDir.parentFile.mkdirs()
-            fromDir.copyRecursively(toDir, overwrite = true)
-            fromDir.deleteRecursively()
-          }
-          moveCount++
-          logger.lifecycle("  directory: ${fromDir.relativeTo(rootDir)} -> ${toDir.relativeTo(rootDir)}")
-        }
-      }
-
-      // Remove empty intermediate directories
-      if (!dry && moveCount > 0) {
-        srcDirs.forEach { srcDir ->
-          val parts = fromPath.split(File.separatorChar)
-          for (i in parts.indices.reversed()) {
-            val dir = srcDir.resolve(parts.take(i + 1).joinToString(File.separator))
-            if (dir.exists() && dir.isDirectory && dir.listFiles()?.isEmpty() != false) {
-              dir.deleteRecursively()
-            }
-          }
-        }
-      }
+    val moveCount =
+      ReplacePackageSupport.renamePackageDirectories(
+        rootDir = rootDir,
+        fromPackage = from,
+        toPackage = to,
+        dryRun = dry,
+        log = logger::lifecycle,
+      )
+    if (from != to) {
       logger.lifecycle("Directories renamed: $moveCount")
     }
 
